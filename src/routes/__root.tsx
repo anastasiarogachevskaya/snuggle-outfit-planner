@@ -19,6 +19,7 @@ import "@fontsource/outfit/600.css";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { Toaster } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
@@ -132,6 +133,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <Toaster position="top-center" />
     </QueryClientProvider>
   );
 }
