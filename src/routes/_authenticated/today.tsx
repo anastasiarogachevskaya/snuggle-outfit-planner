@@ -1,0 +1,418 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchWeather } from "@/lib/weather";
+import { recommend, type Situation } from "@/lib/recommend";
+import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/_authenticated/today")({
+  head: () => ({ meta: [{ title: "Today — Layer" }] }),
+  component: TodayPage,
+});
+
+function TodayPage() {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+
+  const babyQ = useQuery({
+    queryKey: ["baby"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("babies").select("*").limit(1).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const wardrobeQ = useQuery({
+    queryKey: ["wardrobe", babyQ.data?.id],
+    enabled: !!babyQ.data?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wardrobe_items")
+        .select("slug,owned")
+        .eq("baby_id", babyQ.data!.id);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const weatherQ = useQuery({
+    queryKey: ["weather", babyQ.data?.latitude, babyQ.data?.longitude],
+    enabled: !!babyQ.data?.latitude && !!babyQ.data?.longitude,
+    staleTime: 5 * 60_000,
+    queryFn: () => fetchWeather(babyQ.data!.latitude!, babyQ.data!.longitude!),
+  });
+
+  const [situation, setSituation] = useState<Situation>("walk");
+  const [roomTemp, setRoomTemp] = useState(21);
+  const [strollerMode, setStrollerMode] = useState<"stroller" | "carrier">("stroller");
+  const [duration, setDuration] = useState<15 | 30 | 60>(30);
+
+  const owned = useMemo(
+    () => new Set<WardrobeSlug>((wardrobeQ.data ?? []).filter((i) => i.owned).map((i) => i.slug as WardrobeSlug)),
+    [wardrobeQ.data],
+  );
+
+  const rec = useMemo(() => {
+    if (!babyQ.data || !weatherQ.data) return null;
+    return recommend({
+      feelsLikeC: weatherQ.data.feelsLikeC,
+      tempPref: babyQ.data.temperature_pref,
+      situation,
+      roomTempC: situation === "home" ? roomTemp : undefined,
+      strollerMode: situation === "walk" ? strollerMode : undefined,
+      durationMin: duration,
+      owned,
+    });
+  }, [babyQ.data, weatherQ.data, situation, roomTemp, strollerMode, duration, owned]);
+
+  const feedback = useMutation({
+    mutationFn: async (rating: "comfortable" | "cold" | "warm") => {
+      if (!babyQ.data || !weatherQ.data || !rec) return;
+      const { error } = await supabase.from("feedback").insert({
+        baby_id: babyQ.data.id,
+        situation,
+        temp_c: weatherQ.data.tempC,
+        feels_like_c: weatherQ.data.feelsLikeC,
+        recommendation: rec as any,
+        rating,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => toast.success("Thanks — we'll remember that."),
+    onError: (e: any) => toast.error(e.message ?? "Couldn't save"),
+  });
+
+  const signOut = async () => {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
+
+  if (babyQ.isLoading) return <Loading />;
+  if (!babyQ.data) {
+    return <NoBaby />;
+  }
+  const baby = babyQ.data;
+
+  return (
+    <div className="min-h-screen bg-canvas font-sans text-ink pb-16">
+      <div className="mx-auto max-w-md px-6 py-6">
+        {/* Header */}
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-widest text-primary/60">
+              Current location
+            </p>
+            <h2 className="text-lg font-serif font-semibold">
+              {baby.location_label ?? "Somewhere"}
+            </h2>
+          </div>
+          <Link
+            to="/baby"
+            className="size-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-serif font-semibold"
+          >
+            {baby.name.charAt(0).toUpperCase()}
+          </Link>
+        </header>
+
+        {/* Weather */}
+        <section className="mb-8">
+          {weatherQ.data ? (
+            <div className="flex items-end gap-3">
+              <span className="text-6xl font-serif leading-none italic">
+                {Math.round(weatherQ.data.tempC)}°
+              </span>
+              <div className="pb-1">
+                <p className="font-medium">{weatherQ.data.condition}</p>
+                <p className="text-sm text-ink/50">
+                  Feels like {Math.round(weatherQ.data.feelsLikeC)}°
+                </p>
+              </div>
+            </div>
+          ) : weatherQ.isLoading ? (
+            <p className="text-sm text-ink/40">Reading the sky…</p>
+          ) : (
+            <p className="text-sm text-ink/60">
+              Add a location on your{" "}
+              <Link to="/baby" className="text-primary underline">
+                baby profile
+              </Link>{" "}
+              to see the weather.
+            </p>
+          )}
+        </section>
+
+        {/* Recommendation */}
+        {rec && (
+          <section className="mb-10">
+            <div className="bg-surface rounded-[32px] p-7 shadow-sm border border-black/5">
+              <h1 className="text-3xl font-serif font-semibold mb-2">
+                {rec.layers.length >= 3 ? "Go with layers." : rec.layers.length === 2 ? "Keep it light." : "Just the basics."}
+              </h1>
+              <p className="text-ink/60 leading-relaxed mb-6">{rec.reason}</p>
+
+              <div className="space-y-3">
+                {rec.layers.map((l) => (
+                  <Row
+                    key={l.slot + l.slug}
+                    chip={l.slot.slice(0, 3).toUpperCase()}
+                    label={l.label}
+                    hint={owned.has(l.slug) ? "In your wardrobe" : "Not in your wardrobe"}
+                    dim={!owned.has(l.slug)}
+                  />
+                ))}
+                {rec.accessories.map((a) => (
+                  <Row
+                    key={"acc-" + a.slug}
+                    chip="+"
+                    label={a.label}
+                    hint={owned.has(a.slug) ? "" : "Not in your wardrobe"}
+                    accent
+                    dim={!owned.has(a.slug)}
+                  />
+                ))}
+              </div>
+
+              {rec.missing.length > 0 && (
+                <p className="mt-5 text-xs text-accent">
+                  You don't own {rec.missing.length} of these yet —{" "}
+                  <Link to="/wardrobe" className="underline">
+                    update wardrobe
+                  </Link>
+                  .
+                </p>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Situation */}
+        <section className="mb-6">
+          <p className="text-xs font-medium uppercase tracking-widest text-primary/60 mb-4">
+            Where are you headed?
+          </p>
+          <div className="grid grid-cols-3 gap-3">
+            {(["home", "walk", "car"] as Situation[]).map((s) => (
+              <button
+                key={s}
+                onClick={() => setSituation(s)}
+                className={
+                  "py-4 rounded-2xl font-medium transition-colors capitalize " +
+                  (situation === s
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "bg-surface border border-black/5 hover:bg-canvas")
+                }
+              >
+                {s === "home" ? "🏠 Home" : s === "walk" ? "🚶 Walk" : "🚗 Car"}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Situation extras */}
+        <section className="mb-10 bg-surface/60 rounded-2xl p-5 border border-black/5">
+          {situation === "home" && (
+            <label className="block">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-ink/70">Room temperature</span>
+                <span className="font-medium">{roomTemp}°C</span>
+              </div>
+              <input
+                type="range"
+                min={15}
+                max={28}
+                value={roomTemp}
+                onChange={(e) => setRoomTemp(Number(e.target.value))}
+                className="w-full accent-primary"
+              />
+            </label>
+          )}
+          {situation === "walk" && (
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-ink/70 mb-2">Carry with</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["stroller", "carrier"] as const).map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setStrollerMode(m)}
+                      className={
+                        "py-2 rounded-xl text-sm capitalize " +
+                        (strollerMode === m
+                          ? "bg-primary/15 text-primary font-medium"
+                          : "bg-canvas text-ink/70")
+                      }
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-ink/70 mb-2">Duration</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[15, 30, 60].map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setDuration(d as 15 | 30 | 60)}
+                      className={
+                        "py-2 rounded-xl text-sm " +
+                        (duration === d
+                          ? "bg-primary/15 text-primary font-medium"
+                          : "bg-canvas text-ink/70")
+                      }
+                    >
+                      {d === 60 ? "60+ min" : `${d} min`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {situation === "car" && (
+            <div>
+              <p className="text-sm text-ink/70 mb-2">Trip duration</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[15, 30, 60].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDuration(d as 15 | 30 | 60)}
+                    className={
+                      "py-2 rounded-xl text-sm " +
+                      (duration === d
+                        ? "bg-primary/15 text-primary font-medium"
+                        : "bg-canvas text-ink/70")
+                    }
+                  >
+                    {d === 60 ? "60+ min" : `${d} min`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Feedback */}
+        <section className="bg-accent/5 rounded-3xl p-6 border border-accent/10">
+          <h3 className="text-center font-serif text-lg mb-4">How is {baby.name} feeling?</h3>
+          <div className="flex justify-between items-center gap-2">
+            <FeedbackBtn emoji="🥶" label="Too cold" onClick={() => feedback.mutate("cold")} />
+            <FeedbackBtn
+              emoji="😊"
+              label="Just right"
+              primary
+              onClick={() => feedback.mutate("comfortable")}
+            />
+            <FeedbackBtn emoji="🥵" label="Too warm" onClick={() => feedback.mutate("warm")} />
+          </div>
+        </section>
+
+        {/* Footer nav */}
+        <footer className="mt-10 pt-6 border-t border-black/5 flex justify-between text-sm">
+          <Link to="/wardrobe" className="text-primary font-medium">
+            Wardrobe →
+          </Link>
+          <Link to="/baby" className="text-ink/60">
+            Baby profile
+          </Link>
+          <button onClick={signOut} className="text-ink/40">
+            Sign out
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+function Row({
+  chip,
+  label,
+  hint,
+  accent,
+  dim,
+}: {
+  chip: string;
+  label: string;
+  hint?: string;
+  accent?: boolean;
+  dim?: boolean;
+}) {
+  return (
+    <div className={"flex items-center gap-4 p-3 bg-canvas/60 rounded-2xl " + (dim ? "opacity-60" : "")}>
+      <div
+        className={
+          "size-10 bg-white rounded-lg border border-black/5 flex items-center justify-center text-xs font-medium " +
+          (accent ? "text-accent" : "text-primary")
+        }
+      >
+        {chip}
+      </div>
+      <div>
+        <p className="text-sm font-medium">{label}</p>
+        {hint && <p className="text-[11px] text-ink/40">{hint}</p>}
+      </div>
+    </div>
+  );
+}
+
+function FeedbackBtn({
+  emoji,
+  label,
+  primary,
+  onClick,
+}: {
+  emoji: string;
+  label: string;
+  primary?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button onClick={onClick} className="flex-1 flex flex-col items-center gap-2 group">
+      <div
+        className={
+          "rounded-full bg-white border flex items-center justify-center group-active:scale-95 transition-transform shadow-sm " +
+          (primary ? "size-14 border-2 border-primary shadow-md" : "size-12 border-black/5")
+        }
+      >
+        <span className="text-xl">{emoji}</span>
+      </div>
+      <span className={"text-[10px] uppercase tracking-tighter " + (primary ? "font-bold text-primary" : "font-medium")}>
+        {label}
+      </span>
+    </button>
+  );
+}
+
+function Loading() {
+  return (
+    <div className="min-h-screen bg-canvas flex items-center justify-center">
+      <p className="text-ink/40 text-sm">Loading…</p>
+    </div>
+  );
+}
+
+function NoBaby() {
+  return (
+    <div className="min-h-screen bg-canvas font-sans">
+      <div className="mx-auto max-w-md px-6 py-16 text-center">
+        <p className="text-xs font-medium uppercase tracking-widest text-primary/70 mb-2">
+          One quick step
+        </p>
+        <h1 className="text-3xl font-serif font-semibold mb-4">Tell us about your baby.</h1>
+        <p className="text-ink/60 mb-8">
+          Name, birthday, temperature preference, and where you are — that's it.
+        </p>
+        <Link
+          to="/baby"
+          className="inline-block rounded-2xl bg-primary text-primary-foreground px-6 py-3 font-medium shadow-md shadow-primary/20"
+        >
+          Set up profile
+        </Link>
+      </div>
+    </div>
+  );
+}
