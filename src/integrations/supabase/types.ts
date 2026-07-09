@@ -14,7 +14,136 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      babies: {
+        Row: {
+          created_at: string
+          dob: string
+          id: string
+          latitude: number | null
+          location_label: string | null
+          longitude: number | null
+          name: string
+          temperature_pref: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dob: string
+          id?: string
+          latitude?: number | null
+          location_label?: string | null
+          longitude?: number | null
+          name: string
+          temperature_pref?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dob?: string
+          id?: string
+          latitude?: number | null
+          location_label?: string | null
+          longitude?: number | null
+          name?: string
+          temperature_pref?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          baby_id: string
+          created_at: string
+          feels_like_c: number | null
+          id: string
+          rating: string
+          recommendation: Json | null
+          situation: string
+          temp_c: number | null
+        }
+        Insert: {
+          baby_id: string
+          created_at?: string
+          feels_like_c?: number | null
+          id?: string
+          rating: string
+          recommendation?: Json | null
+          situation: string
+          temp_c?: number | null
+        }
+        Update: {
+          baby_id?: string
+          created_at?: string
+          feels_like_c?: number | null
+          id?: string
+          rating?: string
+          recommendation?: Json | null
+          situation?: string
+          temp_c?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      wardrobe_items: {
+        Row: {
+          baby_id: string
+          created_at: string
+          id: string
+          owned: boolean
+          slug: string
+        }
+        Insert: {
+          baby_id: string
+          created_at?: string
+          id?: string
+          owned?: boolean
+          slug: string
+        }
+        Update: {
+          baby_id?: string
+          created_at?: string
+          id?: string
+          owned?: boolean
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wardrobe_items_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
