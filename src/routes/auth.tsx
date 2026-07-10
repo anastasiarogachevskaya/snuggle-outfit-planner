@@ -82,13 +82,22 @@ function AuthPage() {
         </div>
 
         <div className="mt-8 bg-surface rounded-3xl p-6 shadow-sm border border-black/5">
-          <button
-            onClick={google}
-            disabled={busy}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white py-3 text-sm font-medium hover:bg-canvas transition-colors disabled:opacity-50"
-          >
-            Continue with Google
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => oauth("apple")}
+              disabled={busy}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-ink text-canvas py-3 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+               Continue with Apple
+            </button>
+            <button
+              onClick={() => oauth("google")}
+              disabled={busy}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white py-3 text-sm font-medium hover:bg-canvas transition-colors disabled:opacity-50"
+            >
+              Continue with Google
+            </button>
+          </div>
 
           <div className="my-5 flex items-center gap-3 text-xs text-ink/40">
             <span className="flex-1 h-px bg-black/10" /> or <span className="flex-1 h-px bg-black/10" />
