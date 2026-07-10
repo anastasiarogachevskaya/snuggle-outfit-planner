@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DEFAULT_OWNED } from "@/lib/wardrobe-catalog";
+
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/baby")({
@@ -105,24 +105,18 @@ function BabyPage() {
       if (babyQ.data) {
         const { error } = await supabase.from("babies").update(payload).eq("id", babyQ.data.id);
         if (error) throw error;
+        return { isNew: false as const };
       } else {
-        const { data: inserted, error } = await supabase
-          .from("babies")
-          .insert(payload)
-          .select()
-          .single();
+        const { error } = await supabase.from("babies").insert(payload).select().single();
         if (error) throw error;
-        // Seed wardrobe defaults
-        await supabase
-          .from("wardrobe_items")
-          .insert(DEFAULT_OWNED.map((slug) => ({ baby_id: inserted.id, slug, owned: true })));
+        return { isNew: true as const };
       }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ["baby"] });
       qc.invalidateQueries({ queryKey: ["wardrobe"] });
       toast.success("Saved");
-      navigate({ to: "/today" });
+      navigate({ to: result?.isNew ? "/onboarding/wardrobe" : "/today" });
     },
     onError: (e: any) => toast.error(e.message ?? "Save failed"),
   });
