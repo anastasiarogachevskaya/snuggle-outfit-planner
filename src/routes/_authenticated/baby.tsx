@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DEFAULT_OWNED } from "@/lib/wardrobe-catalog";
+
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/baby")({
@@ -105,24 +105,18 @@ function BabyPage() {
       if (babyQ.data) {
         const { error } = await supabase.from("babies").update(payload).eq("id", babyQ.data.id);
         if (error) throw error;
+        return { isNew: false as const };
       } else {
-        const { data: inserted, error } = await supabase
-          .from("babies")
-          .insert(payload)
-          .select()
-          .single();
+        const { error } = await supabase.from("babies").insert(payload).select().single();
         if (error) throw error;
-        // Seed wardrobe defaults
-        await supabase
-          .from("wardrobe_items")
-          .insert(DEFAULT_OWNED.map((slug) => ({ baby_id: inserted.id, slug, owned: true })));
+        return { isNew: true as const };
       }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ["baby"] });
       qc.invalidateQueries({ queryKey: ["wardrobe"] });
       toast.success("Saved");
-      navigate({ to: "/today" });
+      navigate({ to: result?.isNew ? "/onboarding/wardrobe" : "/today" });
     },
     onError: (e: any) => toast.error(e.message ?? "Save failed"),
   });
@@ -216,6 +210,25 @@ function BabyPage() {
             {save.isPending ? "Saving…" : "Save"}
           </button>
         </form>
+
+        {babyQ.data && (
+          <div className="mt-8 pt-6 border-t border-black/5">
+            <Link
+              to="/wardrobe"
+              className="flex items-center justify-between p-4 rounded-2xl bg-surface border border-black/5"
+            >
+              <div>
+                <p className="text-sm font-medium">Wardrobe</p>
+                <p className="text-xs text-ink/50">Update what you own</p>
+              </div>
+              <span className="text-primary">→</span>
+            </Link>
+          </div>
+        )}
+
+        <p className="mt-6 text-center text-xs text-ink/40">
+          Not sure? You can change this later.
+        </p>
       </div>
 
       <style>{`.input { width:100%; border:1px solid rgba(0,0,0,0.1); background: color-mix(in oklab, var(--canvas) 60%, transparent); padding: .75rem 1rem; border-radius: 1rem; font-size: .875rem; outline: none; }

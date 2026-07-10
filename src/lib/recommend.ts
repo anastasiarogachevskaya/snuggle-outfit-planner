@@ -59,7 +59,7 @@ export function recommend(input: RecommendInput): Recommendation {
 
   // Head
   if (effective < 22 && effective >= 14) accessories.push(A("thin_hat", "Thin cotton hat"));
-  else if (effective < 14) accessories.push(A("wool_hat", "Wool hat"));
+  else if (effective < 14) accessories.push(A("warm_hat", "Warm hat"));
 
   // Socks
   if (effective < 20) accessories.push(A("wool_socks", "Warm socks"));
