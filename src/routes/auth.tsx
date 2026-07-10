@@ -51,13 +51,13 @@ function AuthPage() {
     }
   };
 
-  const google = async () => {
+  const oauth = async (provider: "google" | "apple") => {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
+    const result = await lovable.auth.signInWithOAuth(provider, {
       redirect_uri: window.location.origin + "/today",
     });
     if (result.error) {
-      toast.error("Google sign-in failed");
+      toast.error(`${provider === "apple" ? "Apple" : "Google"} sign-in failed`);
       setBusy(false);
       return;
     }
