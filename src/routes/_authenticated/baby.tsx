@@ -210,6 +210,25 @@ function BabyPage() {
             {save.isPending ? "Saving…" : "Save"}
           </button>
         </form>
+
+        {babyQ.data && (
+          <div className="mt-8 pt-6 border-t border-black/5">
+            <Link
+              to="/wardrobe"
+              className="flex items-center justify-between p-4 rounded-2xl bg-surface border border-black/5"
+            >
+              <div>
+                <p className="text-sm font-medium">Wardrobe</p>
+                <p className="text-xs text-ink/50">Update what you own</p>
+              </div>
+              <span className="text-primary">→</span>
+            </Link>
+          </div>
+        )}
+
+        <p className="mt-6 text-center text-xs text-ink/40">
+          Not sure? You can change this later.
+        </p>
       </div>
 
       <style>{`.input { width:100%; border:1px solid rgba(0,0,0,0.1); background: color-mix(in oklab, var(--canvas) 60%, transparent); padding: .75rem 1rem; border-radius: 1rem; font-size: .875rem; outline: none; }
