@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWardrobeRouteImport } from './routes/_authenticated/wardrobe'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedBabyRouteImport } from './routes/_authenticated/baby'
+import { Route as AuthenticatedOnboardingWardrobeRouteImport } from './routes/_authenticated/onboarding.wardrobe'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -45,6 +46,12 @@ const AuthenticatedBabyRoute = AuthenticatedBabyRouteImport.update({
   path: '/baby',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOnboardingWardrobeRoute =
+  AuthenticatedOnboardingWardrobeRouteImport.update({
+    id: '/onboarding/wardrobe',
+    path: '/onboarding/wardrobe',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -52,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/baby': typeof AuthenticatedBabyRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -59,6 +67,7 @@ export interface FileRoutesByTo {
   '/baby': typeof AuthenticatedBabyRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,12 +77,19 @@ export interface FileRoutesById {
   '/_authenticated/baby': typeof AuthenticatedBabyRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/_authenticated/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/baby' | '/today' | '/wardrobe'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/baby'
+    | '/today'
+    | '/wardrobe'
+    | '/onboarding/wardrobe'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/baby' | '/today' | '/wardrobe'
+  to: '/' | '/auth' | '/baby' | '/today' | '/wardrobe' | '/onboarding/wardrobe'
   id:
     | '__root__'
     | '/'
@@ -82,6 +98,7 @@ export interface FileRouteTypes {
     | '/_authenticated/baby'
     | '/_authenticated/today'
     | '/_authenticated/wardrobe'
+    | '/_authenticated/onboarding/wardrobe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -134,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBabyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/onboarding/wardrobe': {
+      id: '/_authenticated/onboarding/wardrobe'
+      path: '/onboarding/wardrobe'
+      fullPath: '/onboarding/wardrobe'
+      preLoaderRoute: typeof AuthenticatedOnboardingWardrobeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -141,12 +165,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBabyRoute: typeof AuthenticatedBabyRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
   AuthenticatedWardrobeRoute: typeof AuthenticatedWardrobeRoute
+  AuthenticatedOnboardingWardrobeRoute: typeof AuthenticatedOnboardingWardrobeRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBabyRoute: AuthenticatedBabyRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
   AuthenticatedWardrobeRoute: AuthenticatedWardrobeRoute,
+  AuthenticatedOnboardingWardrobeRoute: AuthenticatedOnboardingWardrobeRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
