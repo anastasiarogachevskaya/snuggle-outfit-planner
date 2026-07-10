@@ -1,78 +1,46 @@
-## Baby Dressing App — MVP Plan
+# Baby profile — account & data actions
 
-Mobile-first app that answers "What should my baby wear right now?" using baby profile + live weather (Open-Meteo) + wardrobe + situation. Built in the "Soft Nordic Minimal" direction (canvas #FAF9F6, sage primary #7D8F69, clay accent #D48C70, Fraunces serif + Outfit sans).
+Wardrobe pagination is already correct in the Detailed flow, so no changes there.
 
-### Stack
+## Scope
+Add an "Account & data" section to `/baby` with five actions. Mobile-first, stays within the existing `max-w-md` layout and Soft Nordic Minimal styling.
 
-- TanStack Start + Tailwind v4 (existing template)
-- Lovable Cloud (auth + Postgres) — email/password + Google sign-in
-- Open-Meteo (no API key) via a server function
-- Fonts via `@fontsource/fraunces` + `@fontsource/outfit`
+## Actions
 
-### Auth & data model
+1. **Sign out** — calls `supabase.auth.signOut()`, then navigates to `/auth`. Simple button, no confirm.
+2. **Reset wardrobe** — confirm dialog. Deletes all `wardrobe_items` for the current baby, then navigates to `/onboarding/wardrobe` to re-run setup.
+3. **Export data** — downloads a JSON file (`layer-export-<babyname>-<date>.json`) containing baby profile, wardrobe items, and feedback history. Client-side blob download, no server work.
+4. **Clear feedback history** — confirm dialog. Deletes all `feedback` rows for the current baby. Toast on success.
+5. **Delete profile** — destructive. Opens a modal that requires typing the baby's exact name to enable the red "Delete permanently" button. On confirm: delete `feedback` → `wardrobe_items` → `babies` row (RLS scopes to the user). Then sign out and navigate to `/auth`. Explain that this removes the baby, wardrobe, and all feedback.
 
-- Email/password + Google + Apple. One profile per user (parent).
-- Tables (all with GRANTs + RLS scoped to `auth.uid()`):
-  - `profiles` — id (FK auth.users), display_name, created_at
-  - `babies` — id, user_id, name, dob, temperature_pref (1–5), location_label, latitude, longitude
-  - `wardrobe_items` — id, baby_id, slug (from a fixed catalog), owned bool
-  - `feedback` — id, baby_id, situation, temp_c, feels_like_c, recommendation jsonb, rating ('comfortable'|'cold'|'warm'), created_at
-- Trigger auto-creates `profiles` row on signup.
+## UI
 
-### Routes
+Below the existing "Wardrobe" link on `/baby`, add a section:
 
-```
-/                     landing / marketing (public) — hero + CTA to /auth
-/auth                 sign in / sign up (public)
-/_authenticated/
-  today               HOME — recommendation screen (default after login)
-  baby                baby profile (name, dob, temp pref, location)
-  wardrobe            checklist of owned items
+```text
+─── Account & data ────────────
+[ Sign out                  → ]
+[ Export data               ↓ ]
+[ Reset wardrobe            ⟲ ]  (muted)
+[ Clear feedback history    ⟲ ]  (muted)
+[ Delete profile              ]  (destructive, red text)
 ```
 
-### Today screen (hero)
+Each row is a tappable card matching the existing wardrobe-link card style. Destructive action uses `text-destructive` / red border.
 
-Mirrors the chosen prototype exactly:
+The delete modal is a centered dialog with:
+- Warning copy listing what gets removed
+- Text input labeled "Type «{baby.name}» to confirm"
+- Cancel + Delete permanently buttons (Delete disabled until exact match)
 
-1. Header: location label + baby avatar/initial
-2. Weather block: big serif temp, condition, feels-like (from Open-Meteo current + hourly)
-3. White recommendation card: "Go with layers." + short reason + stacked layer list (base / mid / outer / accessories) — each row shows item name and a small "TOP/BTM/OUT" chip
-4. Situation selector: Home / Walk / Car (sage-filled active state)
-5. Contextual extras appear when relevant:
-  - Home → room temperature slider
-  - Walk → stroller/carrier toggle + duration (15 / 30 / 60+)
-  - Car → trip duration
-6. Feedback row: Too Cold / Just Right / Too Warm — one tap writes to `feedback`
+## Technical notes
 
-### Recommendation engine (client-side, deterministic)
+- All DB writes go through the existing browser `supabase` client; RLS policies already restrict rows to the owner, so no new policies needed.
+- Deletion order matters (feedback → wardrobe_items → babies) because there are no cascade rules on these tables.
+- Export uses `URL.createObjectURL(new Blob([...], { type: 'application/json' }))` + a temporary `<a download>`.
+- After sign-out/delete, invalidate the `["baby"]` and `["wardrobe"]` React Query caches.
+- Reuse `sonner` toasts (already has `closeButton`).
 
-Pure function `recommend({ feelsLikeC, tempPref, situation, extras, ownedItems })`:
+## Files touched
 
-- Compute effective temp: `feelsLikeC - (tempPref - 3) * 1.5` (higher pref = feels colder to baby → dress warmer)
-- Situation adjustment: Home uses room temp instead of outdoor; Car subtracts a small factor; Walk uses outdoor.
-- Map effective temp to layer bands (>24, 20–24, 16–20, 12–16, 8–12, 4–8, <4°C) → base/mid/outer/hat/socks/mittens/blanket/footmuff picks.
-- Filter picks to items the user owns; if a needed item is missing, flag it with a subtle "you don't own this yet" hint.
-- Return `{ layers: [...], accessories: [...], reason: "Feels like 4°C with moderate wind." }`.
-
-### Weather
-
-- `getWeather.functions.ts` server fn: fetches Open-Meteo `current` + `hourly` for baby's lat/lon, returns `{ tempC, feelsLikeC, windKph, condition }`. Cached in TanStack Query (5-min stale).
-- Location: GPS via `navigator.geolocation` on first setup, saved to `babies` row; user can edit.
-
-### Onboarding
-
-After first sign-in, if no baby row: guided 3-step setup (name+dob → temperature preference slider → location via GPS or search) → wardrobe checklist (pre-checked common items, uncheck what you don't own).
-
-### Design system (styles.css)
-
-Replace tokens with the chosen palette in oklch, add `--font-serif`/`--font-sans`, install @fontsource packages, keep shadcn semantic tokens intact.
-
-### Out of scope (backlog)
-
-Multiple babies, learning from feedback, custom items, sizes, notifications, additional contexts (sleep/daycare/etc.), UV/humidity, AI photo check, sharing.
-
-### Technical notes
-
-- Server fns in `src/lib/*.functions.ts`, protected ones under `_authenticated` loaders only.
-- Public landing at `/` gets its own head() metadata; `__root.tsx` title updated from "Lovable App" to real app name (proposed: "Layer — What to dress baby in").
-- Weekly weather planning, notifications, and analytics deferred.
+- `src/routes/_authenticated/baby.tsx` — add the Account & data section, dialogs, and handlers. No other files change.
