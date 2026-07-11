@@ -1,46 +1,53 @@
-# Baby profile — account & data actions
+## Split Baby profile into three focused pages
 
-Wardrobe pagination is already correct in the Detailed flow, so no changes there.
+Right now `/baby` mixes profile fields, a wardrobe link, and all account/data actions. We'll split it into three routes, all reachable from a hub on `/baby`.
 
-## Scope
-Add an "Account & data" section to `/baby` with five actions. Mobile-first, stays within the existing `max-w-md` layout and Soft Nordic Minimal styling.
-
-## Actions
-
-1. **Sign out** — calls `supabase.auth.signOut()`, then navigates to `/auth`. Simple button, no confirm.
-2. **Reset wardrobe** — confirm dialog. Deletes all `wardrobe_items` for the current baby, then navigates to `/onboarding/wardrobe` to re-run setup.
-3. **Export data** — downloads a JSON file (`layer-export-<babyname>-<date>.json`) containing baby profile, wardrobe items, and feedback history. Client-side blob download, no server work.
-4. **Clear feedback history** — confirm dialog. Deletes all `feedback` rows for the current baby. Toast on success.
-5. **Delete profile** — destructive. Opens a modal that requires typing the baby's exact name to enable the red "Delete permanently" button. On confirm: delete `feedback` → `wardrobe_items` → `babies` row (RLS scopes to the user). Then sign out and navigate to `/auth`. Explain that this removes the baby, wardrobe, and all feedback.
-
-## UI
-
-Below the existing "Wardrobe" link on `/baby`, add a section:
+### New route structure
 
 ```text
-─── Account & data ────────────
-[ Sign out                  → ]
-[ Export data               ↓ ]
-[ Reset wardrobe            ⟲ ]  (muted)
-[ Clear feedback history    ⟲ ]  (muted)
-[ Delete profile              ]  (destructive, red text)
+/baby              → Baby profile hub (name, DOB, temp pref, location)
+                     + navigation cards → Wardrobe, Account & data
+/wardrobe          → (already exists) manage owned items
+/account           → Sign out, Export data, Reset wardrobe,
+                     Clear feedback history, Delete profile
 ```
 
-Each row is a tappable card matching the existing wardrobe-link card style. Destructive action uses `text-destructive` / red border.
+### `/baby` (profile only)
 
-The delete modal is a centered dialog with:
-- Warning copy listing what gets removed
-- Text input labeled "Type «{baby.name}» to confirm"
-- Cancel + Delete permanently buttons (Delete disabled until exact match)
+- Keep: name, date of birth, temperature preference slider, location (GPS + label), Save button.
+- Remove: the entire "Account & data" section and destructive dialogs.
+- Add two large tappable cards below the form:
+  - **Wardrobe** → `/wardrobe` (icon + "Manage owned items")
+  - **Account & data** → `/account` (icon + "Sign out, export, delete")
+- Keep the "Not sure? You can change this later." footer.
 
-## Technical notes
+### `/account` (new route)
 
-- All DB writes go through the existing browser `supabase` client; RLS policies already restrict rows to the owner, so no new policies needed.
-- Deletion order matters (feedback → wardrobe_items → babies) because there are no cascade rules on these tables.
-- Export uses `URL.createObjectURL(new Blob([...], { type: 'application/json' }))` + a temporary `<a download>`.
-- After sign-out/delete, invalidate the `["baby"]` and `["wardrobe"]` React Query caches.
-- Reuse `sonner` toasts (already has `closeButton`).
+New file `src/routes/_authenticated/account.tsx`. Move the existing Account & data section from `baby.tsx` here verbatim:
 
-## Files touched
+- Sign out
+- Export data (JSON download)
+- Reset wardrobe (confirm dialog → `/onboarding/wardrobe`)
+- Clear feedback history (confirm dialog)
+- Delete profile (type-baby-name-to-confirm modal)
 
-- `src/routes/_authenticated/baby.tsx` — add the Account & data section, dialogs, and handlers. No other files change.
+Header shows a back link to `/baby`, page title "Account & data", and the same `max-w-md` mobile-first shell.
+
+### `/wardrobe` header
+
+Add a back link to `/baby` at the top so navigation feels consistent (currently users can only get out via browser back).
+
+### OAuth sign-in
+
+The user hasn't published yet. Google/Apple OAuth failing in preview is almost always the preview environment's fetch proxy interfering with the OAuth popup handshake — not an app bug. Action:
+
+- No code changes to the auth flow.
+- Recommend publishing and re-testing Google/Apple on the published `.lovable.app` URL. If it still fails there, we'll debug for real.
+
+### Files touched
+
+- `src/routes/_authenticated/baby.tsx` — strip Account & data section, add nav cards.
+- `src/routes/_authenticated/account.tsx` — new, contains moved section.
+- `src/routes/_authenticated/wardrobe.tsx` — add back-to-Baby link in header.
+
+No database, auth, or business-logic changes.
