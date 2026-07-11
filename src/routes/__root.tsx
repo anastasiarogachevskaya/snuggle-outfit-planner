@@ -87,10 +87,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Layer — What should baby wear today?" },
       {
         property: "og:description",
-        content: "Turn today's weather into a simple outfit for your baby.",
+        content: "A calm parenting helper that turns today's weather into a simple layered outfit for your baby.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Layer — What should baby wear today?" },
+      { name: "twitter:description", content: "A calm parenting helper that turns today's weather into a simple layered outfit for your baby." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8d945aa4-20b5-4f76-8234-267df2c9f2f6/id-preview-558ba17c--61d18b02-2730-4e31-9318-73112e9e585a.lovable.app-1783767349149.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8d945aa4-20b5-4f76-8234-267df2c9f2f6/id-preview-558ba17c--61d18b02-2730-4e31-9318-73112e9e585a.lovable.app-1783767349149.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
