@@ -71,8 +71,8 @@ function WardrobePage() {
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
       <div className="mx-auto max-w-md px-6 py-8">
-        <Link to="/today" className="text-sm text-ink/60">
-          ← Today
+        <Link to="/baby" className="text-sm text-ink/60">
+          ← Baby profile
         </Link>
         <h1 className="mt-6 text-3xl font-serif font-semibold">Wardrobe</h1>
         <p className="mt-2 text-ink/60 text-sm">
