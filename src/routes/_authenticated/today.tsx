@@ -245,22 +245,69 @@ function TodayPage() {
           {situation === "walk" && (
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-ink/70 mb-2">Carry with</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["stroller", "carrier"] as const).map((m) => (
+                <p className="text-sm text-ink/70 mb-2">How will baby travel?</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(
+                    [
+                      { id: "pram", label: "Pram" },
+                      { id: "sitting-stroller", label: "Stroller" },
+                      { id: "carrier", label: "Carrier" },
+                    ] as const
+                  ).map((m) => (
                     <button
-                      key={m}
-                      onClick={() => setStrollerMode(m)}
+                      key={m.id}
+                      onClick={() => {
+                        setTransportMode(m.id);
+                        // Reset covers that don't apply to the new mode
+                        setCovers((c) =>
+                          m.id === "carrier"
+                            ? { rain: false, footmuff: false, blanket: c.blanket, babywearing: c.babywearing }
+                            : { rain: c.rain, footmuff: c.footmuff, blanket: c.blanket, babywearing: false },
+                        );
+                      }}
                       className={
-                        "py-2 rounded-xl text-sm capitalize " +
-                        (strollerMode === m
+                        "py-2 rounded-xl text-sm " +
+                        (transportMode === m.id
                           ? "bg-primary/15 text-primary font-medium"
                           : "bg-canvas text-ink/70")
                       }
                     >
-                      {m}
+                      {m.label}
                     </button>
                   ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-ink/70 mb-2">Any extra cover?</p>
+                <div className="flex flex-wrap gap-2">
+                  {(transportMode === "carrier"
+                    ? ([
+                        { id: "babywearing", label: "Babywearing cover" },
+                        { id: "blanket", label: "Blanket" },
+                      ] as const)
+                    : ([
+                        { id: "rain", label: "Rain cover" },
+                        { id: "footmuff", label: "Footmuff" },
+                        { id: "blanket", label: "Blanket" },
+                      ] as const)
+                  ).map((c) => {
+                    const active = covers[c.id];
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => setCovers((prev) => ({ ...prev, [c.id]: !prev[c.id] }))}
+                        className={
+                          "px-3 py-2 rounded-xl text-sm border " +
+                          (active
+                            ? "bg-primary/15 text-primary border-primary/30 font-medium"
+                            : "bg-canvas text-ink/70 border-transparent")
+                        }
+                      >
+                        {active ? "✓ " : ""}
+                        {c.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div>
@@ -284,6 +331,7 @@ function TodayPage() {
               </div>
             </div>
           )}
+
           {situation === "car" && (
             <div>
               <p className="text-sm text-ink/70 mb-2">Trip duration</p>
