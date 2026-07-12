@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { clearStoredAuthNext, getStoredAuthNext, storeAuthNext } from "@/lib/auth-redirect";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -23,7 +24,11 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/today" });
+      if (data.session) {
+        const next = getStoredAuthNext();
+        clearStoredAuthNext();
+        navigate({ to: next, replace: true });
+      }
     });
   }, [navigate]);
 
@@ -32,18 +37,24 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        storeAuthNext("/today");
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin + "/today" },
+          options: { emailRedirectTo: window.location.origin + "/auth/callback" },
         });
         if (error) throw error;
+        if (!data.session) {
+          toast.success("Account created. Check your email to finish signing in.");
+          return;
+        }
         toast.success("Account created. Signing you in…");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      navigate({ to: "/today" });
+      clearStoredAuthNext();
+      navigate({ to: "/today", replace: true });
     } catch (err: any) {
       toast.error(err.message ?? "Something went wrong");
     } finally {
@@ -53,16 +64,22 @@ function AuthPage() {
 
   const oauth = async (provider: "google" | "apple") => {
     setBusy(true);
+    storeAuthNext("/today");
     const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin + "/today",
+      redirect_uri: window.location.origin + "/auth/callback",
     });
     if (result.error) {
-      toast.error(`${provider === "apple" ? "Apple" : "Google"} sign-in failed`);
+      toast.error(
+        result.error instanceof Error
+          ? result.error.message
+          : `${provider === "apple" ? "Apple" : "Google"} sign-in failed`,
+      );
       setBusy(false);
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/today" });
+    clearStoredAuthNext();
+    navigate({ to: "/today", replace: true });
   };
 
   return (
