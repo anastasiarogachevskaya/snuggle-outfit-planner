@@ -47,7 +47,13 @@ function TodayPage() {
 
   const [situation, setSituation] = useState<Situation>("walk");
   const [roomTemp, setRoomTemp] = useState(21);
-  const [strollerMode, setStrollerMode] = useState<"stroller" | "carrier">("stroller");
+  const [transportMode, setTransportMode] = useState<"pram" | "sitting-stroller" | "carrier">("sitting-stroller");
+  const [covers, setCovers] = useState({
+    rain: false,
+    footmuff: false,
+    blanket: false,
+    babywearing: false,
+  });
   const [duration, setDuration] = useState<15 | 30 | 60>(30);
 
   const owned = useMemo(
@@ -62,11 +68,16 @@ function TodayPage() {
       tempPref: babyQ.data.temperature_pref,
       situation,
       roomTempC: situation === "home" ? roomTemp : undefined,
-      strollerMode: situation === "walk" ? strollerMode : undefined,
+      transportMode: situation === "walk" ? transportMode : undefined,
+      rainCoverUsed: situation === "walk" ? covers.rain : undefined,
+      footmuffUsed: situation === "walk" ? covers.footmuff : undefined,
+      blanketUsed: situation === "walk" ? covers.blanket : undefined,
+      babywearingCoverUsed: situation === "walk" ? covers.babywearing : undefined,
       durationMin: duration,
       owned,
     });
-  }, [babyQ.data, weatherQ.data, situation, roomTemp, strollerMode, duration, owned]);
+  }, [babyQ.data, weatherQ.data, situation, roomTemp, transportMode, covers, duration, owned]);
+
 
   const feedback = useMutation({
     mutationFn: async (rating: "comfortable" | "cold" | "warm") => {
@@ -153,7 +164,17 @@ function TodayPage() {
               <h1 className="text-3xl font-serif font-semibold mb-2">
                 {rec.layers.length >= 3 ? "Go with layers." : rec.layers.length === 2 ? "Keep it light." : "Just the basics."}
               </h1>
-              <p className="text-ink/60 leading-relaxed mb-6">{rec.reason}</p>
+              <p className="text-ink/60 leading-relaxed mb-4">{rec.reason}</p>
+              {rec.notes.length > 0 && (
+                <div className="space-y-2 mb-6">
+                  {rec.notes.map((n, i) => (
+                    <p key={i} className="text-xs text-ink/70 border-l-2 border-accent/40 pl-3">
+                      {n}
+                    </p>
+                  ))}
+                </div>
+              )}
+
 
               <div className="space-y-3">
                 {rec.layers.map((l) => (
@@ -234,22 +255,69 @@ function TodayPage() {
           {situation === "walk" && (
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-ink/70 mb-2">Carry with</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["stroller", "carrier"] as const).map((m) => (
+                <p className="text-sm text-ink/70 mb-2">How will baby travel?</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(
+                    [
+                      { id: "pram", label: "Pram" },
+                      { id: "sitting-stroller", label: "Stroller" },
+                      { id: "carrier", label: "Carrier" },
+                    ] as const
+                  ).map((m) => (
                     <button
-                      key={m}
-                      onClick={() => setStrollerMode(m)}
+                      key={m.id}
+                      onClick={() => {
+                        setTransportMode(m.id);
+                        // Reset covers that don't apply to the new mode
+                        setCovers((c) =>
+                          m.id === "carrier"
+                            ? { rain: false, footmuff: false, blanket: c.blanket, babywearing: c.babywearing }
+                            : { rain: c.rain, footmuff: c.footmuff, blanket: c.blanket, babywearing: false },
+                        );
+                      }}
                       className={
-                        "py-2 rounded-xl text-sm capitalize " +
-                        (strollerMode === m
+                        "py-2 rounded-xl text-sm " +
+                        (transportMode === m.id
                           ? "bg-primary/15 text-primary font-medium"
                           : "bg-canvas text-ink/70")
                       }
                     >
-                      {m}
+                      {m.label}
                     </button>
                   ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-ink/70 mb-2">Any extra cover?</p>
+                <div className="flex flex-wrap gap-2">
+                  {(transportMode === "carrier"
+                    ? ([
+                        { id: "babywearing", label: "Babywearing cover" },
+                        { id: "blanket", label: "Blanket" },
+                      ] as const)
+                    : ([
+                        { id: "rain", label: "Rain cover" },
+                        { id: "footmuff", label: "Footmuff" },
+                        { id: "blanket", label: "Blanket" },
+                      ] as const)
+                  ).map((c) => {
+                    const active = covers[c.id];
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => setCovers((prev) => ({ ...prev, [c.id]: !prev[c.id] }))}
+                        className={
+                          "px-3 py-2 rounded-xl text-sm border " +
+                          (active
+                            ? "bg-primary/15 text-primary border-primary/30 font-medium"
+                            : "bg-canvas text-ink/70 border-transparent")
+                        }
+                      >
+                        {active ? "✓ " : ""}
+                        {c.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div>
@@ -273,6 +341,7 @@ function TodayPage() {
               </div>
             </div>
           )}
+
           {situation === "car" && (
             <div>
               <p className="text-sm text-ink/70 mb-2">Trip duration</p>
