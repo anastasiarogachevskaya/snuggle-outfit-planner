@@ -41,7 +41,7 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin + "/auth/callback" },
+          options: { emailRedirectTo: window.location.origin + "/auth-callback" },
         });
         if (error) throw error;
         if (!data.session) {
@@ -66,7 +66,7 @@ function AuthPage() {
     setBusy(true);
     storeAuthNext("/today");
     const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin + "/auth/callback",
+      redirect_uri: window.location.origin + "/auth-callback",
     });
     if (result.error) {
       toast.error(
