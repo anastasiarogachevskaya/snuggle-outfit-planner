@@ -47,7 +47,13 @@ function TodayPage() {
 
   const [situation, setSituation] = useState<Situation>("walk");
   const [roomTemp, setRoomTemp] = useState(21);
-  const [strollerMode, setStrollerMode] = useState<"stroller" | "carrier">("stroller");
+  const [transportMode, setTransportMode] = useState<"pram" | "sitting-stroller" | "carrier">("sitting-stroller");
+  const [covers, setCovers] = useState({
+    rain: false,
+    footmuff: false,
+    blanket: false,
+    babywearing: false,
+  });
   const [duration, setDuration] = useState<15 | 30 | 60>(30);
 
   const owned = useMemo(
@@ -62,11 +68,16 @@ function TodayPage() {
       tempPref: babyQ.data.temperature_pref,
       situation,
       roomTempC: situation === "home" ? roomTemp : undefined,
-      strollerMode: situation === "walk" ? strollerMode : undefined,
+      transportMode: situation === "walk" ? transportMode : undefined,
+      rainCoverUsed: situation === "walk" ? covers.rain : undefined,
+      footmuffUsed: situation === "walk" ? covers.footmuff : undefined,
+      blanketUsed: situation === "walk" ? covers.blanket : undefined,
+      babywearingCoverUsed: situation === "walk" ? covers.babywearing : undefined,
       durationMin: duration,
       owned,
     });
-  }, [babyQ.data, weatherQ.data, situation, roomTemp, strollerMode, duration, owned]);
+  }, [babyQ.data, weatherQ.data, situation, roomTemp, transportMode, covers, duration, owned]);
+
 
   const feedback = useMutation({
     mutationFn: async (rating: "comfortable" | "cold" | "warm") => {
