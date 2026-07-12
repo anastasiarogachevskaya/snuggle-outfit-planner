@@ -1,53 +1,81 @@
-## Split Baby profile into three focused pages
+## Improve walk recommendations for transport type and covers
 
-Right now `/baby` mixes profile fields, a wardrobe link, and all account/data actions. We'll split it into three routes, all reachable from a hub on `/baby`.
+Make walk mode distinguish pram / sitting stroller / carrier, and factor in rain cover, footmuff, blanket, and babywearing cover. Update the UI, the effective-temperature math, the reason text, and add safety notes.
 
-### New route structure
+### 1. `src/lib/recommend.ts` — inputs and math
+
+Extend `RecommendInput` for walk mode:
+
+- Replace `strollerMode?: "stroller" | "carrier"` with:
+  - `transportMode?: "pram" | "sitting-stroller" | "carrier"`
+- Add optional cover flags:
+  - `rainCoverUsed?: boolean`
+  - `footmuffUsed?: boolean`
+  - `blanketUsed?: boolean`
+  - `babywearingCoverUsed?: boolean`
+
+After the existing base + `tempPref` adjustment, when `situation === "walk"` apply:
 
 ```text
-/baby              → Baby profile hub (name, DOB, temp pref, location)
-                     + navigation cards → Wardrobe, Account & data
-/wardrobe          → (already exists) manage owned items
-/account           → Sign out, Export data, Reset wardrobe,
-                     Clear feedback history, Delete profile
+pram              → effective += 1
+sitting-stroller  → effective -= 1
+carrier           → effective += 3
+carrier + babywearingCover → additional +2
+rainCoverUsed     → +2
+footmuffUsed      → +2
+blanketUsed       → +1
 ```
 
-### `/baby` (profile only)
+Existing accessory rules stay, but replace the current stroller-only footmuff/blanket auto-suggestions with:
 
-- Keep: name, date of birth, temperature preference slider, location (GPS + label), Save button.
-- Remove: the entire "Account & data" section and destructive dialogs.
-- Add two large tappable cards below the form:
-  - **Wardrobe** → `/wardrobe` (icon + "Manage owned items")
-  - **Account & data** → `/account` (icon + "Sign out, export, delete")
-- Keep the "Not sure? You can change this later." footer.
+- If `transportMode` is `pram` or `sitting-stroller` and `effective < 10`, only suggest `footmuff` when the user hasn't already marked `footmuffUsed`.
+- Same idea for blanket suggestions — don't recommend a cover the parent already reports using.
+- Carrier mode: don't suggest footmuff/blanket at all; suggest `babywearing_cover` when `effective < 8` and it's not already in use.
 
-### `/account` (new route)
+Extend `Recommendation` with `notes: string[]` and populate:
 
-New file `src/routes/_authenticated/account.tsx`. Move the existing Account & data section from `baby.tsx` here verbatim:
+- `rainCoverUsed` → "Rain cover makes the stroller warmer and reduces airflow. Check baby's neck or chest regularly and remove a layer if baby feels hot."
+- `transportMode === "carrier"` → "Carrier keeps baby warmer because of adult body heat. Dress baby slightly lighter than for a stroller walk and check baby's neck/chest during the walk."
+- `carrier + babywearingCoverUsed` → append "Babywearing cover adds extra warmth. Avoid too many thick layers under it."
 
-- Sign out
-- Export data (JSON download)
-- Reset wardrobe (confirm dialog → `/onboarding/wardrobe`)
-- Clear feedback history (confirm dialog)
-- Delete profile (type-baby-name-to-confirm modal)
+Update `buildReason` for walk mode to mention transport effect, e.g.:
 
-Header shows a back link to `/baby`, page title "Account & data", and the same `max-w-md` mobile-first shell.
+- pram → "Feels like Xo°C outside. Pram is slightly more protected, so outfit is adjusted a little warmer than open air."
+- sitting-stroller → "Feels like X°C outside. Sitting stroller is more exposed to wind, so outfit is adjusted slightly warmer."
+- carrier → "Feels like X°C outside. Carrier adds warmth from adult body heat, so baby needs fewer layers than in a stroller."
+- If rain cover used, append: " Rain cover adds warmth and reduces airflow, so the outfit is adjusted lighter."
 
-### `/wardrobe` header
+### 2. `src/routes/_authenticated/today.tsx` — walk UI
 
-Add a back link to `/baby` at the top so navigation feels consistent (currently users can only get out via browser back).
+Replace the current `strollerMode` state with:
 
-### OAuth sign-in
+- `transportMode: "pram" | "sitting-stroller" | "carrier"` (default `sitting-stroller`)
+- `covers: { rain: boolean; footmuff: boolean; blanket: boolean; babywearing: boolean }`
 
-The user hasn't published yet. Google/Apple OAuth failing in preview is almost always the preview environment's fetch proxy interfering with the OAuth popup handshake — not an app bug. Action:
+Walk section becomes:
 
-- No code changes to the auth flow.
-- Recommend publishing and re-testing Google/Apple on the published `.lovable.app` URL. If it still fails there, we'll debug for real.
+1. **How will baby travel?** — 3 pill buttons: Pram / bassinet, Sitting stroller, Baby carrier.
+2. **Any extra cover?** — multi-select chips, filtered by transport:
+   - Pram or sitting stroller → Rain cover, Footmuff, Blanket
+   - Carrier → Babywearing cover, Blanket
+3. Duration selector stays.
+
+Pass the new fields into `recommend(...)`. Render `rec.notes` under the reason as small info callouts (accent color, no emoji).
+
+Switching transport resets covers that don't apply.
+
+### 3. Notes in the recommendation card
+
+Below the existing `rec.reason`, render each note as a subtle bordered line (`text-xs text-ink/70 border-l-2 border-accent/40 pl-3`).
+
+### 4. Non-goals
+
+- No DB migration — walk inputs are transient UI state, not persisted.
+- Home and car flows are untouched.
+- Wardrobe catalog and onboarding untouched (all referenced items already exist).
+- Feedback payload keeps storing `recommendation` as JSON; the added `notes` field flows through automatically.
 
 ### Files touched
 
-- `src/routes/_authenticated/baby.tsx` — strip Account & data section, add nav cards.
-- `src/routes/_authenticated/account.tsx` — new, contains moved section.
-- `src/routes/_authenticated/wardrobe.tsx` — add back-to-Baby link in header.
-
-No database, auth, or business-logic changes.
+- `src/lib/recommend.ts` — types, math, notes, reason.
+- `src/routes/_authenticated/today.tsx` — walk UI state, inputs, notes rendering.
