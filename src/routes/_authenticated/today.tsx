@@ -164,7 +164,17 @@ function TodayPage() {
               <h1 className="text-3xl font-serif font-semibold mb-2">
                 {rec.layers.length >= 3 ? "Go with layers." : rec.layers.length === 2 ? "Keep it light." : "Just the basics."}
               </h1>
-              <p className="text-ink/60 leading-relaxed mb-6">{rec.reason}</p>
+              <p className="text-ink/60 leading-relaxed mb-4">{rec.reason}</p>
+              {rec.notes.length > 0 && (
+                <div className="space-y-2 mb-6">
+                  {rec.notes.map((n, i) => (
+                    <p key={i} className="text-xs text-ink/70 border-l-2 border-accent/40 pl-3">
+                      {n}
+                    </p>
+                  ))}
+                </div>
+              )}
+
 
               <div className="space-y-3">
                 {rec.layers.map((l) => (
