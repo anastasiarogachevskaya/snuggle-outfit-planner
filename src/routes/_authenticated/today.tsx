@@ -1,16 +1,29 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchWeather } from "@/lib/weather";
-import { recommend, type Situation } from "@/lib/recommend";
-import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { recommend, type Situation, type TransportMode } from "@/lib/recommend";
+import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({ meta: [{ title: "Today — Layer" }] }),
   component: TodayPage,
 });
+
+function ageInMonths(dob: string | null | undefined): number | null {
+  if (!dob) return null;
+  const d = new Date(dob);
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  return (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+}
+
+function isRainingCondition(condition: string | undefined) {
+  if (!condition) return false;
+  return /rain|drizzle|shower|thunder/i.test(condition);
+}
 
 function TodayPage() {
   const navigate = useNavigate();
@@ -47,19 +60,26 @@ function TodayPage() {
 
   const [situation, setSituation] = useState<Situation>("walk");
   const [roomTemp, setRoomTemp] = useState(21);
-  const [transportMode, setTransportMode] = useState<"pram" | "sitting-stroller" | "carrier">("sitting-stroller");
-  const [covers, setCovers] = useState({
-    rain: false,
-    footmuff: false,
-    blanket: false,
-    babywearing: false,
-  });
+  const ageMonths = ageInMonths(babyQ.data?.dob);
+  const pramAllowed = ageMonths === null || ageMonths <= 6;
+
+  const [transportMode, setTransportMode] = useState<TransportMode>("sitting-stroller");
+  useEffect(() => {
+    if (!pramAllowed && transportMode === "pram") setTransportMode("sitting-stroller");
+    if (ageMonths !== null && ageMonths < 4 && transportMode === "sitting-stroller") {
+      setTransportMode("pram");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ageMonths]);
+
   const [duration, setDuration] = useState<15 | 30 | 60>(30);
 
   const owned = useMemo(
     () => new Set<WardrobeSlug>((wardrobeQ.data ?? []).filter((i) => i.owned).map((i) => i.slug as WardrobeSlug)),
     [wardrobeQ.data],
   );
+
+  const isRaining = isRainingCondition(weatherQ.data?.condition);
 
   const rec = useMemo(() => {
     if (!babyQ.data || !weatherQ.data) return null;
@@ -69,15 +89,11 @@ function TodayPage() {
       situation,
       roomTempC: situation === "home" ? roomTemp : undefined,
       transportMode: situation === "walk" ? transportMode : undefined,
-      rainCoverUsed: situation === "walk" ? covers.rain : undefined,
-      footmuffUsed: situation === "walk" ? covers.footmuff : undefined,
-      blanketUsed: situation === "walk" ? covers.blanket : undefined,
-      babywearingCoverUsed: situation === "walk" ? covers.babywearing : undefined,
+      isRaining: situation === "walk" ? isRaining : undefined,
       durationMin: duration,
       owned,
     });
-  }, [babyQ.data, weatherQ.data, situation, roomTemp, transportMode, covers, duration, owned]);
-
+  }, [babyQ.data, weatherQ.data, situation, roomTemp, transportMode, isRaining, duration, owned]);
 
   const feedback = useMutation({
     mutationFn: async (rating: "comfortable" | "cold" | "warm") => {
@@ -108,6 +124,12 @@ function TodayPage() {
     return <NoBaby />;
   }
   const baby = babyQ.data;
+
+  const transportOptions: { id: TransportMode; label: string }[] = [
+    ...(pramAllowed ? [{ id: "pram" as TransportMode, label: "Pram" }] : []),
+    { id: "sitting-stroller", label: "Stroller" },
+    { id: "carrier", label: "Carrier" },
+  ];
 
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink pb-16">
@@ -162,7 +184,7 @@ function TodayPage() {
           <section className="mb-10">
             <div className="bg-surface rounded-[32px] p-7 shadow-sm border border-black/5">
               <h1 className="text-3xl font-serif font-semibold mb-2">
-                {rec.layers.length >= 3 ? "Go with layers." : rec.layers.length === 2 ? "Keep it light." : "Just the basics."}
+                {rec.babyClothing.length >= 3 ? "Go with layers." : rec.babyClothing.length === 2 ? "Keep it light." : "Just the basics."}
               </h1>
               <p className="text-ink/60 leading-relaxed mb-4">{rec.reason}</p>
               {rec.notes.length > 0 && (
@@ -175,9 +197,11 @@ function TodayPage() {
                 </div>
               )}
 
-
+              <p className="text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
+                Baby clothing
+              </p>
               <div className="space-y-3">
-                {rec.layers.map((l) => (
+                {rec.babyClothing.map((l) => (
                   <Row
                     key={l.slot + l.slug}
                     chip={l.slot.slice(0, 3).toUpperCase()}
@@ -198,14 +222,36 @@ function TodayPage() {
                 ))}
               </div>
 
-              {rec.missing.length > 0 && (
-                <p className="mt-5 text-xs text-accent">
-                  You don't own {rec.missing.length} of these yet —{" "}
-                  <Link to="/wardrobe" className="underline">
-                    update wardrobe
-                  </Link>
-                  .
-                </p>
+              {rec.transportExtras.length > 0 && (
+                <>
+                  <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
+                    Transport extras
+                  </p>
+                  <div className="space-y-3">
+                    {rec.transportExtras.map((a) => (
+                      <Row key={"tx-" + a.slug} chip="🧳" label={a.label} hint="From your wardrobe" />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {rec.missingHelpfulItems.length > 0 && (
+                <>
+                  <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-accent/70 mb-2">
+                    Suggested for next time
+                  </p>
+                  <div className="space-y-3">
+                    {rec.missingHelpfulItems.map((a) => (
+                      <Row key={"miss-" + a.slug} chip="?" label={a.label} hint="Not in your wardrobe" accent dim />
+                    ))}
+                  </div>
+                  <p className="mt-3 text-xs text-ink/50">
+                    <Link to="/wardrobe" className="underline">
+                      Add to wardrobe
+                    </Link>{" "}
+                    when you have them.
+                  </p>
+                </>
               )}
             </div>
           </section>
@@ -256,25 +302,11 @@ function TodayPage() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-ink/70 mb-2">How will baby travel?</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {(
-                    [
-                      { id: "pram", label: "Pram" },
-                      { id: "sitting-stroller", label: "Stroller" },
-                      { id: "carrier", label: "Carrier" },
-                    ] as const
-                  ).map((m) => (
+                <div className={"grid gap-2 " + (transportOptions.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
+                  {transportOptions.map((m) => (
                     <button
                       key={m.id}
-                      onClick={() => {
-                        setTransportMode(m.id);
-                        // Reset covers that don't apply to the new mode
-                        setCovers((c) =>
-                          m.id === "carrier"
-                            ? { rain: false, footmuff: false, blanket: c.blanket, babywearing: c.babywearing }
-                            : { rain: c.rain, footmuff: c.footmuff, blanket: c.blanket, babywearing: false },
-                        );
-                      }}
+                      onClick={() => setTransportMode(m.id)}
                       className={
                         "py-2 rounded-xl text-sm " +
                         (transportMode === m.id
@@ -285,39 +317,6 @@ function TodayPage() {
                       {m.label}
                     </button>
                   ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-ink/70 mb-2">Any extra cover?</p>
-                <div className="flex flex-wrap gap-2">
-                  {(transportMode === "carrier"
-                    ? ([
-                        { id: "babywearing", label: "Babywearing cover" },
-                        { id: "blanket", label: "Blanket" },
-                      ] as const)
-                    : ([
-                        { id: "rain", label: "Rain cover" },
-                        { id: "footmuff", label: "Footmuff" },
-                        { id: "blanket", label: "Blanket" },
-                      ] as const)
-                  ).map((c) => {
-                    const active = covers[c.id];
-                    return (
-                      <button
-                        key={c.id}
-                        onClick={() => setCovers((prev) => ({ ...prev, [c.id]: !prev[c.id] }))}
-                        className={
-                          "px-3 py-2 rounded-xl text-sm border " +
-                          (active
-                            ? "bg-primary/15 text-primary border-primary/30 font-medium"
-                            : "bg-canvas text-ink/70 border-transparent")
-                        }
-                      >
-                        {active ? "✓ " : ""}
-                        {c.label}
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
               <div>
