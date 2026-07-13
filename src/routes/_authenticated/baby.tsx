@@ -232,7 +232,7 @@ function BabyPage() {
         </p>
       </div>
 
-      <style>{`.input { width:100%; border:1px solid rgba(0,0,0,0.1); background: color-mix(in oklab, var(--canvas) 60%, transparent); padding: .75rem 1rem; border-radius: 1rem; font-size: .875rem; outline: none; }
+      <style>{`.input { width:100%; min-width:0; max-width:100%; box-sizing:border-box; border:1px solid rgba(0,0,0,0.1); background: color-mix(in oklab, var(--canvas) 60%, transparent); padding: .75rem 1rem; border-radius: 1rem; font-size: .875rem; outline: none; }
       .input:focus { border-color: color-mix(in oklab, var(--primary) 40%, transparent); }`}</style>
     </div>
   );
