@@ -10,7 +10,20 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/onboarding/wardrobe")({
-  head: () => ({ meta: [{ title: "Wardrobe setup — Layer" }] }),
+  head: () => ({
+    meta: [
+      { title: "Wardrobe setup — Layerly" },
+      {
+        name: "description",
+        content:
+          "Quick two-minute setup: tell Layerly which baby clothes you own so recommendations match your drawer.",
+      },
+      { property: "og:title", content: "Wardrobe setup — Layerly" },
+      { property: "og:url", content: "https://layerly.online/onboarding/wardrobe" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://layerly.online/onboarding/wardrobe" }],
+  }),
   component: OnboardingWardrobe,
 });
 

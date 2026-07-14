@@ -6,7 +6,20 @@ import { WARDROBE_CATALOG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
-  head: () => ({ meta: [{ title: "Wardrobe — Layer" }] }),
+  head: () => ({
+    meta: [
+      { title: "Wardrobe checklist — Layerly" },
+      {
+        name: "description",
+        content:
+          "Tick everything you own so Layerly only recommends baby clothes that are actually in your drawer.",
+      },
+      { property: "og:title", content: "Wardrobe checklist — Layerly" },
+      { property: "og:url", content: "https://layerly.online/wardrobe" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://layerly.online/wardrobe" }],
+  }),
   component: WardrobePage,
 });
 
