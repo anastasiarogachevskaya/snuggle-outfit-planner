@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+import type { ReactElement, ReactNode, SVGProps } from "react";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 
 /**
@@ -9,7 +9,7 @@ import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 
 export type IconProps = SVGProps<SVGSVGElement> & { size?: number };
 
-function Svg({ size = 24, children, ...rest }: IconProps & { children: React.ReactNode }) {
+function Svg({ size = 24, children, ...rest }: IconProps & { children: ReactNode }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -419,7 +419,7 @@ export const CarSeatBlanketIcon = (p: IconProps) => (
 
 /* ---------- Data-driven mapping ---------- */
 
-export const iconMap: Record<WardrobeSlug, (p: IconProps) => React.ReactElement> = {
+export const iconMap: Record<WardrobeSlug, (p: IconProps) => ReactElement> = {
   sleeveless_bodysuit: SleevelessBodysuitIcon,
   short_sleeve_bodysuit: ShortSleeveBodysuitIcon,
   long_sleeve_bodysuit: LongSleeveBodysuitIcon,
