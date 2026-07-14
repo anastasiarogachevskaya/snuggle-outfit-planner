@@ -4,6 +4,7 @@ export type Weather = {
   windKph: number;
   code: number;
   condition: string;
+  uvIndex?: number;
 };
 
 // https://open-meteo.com/en/docs — no API key.
@@ -13,19 +14,21 @@ export async function fetchWeather(lat: number, lon: number): Promise<Weather> {
   url.searchParams.set("longitude", String(lon));
   url.searchParams.set(
     "current",
-    "temperature_2m,apparent_temperature,wind_speed_10m,weather_code",
+    "temperature_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index",
   );
   url.searchParams.set("wind_speed_unit", "kmh");
   const res = await fetch(url.toString());
   if (!res.ok) throw new Error("weather fetch failed");
   const json = await res.json();
   const c = json.current;
+  const uv = typeof c.uv_index === "number" ? c.uv_index : undefined;
   return {
     tempC: c.temperature_2m,
     feelsLikeC: c.apparent_temperature,
     windKph: c.wind_speed_10m,
     code: c.weather_code,
     condition: describeCode(c.weather_code),
+    uvIndex: uv,
   };
 }
 
