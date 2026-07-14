@@ -240,7 +240,11 @@ function BabyPage() {
               to="/account"
               title="Account & data"
               desc="Sign out, export, delete"
-              icon={<span className="text-2xl">⚙</span>}
+              icon={
+                <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center text-3xl">
+                  ⚙
+                </span>
+              }
             />
           </div>
         )}
