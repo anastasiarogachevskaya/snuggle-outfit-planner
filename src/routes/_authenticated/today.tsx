@@ -8,9 +8,7 @@ import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import {
   HomeIcon,
-  WalkIcon,
   walkIconVariants,
-  CarIcon,
   carIconVariants,
   PlayingIcon,
   SleepingIcon,
