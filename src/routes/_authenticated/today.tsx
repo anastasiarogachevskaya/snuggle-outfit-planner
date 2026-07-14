@@ -319,20 +319,41 @@ function TodayPage() {
         {/* Situation extras */}
         <section className="mb-10 bg-surface/60 rounded-2xl p-5 border border-black/5">
           {situation === "home" && (
-            <label className="block">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-ink/70">Room temperature</span>
-                <span className="font-medium">{roomTemp}°C</span>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-ink/70 mb-2">What will baby be doing?</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["playing", "sleeping"] as HomeActivity[]).map((a) => (
+                    <button
+                      key={a}
+                      onClick={() => setHomeActivity(a)}
+                      className={
+                        "py-2 rounded-xl text-sm capitalize " +
+                        (homeActivity === a
+                          ? "bg-primary/15 text-primary font-medium"
+                          : "bg-canvas text-ink/70")
+                      }
+                    >
+                      {a === "playing" ? "🧸 Playing" : "😴 Sleeping"}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <input
-                type="range"
-                min={15}
-                max={28}
-                value={roomTemp}
-                onChange={(e) => setRoomTemp(Number(e.target.value))}
-                className="w-full accent-primary"
-              />
-            </label>
+              <label className="block">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-ink/70">Room temperature</span>
+                  <span className="font-medium">{roomTemp}°C</span>
+                </div>
+                <input
+                  type="range"
+                  min={15}
+                  max={30}
+                  value={roomTemp}
+                  onChange={(e) => setRoomTemp(Number(e.target.value))}
+                  className="w-full accent-primary"
+                />
+              </label>
+            </div>
           )}
           {situation === "walk" && (
             <div className="space-y-4">
