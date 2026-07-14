@@ -1,29 +1,24 @@
-Update only the activity selector section on `/today` with the user-provided green colors, scoped specifically to the selected activity state.
+### Objective
+Replace the 👕 emoji in the `NavCard` on `/baby` with the wardrobe icon the user uploaded.
 
-### Changes
+### Why this needs a clean-up
+The uploaded image is a line-art wardrobe on a dark gray background. Dropping it directly into the white card would show a dark square behind it. I’ll first generate a clean, transparent-background version that matches the app’s soft Nordic aesthetic.
 
-1. **Add scoped CSS variables in `src/styles.css`**
-   - Introduce a new token set only for the activity selector selected state, e.g.:
-     - `--activity-selected: #A8B894`
-     - `--activity-selected-foreground: #2F3A2E`
-     - `--activity-selected-border: #8E9F7D`
-   - Leave the existing `--primary`, `--activity`, and other global tokens unchanged so the rest of the app stays the same.
+### Steps
 
-2. **Update `src/routes/_authenticated/today.tsx`**
-   - In the `situationOptions` mapped buttons, change the selected-card classes to use the new scoped green tokens:
-     - Background: `bg-activity-selected`
-     - Text: `text-activity-selected-foreground`
-     - Border: `border-activity-selected-border` with a thicker border (e.g. `border-2`)
-     - Shadow: subtle `shadow-sm` in the green tone
-     - Scale: `scale-[1.02]`
-     - Title/label: bold (`font-bold`)
-     - Icon: dark green / keep existing emoji but style wrapper if needed
-   - Change the unselected cards to:
-     - White background (`bg-white`)
-     - Thin border (`border`)
-     - Lighter / neutral text and icon treatment
-   - Keep the same three-card layout, emoji icons, labels, and descriptions.
+1. **Generate a clean transparent wardrobe icon**
+   - Use `imagegen--edit_image` on `user-uploads://wardrobe.png`.
+   - Prompt: remove the dark gray background, keep only the black wardrobe line art, make it suitable for a small app icon on a white card, clean minimal lines.
+   - Save to `src/assets/wardrobe-icon.png` with `transparent_background: true`.
 
-3. **Verify**
-   - Run build to confirm no errors.
-   - Capture a preview screenshot of the `/today` activity section to confirm the selected card matches the requested richer green palette and the unselected cards remain white.
+2. **Register as a Lovable asset**
+   - Run `lovable-assets create` for the generated icon and create `src/assets/wardrobe-icon.png.asset.json`.
+
+3. **Update `NavCard` in `src/routes/_authenticated/baby.tsx`**
+   - Change the `icon` prop from `string` to `React.ReactNode` so it can render either an emoji or an image.
+   - Render the icon node as-is when it’s a React node; keep emoji rendering for the remaining `⚙` account card.
+   - Use the wardrobe asset for the Wardrobe card, sized at `w-6 h-6` to match the previous emoji scale.
+
+4. **Verify**
+   - Run `bun run build` to confirm no TypeScript/import errors.
+   - Capture a preview screenshot of `/baby` to confirm the wardrobe icon appears clean and aligned with the card text.
