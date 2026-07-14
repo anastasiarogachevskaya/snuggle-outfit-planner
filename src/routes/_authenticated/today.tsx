@@ -455,7 +455,7 @@ function TodayPage() {
                   </p>
                   <div className="space-y-3">
                     {rec.missingHelpfulItems.map((a) => (
-                      <Row key={"miss-" + a.slug} chip="?" label={a.label} hint="Not in your wardrobe" accent dim />
+                      <Row key={"miss-" + a.slug} slug={a.slug} chip="?" label={a.label} hint="Not in your wardrobe" accent dim />
                     ))}
                   </div>
                   <p className="mt-3 text-xs text-ink/50">
