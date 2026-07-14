@@ -595,6 +595,41 @@ function FeedbackBtn({
   );
 }
 
+function IconVariantPicker({
+  label,
+  variants,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  variants: ComponentType<IconProps>[];
+  selected: number;
+  onSelect: (idx: number) => void;
+}) {
+  return (
+    <div className="flex-1">
+      <p className="text-xs text-ink/60 mb-1.5">{label}</p>
+      <div className="flex gap-1.5">
+        {variants.map((Icon, i) => (
+          <button
+            key={i}
+            onClick={() => onSelect(i)}
+            aria-label={`${label} icon option ${i + 1}`}
+            className={
+              "size-9 rounded-xl border flex items-center justify-center transition-all " +
+              (selected === i
+                ? "bg-activity-selected text-activity-selected-foreground border-activity-selected-border shadow-sm shadow-activity-selected-shadow/25 scale-[1.02]"
+                : "bg-white border-black/10 text-ink/60 hover:bg-canvas")
+            }
+          >
+            <Icon size={20} strokeWidth={selected === i ? 2 : 1.75} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Loading() {
   return (
     <div className="min-h-screen bg-canvas flex items-center justify-center">
