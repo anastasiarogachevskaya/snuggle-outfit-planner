@@ -509,22 +509,28 @@ function Row({
   hint,
   accent,
   dim,
+  slug,
 }: {
   chip: string;
   label: string;
   hint?: string;
   accent?: boolean;
   dim?: boolean;
+  slug?: WardrobeSlug;
 }) {
   return (
     <div className={"flex items-center gap-4 p-3 bg-canvas/60 rounded-2xl " + (dim ? "opacity-60" : "")}>
       <div
         className={
-          "size-10 bg-white rounded-lg border border-black/5 flex items-center justify-center text-xs font-medium " +
+          "size-10 bg-white rounded-lg border border-black/5 flex items-center justify-center " +
           (accent ? "text-accent" : "text-primary")
         }
       >
-        {chip}
+        {slug ? (
+          <ClothingIcon slug={slug} size={22} />
+        ) : (
+          <span className="text-xs font-medium">{chip}</span>
+        )}
       </div>
       <div>
         <p className="text-sm font-medium">{label}</p>
