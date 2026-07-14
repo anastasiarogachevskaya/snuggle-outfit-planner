@@ -386,6 +386,7 @@ function TodayPage() {
                   return (
                     <Row
                       key={l.slot + l.slug}
+                      slug={isSynthetic ? undefined : (l.slug as WardrobeSlug)}
                       chip={l.slot.slice(0, 3).toUpperCase()}
                       label={l.label}
                       hint={isSynthetic ? "" : isOwned ? "In your wardrobe" : "Not in your wardrobe"}
@@ -396,6 +397,7 @@ function TodayPage() {
                 {rec.accessories.map((a) => (
                   <Row
                     key={"acc-" + a.slug}
+                    slug={a.slug}
                     chip="+"
                     label={a.label}
                     hint={owned.has(a.slug) ? "" : "Not in your wardrobe"}
@@ -412,7 +414,7 @@ function TodayPage() {
                   </p>
                   <div className="space-y-3">
                     {rec.sleepAccessories.map((a) => (
-                      <Row key={"sleep-" + a.slug} chip="🌙" label={a.label} hint="From your wardrobe" />
+                      <Row key={"sleep-" + a.slug} slug={a.slug} chip="ZZ" label={a.label} hint="From your wardrobe" />
                     ))}
                   </div>
                 </>
@@ -425,7 +427,7 @@ function TodayPage() {
                   </p>
                   <div className="space-y-3">
                     {rec.transportExtras.map((a) => (
-                      <Row key={"tx-" + a.slug} chip="🧳" label={a.label} hint="From your wardrobe" />
+                      <Row key={"tx-" + a.slug} slug={a.slug} chip="+" label={a.label} hint="From your wardrobe" />
                     ))}
                   </div>
                 </>
