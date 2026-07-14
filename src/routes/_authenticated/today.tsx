@@ -205,7 +205,7 @@ function TodayPage() {
                 className={
                   "flex flex-col items-center gap-1.5 py-5 px-2 rounded-2xl transition-all " +
                   (situation === s.id
-                    ? "bg-activity text-activity-foreground shadow-md shadow-activity/25 scale-[1.02]"
+                    ? "bg-activity text-activity-foreground border border-activity-foreground/15 shadow-sm shadow-activity/20 scale-[1.02]"
                     : "bg-surface border border-black/5 hover:bg-canvas text-ink")
                 }
               >

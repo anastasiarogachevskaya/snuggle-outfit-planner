@@ -67,8 +67,8 @@
   --border: oklch(0.28 0.005 250 / 8%);
   --input: oklch(0.28 0.005 250 / 12%);
   --ring: oklch(0.62 0.055 130);
-  --activity: oklch(0.68 0.11 45);          /* warm clay */
-  --activity-foreground: oklch(0.99 0.005 85);
+  --activity: oklch(0.94 0.015 160);          /* soft sage */
+  --activity-foreground: oklch(0.55 0.04 165); /* muted sage */
 
   --font-serif: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
