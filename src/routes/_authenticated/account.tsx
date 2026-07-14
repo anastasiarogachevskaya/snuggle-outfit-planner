@@ -23,7 +23,20 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/account")({
-  head: () => ({ meta: [{ title: "Account & data — Layer" }] }),
+  head: () => ({
+    meta: [
+      { title: "Account & data — Layerly" },
+      {
+        name: "description",
+        content:
+          "Manage your Layerly account: sign out, export your data, reset your wardrobe, or delete your profile.",
+      },
+      { property: "og:title", content: "Account & data — Layerly" },
+      { property: "og:url", content: "https://layerly.online/account" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://layerly.online/account" }],
+  }),
   component: AccountPage,
 });
 
