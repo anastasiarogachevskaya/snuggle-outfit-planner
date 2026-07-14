@@ -6,6 +6,16 @@ import { fetchWeather } from "@/lib/weather";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
+import {
+  HomeIcon,
+  WalkIcon,
+  CarIcon,
+  PlayingIcon,
+  SleepingIcon,
+  ClothingIcon,
+  type IconProps,
+} from "@/components/icons";
+import type { ComponentType } from "react";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({
@@ -148,10 +158,10 @@ function TodayPage() {
     { id: "carrier", label: "Carrier" },
   ];
 
-  const situationOptions: { id: Situation; icon: string; label: string; description: string }[] = [
-    { id: "home", icon: "🏠", label: "Home", description: "Indoors" },
-    { id: "walk", icon: "🚶", label: "Walk", description: "Outside" },
-    { id: "car", icon: "🚗", label: "Car", description: "In the car" },
+  const situationOptions: { id: Situation; Icon: ComponentType<IconProps>; label: string; description: string }[] = [
+    { id: "home", Icon: HomeIcon, label: "Home", description: "Indoors" },
+    { id: "walk", Icon: WalkIcon, label: "Walk", description: "Outside" },
+    { id: "car", Icon: CarIcon, label: "Car", description: "In the car" },
   ];
 
   return (
