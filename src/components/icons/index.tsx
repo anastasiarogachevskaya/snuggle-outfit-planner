@@ -40,24 +40,28 @@ export const HomeIcon = (p: IconProps) => (
 
 export const WalkIcon = (p: IconProps) => (
   <Svg {...p}>
-    {/* simple person walking */}
-    <circle cx="12" cy="5" r="1.8" />
-    <path d="M12 7v4" />
-    <path d="M9 15l-2 4" />
-    <path d="M15 15l2 4" />
-    <path d="M9 11l3 3 3-3" />
+    {/* person walking, mid-stride */}
+    <circle cx="13" cy="4.5" r="1.8" />
+    <path d="M13 7.5c-1.2 0-2 .7-2.4 1.7L9 13l-2 1.5" />
+    <path d="M10.6 9.2l2.2 2.3-.6 3.2 2.4 4.3" />
+    <path d="M12.6 14.7 9.8 19.5" />
+    <path d="M14.6 11.5l2.4 1.2" />
   </Svg>
 );
 
 export const CarIcon = (p: IconProps) => (
   <Svg {...p}>
-    {/* basic car side view */}
-    <path d="M4 11h14a2 2 0 0 1 2 2v3H4v-5z" />
-    <path d="M6 11V9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" />
-    <circle cx="7.5" cy="16.5" r="1.6" />
-    <circle cx="17.5" cy="16.5" r="1.6" />
+    {/* cute rounded car, side view */}
+    <path d="M3.5 15.5v-2.2c0-.6.3-1.1.8-1.4l1.4-.7 1.8-3.1c.4-.7 1.1-1.1 1.9-1.1h6.4c.8 0 1.6.4 2 1.1l1.8 3.1 1.2.6c.5.3.8.8.8 1.4v2.3a1 1 0 0 1-1 1h-1.3" />
+    <path d="M7.8 16.5H16" />
+    <path d="M3.5 16.5h1.3" />
+    <path d="M7.2 11.2h9.6" />
+    <path d="M11.5 11.2V7" />
+    <circle cx="6.5" cy="16.7" r="1.8" />
+    <circle cx="17.3" cy="16.7" r="1.8" />
   </Svg>
 );
+
 
 export const PlayingIcon = (p: IconProps) => (
   <Svg {...p}>
