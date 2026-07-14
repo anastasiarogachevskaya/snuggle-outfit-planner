@@ -206,7 +206,7 @@ function TodayPage() {
                   "flex flex-col items-center gap-1.5 py-5 px-2 rounded-2xl transition-all " +
                   (situation === s.id
                     ? "bg-activity-selected text-activity-selected-foreground border-2 border-activity-selected-border shadow-sm shadow-activity-selected-shadow/25 scale-[1.02]"
-                    : "bg-white border border-black/5 hover:bg-canvas text-ink/70")
+                    : "bg-surface border border-black/5 hover:bg-canvas text-ink/70")
                 }
               >
                 <span className={"text-2xl " + (situation === s.id ? "" : "opacity-60 grayscale-[25%]")}>
