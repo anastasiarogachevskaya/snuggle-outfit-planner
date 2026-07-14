@@ -168,8 +168,8 @@ function TodayPage() {
 
   const situationOptions: { id: Situation; Icon: ComponentType<IconProps>; label: string; description: string }[] = [
     { id: "home", Icon: HomeIcon, label: "Home", description: "Indoors" },
-    { id: "walk", Icon: WalkIcon, label: "Walk", description: "Outside" },
-    { id: "car", Icon: CarIcon, label: "Car", description: "In the car" },
+    { id: "walk", Icon: WalkIconSelected, label: "Walk", description: "Outside" },
+    { id: "car", Icon: CarIconSelected, label: "Car", description: "In the car" },
   ];
 
   return (
