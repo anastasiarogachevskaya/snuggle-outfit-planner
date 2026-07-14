@@ -76,7 +76,7 @@ function WardrobePage() {
         </Link>
         <h1 className="mt-6 text-3xl font-serif font-semibold">Wardrobe</h1>
         <p className="mt-2 text-ink/60 text-sm">
-          Tick everything you own. Layer only recommends clothes you actually have.
+          Tick everything you own. Layerly only recommends clothes you actually have.
         </p>
 
         <div className="mt-8 space-y-8">
