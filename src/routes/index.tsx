@@ -25,7 +25,7 @@ function Landing() {
             <span className="italic">Baby dressed right.</span>
           </h1>
           <p className="mt-5 text-ink/60 leading-relaxed">
-            Layer reads today's weather where you are, weighs your baby's temperature preference and the clothes you
+            Layerly reads today's weather where you are, weighs your baby's temperature preference and the clothes you
             actually own, and answers the only question that matters at 7&nbsp;am.
           </p>
         </section>
