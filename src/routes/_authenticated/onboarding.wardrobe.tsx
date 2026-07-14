@@ -8,6 +8,7 @@ import {
   type WardrobeSlug,
 } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
+import { ClothingIcon } from "@/components/icons";
 
 export const Route = createFileRoute("/_authenticated/onboarding/wardrobe")({
   head: () => ({
@@ -271,7 +272,8 @@ function ChoiceCard({
 function Tile({
   label,
   hint,
-  emoji,
+  emoji: _emoji,
+  slug,
   selected,
   onClick,
   compact,
@@ -279,6 +281,7 @@ function Tile({
   label: string;
   hint: string;
   emoji: string;
+  slug: WardrobeSlug;
   selected: boolean;
   onClick: () => void;
   compact?: boolean;
@@ -299,7 +302,9 @@ function Tile({
           ✓
         </span>
       )}
-      <div className={compact ? "text-2xl mb-1" : "text-3xl mb-2"}>{emoji}</div>
+      <div className={(compact ? "mb-1 " : "mb-2 ") + (selected ? "text-primary" : "text-ink/60")}>
+        <ClothingIcon slug={slug} size={compact ? 28 : 34} />
+      </div>
       <p className={"font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>
         {label}
       </p>
