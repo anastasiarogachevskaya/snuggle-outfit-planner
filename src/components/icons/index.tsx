@@ -419,7 +419,7 @@ export const CarSeatBlanketIcon = (p: IconProps) => (
 
 /* ---------- Data-driven mapping ---------- */
 
-export const iconMap: Record<WardrobeSlug, (p: IconProps) => JSX.Element> = {
+export const iconMap: Record<WardrobeSlug, (p: IconProps) => React.ReactElement> = {
   sleeveless_bodysuit: SleevelessBodysuitIcon,
   short_sleeve_bodysuit: ShortSleeveBodysuitIcon,
   long_sleeve_bodysuit: LongSleeveBodysuitIcon,
