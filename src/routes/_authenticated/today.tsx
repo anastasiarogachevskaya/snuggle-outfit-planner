@@ -264,13 +264,14 @@ function TodayPage() {
                       key={a}
                       onClick={() => setHomeActivity(a)}
                       className={
-                        "py-2 rounded-xl text-sm capitalize " +
+                        "py-2 rounded-xl text-sm capitalize inline-flex items-center justify-center gap-2 " +
                         (homeActivity === a
                           ? "bg-primary/15 text-primary font-medium"
                           : "bg-canvas text-ink/70")
                       }
                     >
-                      {a === "playing" ? "🧸 Playing" : "😴 Sleeping"}
+                      {a === "playing" ? <PlayingIcon size={18} /> : <SleepingIcon size={18} />}
+                      {a === "playing" ? "Playing" : "Sleeping"}
                     </button>
                   ))}
                 </div>
