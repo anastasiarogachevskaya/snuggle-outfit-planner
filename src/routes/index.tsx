@@ -1,6 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Layerly — What should baby wear today?" },
+      {
+        name: "description",
+        content:
+          "Layerly turns today's weather into a simple layered outfit for your baby, using clothes you already own.",
+      },
+      { property: "og:title", content: "Layerly — What should baby wear today?" },
+      {
+        property: "og:description",
+        content:
+          "Layerly turns today's weather into a simple layered outfit for your baby, using clothes you already own.",
+      },
+      { property: "og:url", content: "https://layerly.online/" },
+    ],
+    links: [{ rel: "canonical", href: "https://layerly.online/" }],
+  }),
   component: Landing,
 });
 
