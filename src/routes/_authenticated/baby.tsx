@@ -5,7 +5,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/baby")({
-  head: () => ({ meta: [{ title: "Baby profile — Layer" }] }),
+  head: () => ({
+    meta: [
+      { title: "Baby profile — Layerly" },
+      {
+        name: "description",
+        content:
+          "Update your baby's name, birth date, temperature preference, and location so Layerly can dress them right.",
+      },
+      { property: "og:title", content: "Baby profile — Layerly" },
+      { property: "og:url", content: "https://layerly.online/baby" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://layerly.online/baby" }],
+  }),
   component: BabyPage,
 });
 
