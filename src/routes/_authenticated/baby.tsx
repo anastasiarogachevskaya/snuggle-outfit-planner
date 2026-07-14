@@ -283,7 +283,7 @@ function NavCard({
       to={to}
       className="flex items-center gap-3 p-4 rounded-2xl bg-surface border border-black/5 hover:border-primary/30 transition-colors"
     >
-      <span className="w-6 h-6 inline-flex items-center justify-center" aria-hidden>{icon}</span>
+      <span className="inline-flex items-center justify-center" aria-hidden>{icon}</span>
       <div className="flex-1">
         <p className="text-sm font-medium">{title}</p>
         <p className="text-xs text-ink/50">{desc}</p>
