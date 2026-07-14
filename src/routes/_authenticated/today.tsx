@@ -8,14 +8,15 @@ import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import {
   HomeIcon,
-  WalkIcon,
-  CarIcon,
+  walkIconVariants,
+  carIconVariants,
   PlayingIcon,
   SleepingIcon,
   ClothingIcon,
   type IconProps,
 } from "@/components/icons";
 import type { ComponentType } from "react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({
@@ -98,6 +99,11 @@ function TodayPage() {
   const [duration, setDuration] = useState<15 | 30 | 60>(30);
   const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
 
+  const [walkIconIdx, setWalkIconIdx] = useLocalStorage("layerly-walk-icon", 0);
+  const [carIconIdx, setCarIconIdx] = useLocalStorage("layerly-car-icon", 0);
+  const WalkIconSelected = walkIconVariants[Math.max(0, Math.min(walkIconVariants.length - 1, walkIconIdx))];
+  const CarIconSelected = carIconVariants[Math.max(0, Math.min(carIconVariants.length - 1, carIconIdx))];
+
   const owned = useMemo(
     () => new Set<WardrobeSlug>((wardrobeQ.data ?? []).filter((i) => i.owned).map((i) => i.slug as WardrobeSlug)),
     [wardrobeQ.data],
@@ -160,8 +166,8 @@ function TodayPage() {
 
   const situationOptions: { id: Situation; Icon: ComponentType<IconProps>; label: string; description: string }[] = [
     { id: "home", Icon: HomeIcon, label: "Home", description: "Indoors" },
-    { id: "walk", Icon: WalkIcon, label: "Walk", description: "Outside" },
-    { id: "car", Icon: CarIcon, label: "Car", description: "In the car" },
+    { id: "walk", Icon: WalkIconSelected, label: "Walk", description: "Outside" },
+    { id: "car", Icon: CarIconSelected, label: "Car", description: "In the car" },
   ];
 
   return (
@@ -248,6 +254,25 @@ function TodayPage() {
                 </span>
               </button>
             ))}
+          </div>
+
+          {/* Icon variant selector */}
+          <div className="mt-4 pt-4 border-t border-black/5">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-ink/40 mb-2.5">Icon style</p>
+            <div className="flex gap-4">
+              <IconVariantPicker
+                label="Walk"
+                variants={walkIconVariants}
+                selected={walkIconIdx}
+                onSelect={setWalkIconIdx}
+              />
+              <IconVariantPicker
+                label="Car"
+                variants={carIconVariants}
+                selected={carIconIdx}
+                onSelect={setCarIconIdx}
+              />
+            </div>
           </div>
         </section>
 
@@ -565,6 +590,41 @@ function FeedbackBtn({
         {label}
       </span>
     </button>
+  );
+}
+
+function IconVariantPicker({
+  label,
+  variants,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  variants: ComponentType<IconProps>[];
+  selected: number;
+  onSelect: (idx: number) => void;
+}) {
+  return (
+    <div className="flex-1">
+      <p className="text-xs text-ink/60 mb-1.5">{label}</p>
+      <div className="flex gap-1.5">
+        {variants.map((Icon, i) => (
+          <button
+            key={i}
+            onClick={() => onSelect(i)}
+            aria-label={`${label} icon option ${i + 1}`}
+            className={
+              "size-9 rounded-xl border flex items-center justify-center transition-all " +
+              (selected === i
+                ? "bg-activity-selected text-activity-selected-foreground border-activity-selected-border shadow-sm shadow-activity-selected-shadow/25 scale-[1.02]"
+                : "bg-white border-black/10 text-ink/60 hover:bg-canvas")
+            }
+          >
+            <Icon size={20} strokeWidth={selected === i ? 2 : 1.75} />
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 

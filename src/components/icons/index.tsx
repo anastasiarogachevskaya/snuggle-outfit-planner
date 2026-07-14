@@ -38,7 +38,7 @@ export const HomeIcon = (p: IconProps) => (
   </Svg>
 );
 
-export const WalkIcon = (p: IconProps) => (
+export const WalkIconA = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="13" cy="4.5" r="1.6" />
     <path d="M9 21l2.5-5.5L9 12l1.5-4 3 1.5L16 12" />
@@ -47,7 +47,32 @@ export const WalkIcon = (p: IconProps) => (
   </Svg>
 );
 
-export const CarIcon = (p: IconProps) => (
+export const WalkIconB = (p: IconProps) => (
+  <Svg {...p}>
+    {/* classic pram side view */}
+    <path d="M2 13h3l2-5h10l2 5h3" />
+    <path d="M5 8c2-3 5-5 9-5s7 2 9 5" />
+    <circle cx="7" cy="17" r="2" />
+    <circle cx="17" cy="17" r="2" />
+    <path d="M4 13c2-2 5-2 7 0" />
+  </Svg>
+);
+
+export const WalkIconC = (p: IconProps) => (
+  <Svg {...p}>
+    {/* walking figure with baby in a sling */}
+    <circle cx="13" cy="4.5" r="1.6" />
+    <path d="M10 21l2-6 1.5-3" />
+    <path d="M12.5 12l-2.5-2 1-3 3 1.5" />
+    <path d="M14 9l2.5 2.5L19 15" />
+    <path d="M10 14c-1 1-2 1.5-3.5 1.5" />
+  </Svg>
+);
+
+export const WalkIcon = WalkIconA;
+export const walkIconVariants = [WalkIconA, WalkIconB, WalkIconC];
+
+export const CarIconA = (p: IconProps) => (
   <Svg {...p}>
     <path d="M4 15v-2.3a2 2 0 0 1 .28-1.02l1.6-2.72A3 3 0 0 1 8.46 7.5h7.08a3 3 0 0 1 2.58 1.46l1.6 2.72A2 2 0 0 1 20 12.7V15" />
     <path d="M3.5 15h17" />
@@ -57,6 +82,30 @@ export const CarIcon = (p: IconProps) => (
     <circle cx="16.5" cy="13.5" r="0.6" fill="currentColor" stroke="none" />
   </Svg>
 );
+
+export const CarIconB = (p: IconProps) => (
+  <Svg {...p}>
+    {/* simpler rounded side car */}
+    <path d="M4 11h14a2 2 0 0 1 2 2v2H4v-4z" />
+    <path d="M6 11V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3" />
+    <circle cx="7.5" cy="16.5" r="1.6" />
+    <circle cx="17.5" cy="16.5" r="1.6" />
+  </Svg>
+);
+
+export const CarIconC = (p: IconProps) => (
+  <Svg {...p}>
+    {/* compact front view car */}
+    <path d="M6 12h12a2 2 0 0 1 2 2v4H4v-4a2 2 0 0 1 2-2z" />
+    <path d="M6 12l1-4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2l1 4" />
+    <circle cx="9" cy="16" r="1.1" />
+    <circle cx="15" cy="16" r="1.1" />
+    <path d="M11 14h2" />
+  </Svg>
+);
+
+export const CarIcon = CarIconA;
+export const carIconVariants = [CarIconA, CarIconB, CarIconC];
 
 export const PlayingIcon = (p: IconProps) => (
   <Svg {...p}>
