@@ -6,8 +6,9 @@ import { clearStoredAuthNext, getStoredAuthNext } from "@/lib/auth-redirect";
 export const Route = createFileRoute("/auth-callback")({
   head: () => ({
     meta: [
-      { title: "Signing in — Layer" },
-      { name: "description", content: "Finishing secure sign-in for Layer." },
+      { title: "Signing in — Layerly" },
+      { name: "description", content: "Finishing your secure Layerly sign-in and redirecting you back to the app." },
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: AuthCallbackPage,
