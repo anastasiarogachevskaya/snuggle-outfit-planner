@@ -205,15 +205,19 @@ function TodayPage() {
                 Baby clothing
               </p>
               <div className="space-y-3">
-                {rec.babyClothing.map((l) => (
-                  <Row
-                    key={l.slot + l.slug}
-                    chip={l.slot.slice(0, 3).toUpperCase()}
-                    label={l.label}
-                    hint={owned.has(l.slug) ? "In your wardrobe" : "Not in your wardrobe"}
-                    dim={!owned.has(l.slug)}
-                  />
-                ))}
+                {rec.babyClothing.map((l) => {
+                  const isSynthetic = l.slug === "diaper_only";
+                  const isOwned = !isSynthetic && owned.has(l.slug as WardrobeSlug);
+                  return (
+                    <Row
+                      key={l.slot + l.slug}
+                      chip={l.slot.slice(0, 3).toUpperCase()}
+                      label={l.label}
+                      hint={isSynthetic ? "" : isOwned ? "In your wardrobe" : "Not in your wardrobe"}
+                      dim={!isSynthetic && !isOwned}
+                    />
+                  );
+                })}
                 {rec.accessories.map((a) => (
                   <Row
                     key={"acc-" + a.slug}
@@ -226,6 +230,19 @@ function TodayPage() {
                 ))}
               </div>
 
+              {rec.sleepAccessories.length > 0 && (
+                <>
+                  <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
+                    Sleep accessories
+                  </p>
+                  <div className="space-y-3">
+                    {rec.sleepAccessories.map((a) => (
+                      <Row key={"sleep-" + a.slug} chip="🌙" label={a.label} hint="From your wardrobe" />
+                    ))}
+                  </div>
+                </>
+              )}
+
               {rec.transportExtras.length > 0 && (
                 <>
                   <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
@@ -234,6 +251,21 @@ function TodayPage() {
                   <div className="space-y-3">
                     {rec.transportExtras.map((a) => (
                       <Row key={"tx-" + a.slug} chip="🧳" label={a.label} hint="From your wardrobe" />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {rec.safetyAdvice.length > 0 && (
+                <>
+                  <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-accent/70 mb-2">
+                    Weather safety
+                  </p>
+                  <div className="space-y-2">
+                    {rec.safetyAdvice.map((s, i) => (
+                      <p key={i} className="text-sm text-ink/80 bg-accent/5 border border-accent/10 rounded-2xl px-4 py-3">
+                        {s}
+                      </p>
                     ))}
                   </div>
                 </>
