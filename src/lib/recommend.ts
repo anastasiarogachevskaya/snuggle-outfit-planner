@@ -2,6 +2,7 @@ import { type WardrobeSlug } from "./wardrobe-catalog";
 
 export type Situation = "home" | "walk" | "car";
 export type TransportMode = "pram" | "sitting-stroller" | "carrier";
+export type HomeActivity = "playing" | "sleeping";
 
 export type RecommendInput = {
   feelsLikeC: number;
@@ -12,23 +13,33 @@ export type RecommendInput = {
   isRaining?: boolean;
   durationMin?: number;
   owned: Set<WardrobeSlug>;
+  homeActivity?: HomeActivity;
+  ageMonths?: number | null;
+  uvIndex?: number;
 };
 
-export type Layer = { slot: "base" | "bottom" | "mid" | "outer"; slug: WardrobeSlug; label: string };
+// slug can be a real WardrobeSlug or a synthetic display-only value like "diaper_only"
+export type Layer = {
+  slot: "base" | "bottom" | "mid" | "outer";
+  slug: WardrobeSlug | "diaper_only";
+  label: string;
+};
 export type Accessory = { slug: WardrobeSlug; label: string };
 
 export type Recommendation = {
   babyClothing: Layer[];
   accessories: Accessory[];
+  sleepAccessories: Accessory[];
   transportExtras: Accessory[];
   missingHelpfulItems: Accessory[];
   missing: WardrobeSlug[]; // missing baby clothing / accessory items only
   reason: string;
   notes: string[];
+  safetyAdvice: string[];
   effectiveTempC: number;
 };
 
-const L = (slot: Layer["slot"], slug: WardrobeSlug, label: string): Layer => ({ slot, slug, label });
+const L = (slot: Layer["slot"], slug: Layer["slug"], label: string): Layer => ({ slot, slug, label });
 const A = (slug: WardrobeSlug, label: string): Accessory => ({ slug, label });
 
 export function recommend(input: RecommendInput): Recommendation {
@@ -41,29 +52,37 @@ export function recommend(input: RecommendInput): Recommendation {
     isRaining,
     durationMin,
     owned,
+    homeActivity = "playing",
+    ageMonths,
+    uvIndex,
   } = input;
 
-  // Base effective temperature (before extras)
-  let effective =
-    situation === "home" && typeof roomTempC === "number"
-      ? roomTempC
-      : situation === "car"
-        ? feelsLikeC + 2
-        : feelsLikeC;
+  // ============================================================
+  // HOME MODE — handled specially, returns early with its own shape
+  // ============================================================
+  if (situation === "home") {
+    return recommendHome({
+      roomTempC: roomTempC ?? 21,
+      homeActivity,
+      ageMonths: ageMonths ?? null,
+      owned,
+    });
+  }
 
+  // ============================================================
+  // OUTDOOR (walk / car) — existing effective-temp logic
+  // ============================================================
+  let effective = situation === "car" ? feelsLikeC + 2 : feelsLikeC;
   effective -= (tempPref - 3) * 1.5;
 
   const transportExtras: Accessory[] = [];
   const missingHelpfulItems: Accessory[] = [];
   const notes: string[] = [];
+  const safetyAdvice: string[] = [];
   const usedExtras: Set<WardrobeSlug> = new Set();
   const missingExtras: Set<WardrobeSlug> = new Set();
 
-  const consider = (
-    slug: WardrobeSlug,
-    label: string,
-    warmthBoost: number,
-  ) => {
+  const consider = (slug: WardrobeSlug, label: string, warmthBoost: number) => {
     if (owned.has(slug)) {
       transportExtras.push(A(slug, label));
       usedExtras.add(slug);
@@ -74,7 +93,6 @@ export function recommend(input: RecommendInput): Recommendation {
     }
   };
 
-  // Walk transport modifiers + auto extras
   if (situation === "walk") {
     if (transportMode === "pram") effective += 1;
     if (transportMode === "sitting-stroller") effective -= 1;
@@ -85,7 +103,6 @@ export function recommend(input: RecommendInput): Recommendation {
     if (isStrollerLike) {
       if (isRaining) consider("rain_cover", "Rain cover", 2);
       if (effective < 10) consider("footmuff", "Footmuff", 2);
-      // Blanket if still cool, or as a fallback when footmuff is missing
       if (effective < 16 && !usedExtras.has("footmuff")) {
         consider("blanket", "Blanket", 1);
       }
@@ -97,7 +114,6 @@ export function recommend(input: RecommendInput): Recommendation {
     }
   }
 
-  // Car: long cold trip → blanket instead of overall in seat
   if (situation === "car" && (durationMin ?? 0) >= 30 && effective < 15) {
     if (owned.has("blanket")) {
       transportExtras.push(A("blanket", "Blanket — remove the winter overall in the car seat"));
@@ -125,9 +141,20 @@ export function recommend(input: RecommendInput): Recommendation {
   // Outer
   if (effective < 4) babyClothing.push(L("outer", "winter_overall", "Winter overall"));
 
-  // Head
-  if (effective < 22 && effective >= 14) accessories.push(A("thin_hat", "Thin cotton hat"));
-  else if (effective < 14) accessories.push(A("warm_hat", "Warm hat"));
+  // Head — sun hat on warm walks takes priority
+  const wantsSunHat = situation === "walk" && effective >= 18;
+  if (wantsSunHat) {
+    if (owned.has("sun_hat")) {
+      accessories.push(A("sun_hat", "Sun hat"));
+    } else {
+      missingHelpfulItems.push(A("sun_hat", "Sun hat"));
+      missingExtras.add("sun_hat");
+    }
+  } else if (effective < 22 && effective >= 14) {
+    accessories.push(A("thin_hat", "Thin cotton hat"));
+  } else if (effective < 14) {
+    accessories.push(A("warm_hat", "Warm hat"));
+  }
 
   // Socks
   if (effective < 20) accessories.push(A("wool_socks", "Warm socks"));
@@ -139,10 +166,13 @@ export function recommend(input: RecommendInput): Recommendation {
   const seen = new Set<string>();
   const accs = accessories.filter((a) => (seen.has(a.slug) ? false : (seen.add(a.slug), true)));
 
-  const clothingSlugs = [...babyClothing.map((l) => l.slug), ...accs.map((a) => a.slug)];
+  const clothingSlugs = [
+    ...babyClothing.map((l) => l.slug).filter((s): s is WardrobeSlug => s !== "diaper_only"),
+    ...accs.map((a) => a.slug),
+  ];
   const missing = clothingSlugs.filter((s) => !owned.has(s));
 
-  // Safety & context notes — only for extras actually used
+  // Transport / carrier notes
   if (situation === "walk") {
     if (usedExtras.has("rain_cover")) {
       notes.push(
@@ -163,8 +193,40 @@ export function recommend(input: RecommendInput): Recommendation {
     if (missingExtras.has("rain_cover") && isRaining) {
       notes.push("No rain cover in your wardrobe — consider a rain overall to keep baby dry.");
     }
-    if (missingExtras.has("blanket") && !usedExtras.has("footmuff") && !usedExtras.has("babywearing_cover")) {
+    if (
+      missingExtras.has("blanket") &&
+      !usedExtras.has("footmuff") &&
+      !usedExtras.has("babywearing_cover")
+    ) {
       notes.push("No blanket available — outfit kept warmer instead.");
+    }
+  }
+
+  // ---- Sun & UV safety advice (walk only) ----
+  if (situation === "walk") {
+    const uv = typeof uvIndex === "number" ? uvIndex : undefined;
+    const warmEnough = feelsLikeC >= 22 || (uv !== undefined && uv >= 3);
+    if (warmEnough) {
+      if (ageMonths !== null && ageMonths !== undefined && ageMonths < 6) {
+        safetyAdvice.push("☀️ Keep baby in the shade whenever possible.");
+        safetyAdvice.push("☀️ Avoid direct sunlight.");
+        safetyAdvice.push(
+          "☀️ Dress baby in lightweight clothing and always use a sun hat if available.",
+        );
+      } else {
+        safetyAdvice.push(
+          "☀️ Use a sun hat, seek shade whenever possible, and apply broad-spectrum SPF 30+ to exposed skin before going outside.",
+        );
+        safetyAdvice.push(
+          "☀️ Reapply sunscreen per product instructions, especially after sweating or getting wet.",
+        );
+      }
+    }
+    if (uv !== undefined) {
+      if (uv >= 8) safetyAdvice.push("☀️ Very strong UV today. Minimize direct sun exposure.");
+      else if (uv >= 6)
+        safetyAdvice.push("☀️ Strong sun today. Keep baby in the shade when possible.");
+      else if (uv >= 3) safetyAdvice.push("☀️ Sun protection is recommended.");
     }
   }
 
@@ -173,12 +235,125 @@ export function recommend(input: RecommendInput): Recommendation {
   return {
     babyClothing,
     accessories: accs,
+    sleepAccessories: [],
     transportExtras,
     missingHelpfulItems,
     missing,
     reason,
     notes,
+    safetyAdvice,
     effectiveTempC: effective,
+  };
+}
+
+// ============================================================
+// HOME
+// ============================================================
+function recommendHome(args: {
+  roomTempC: number;
+  homeActivity: HomeActivity;
+  ageMonths: number | null;
+  owned: Set<WardrobeSlug>;
+}): Recommendation {
+  const { roomTempC, homeActivity, ageMonths, owned } = args;
+
+  const babyClothing: Layer[] = [];
+  const accessories: Accessory[] = [];
+  const sleepAccessories: Accessory[] = [];
+  const missingHelpfulItems: Accessory[] = [];
+  const safetyAdvice: string[] = [];
+  const notes: string[] = [];
+
+  const suggest = (slug: WardrobeSlug, label: string) => {
+    if (owned.has(slug)) sleepAccessories.push(A(slug, label));
+    else missingHelpfulItems.push(A(slug, label));
+  };
+
+  let reason = "";
+
+  if (homeActivity === "sleeping") {
+    // Sleep-specific bands based on room temperature.
+    if (roomTempC >= 27) {
+      babyClothing.push(L("base", "diaper_only", "Diaper only"));
+      safetyAdvice.push("🌡️ The room is very warm. Avoid sleep sacks and extra blankets.");
+      safetyAdvice.push("🌡️ Check baby's neck or chest for signs of overheating.");
+      reason = `Room is ~${Math.round(roomTempC)}°C — very warm for sleep, so no sleep clothing needed.`;
+    } else if (roomTempC >= 24) {
+      babyClothing.push(L("base", "short_sleeve_bodysuit", "Short-sleeve bodysuit"));
+      safetyAdvice.push("🌡️ Warm room — skip the sleep sack or use only a very lightweight one.");
+      reason = `Room is ~${Math.round(roomTempC)}°C — a short-sleeve bodysuit is enough for sleep.`;
+    } else if (roomTempC >= 21) {
+      babyClothing.push(L("base", "pajamas", "Lightweight pajamas"));
+      const newborn = ageMonths !== null && ageMonths < 4;
+      if (newborn && owned.has("swaddle")) {
+        sleepAccessories.push(A("swaddle", "Swaddle"));
+      } else {
+        suggest("sleep_sack_light", "Light sleep sack");
+      }
+      reason = `Room is ~${Math.round(roomTempC)}°C — pajamas with a light sleep sack.`;
+    } else {
+      // 18–20 (and below)
+      babyClothing.push(L("base", "pajamas", "Long-sleeve pajamas"));
+      const newborn = ageMonths !== null && ageMonths < 4;
+      if (newborn && owned.has("swaddle")) {
+        sleepAccessories.push(A("swaddle", "Swaddle"));
+      } else if (owned.has("sleep_sack_warm")) {
+        sleepAccessories.push(A("sleep_sack_warm", "Warm sleep sack"));
+      } else if (owned.has("sleep_sack_light")) {
+        sleepAccessories.push(A("sleep_sack_light", "Light sleep sack"));
+        notes.push("No warm sleep sack — using a light one; add pajamas underneath if baby feels cool.");
+      } else {
+        missingHelpfulItems.push(A("sleep_sack_warm", "Warm sleep sack"));
+      }
+      reason = `Room is ~${Math.round(roomTempC)}°C — pajamas and a sleep sack for warmth.`;
+    }
+  } else {
+    // Playing / awake — daytime clothing with hot-room overrides.
+    if (roomTempC >= 28) {
+      babyClothing.push(L("base", "diaper_only", "Diaper only"));
+      safetyAdvice.push(
+        "🌡️ The room is very warm. Keeping baby in only a diaper helps reduce overheating.",
+      );
+      safetyAdvice.push("🌡️ Avoid extra blankets. Check baby's neck/chest for signs of overheating.");
+      reason = `Room is ~${Math.round(roomTempC)}°C — very warm, so reduce layers.`;
+    } else if (roomTempC >= 26) {
+      babyClothing.push(L("base", "short_sleeve_bodysuit", "Short-sleeve bodysuit"));
+      safetyAdvice.push("🌡️ Warm room — keep it to a single light layer and skip extra blankets.");
+      reason = `Room is ~${Math.round(roomTempC)}°C — warm, so a single light layer is enough.`;
+    } else if (roomTempC >= 24) {
+      babyClothing.push(L("base", "short_sleeve_bodysuit", "Short-sleeve bodysuit"));
+      babyClothing.push(L("bottom", "pants", "Light pants"));
+      reason = `Room is ~${Math.round(roomTempC)}°C — light clothing only.`;
+    } else if (roomTempC >= 20) {
+      babyClothing.push(L("base", "long_sleeve_bodysuit", "Long-sleeve bodysuit"));
+      babyClothing.push(L("bottom", "pants", "Pants"));
+      reason = `Room is ~${Math.round(roomTempC)}°C — comfortable for a regular outfit.`;
+    } else {
+      babyClothing.push(L("base", "long_sleeve_bodysuit", "Long-sleeve bodysuit"));
+      babyClothing.push(L("bottom", "leggings", "Leggings"));
+      babyClothing.push(L("mid", "sweater", "Sweater"));
+      accessories.push(A("wool_socks", "Warm socks"));
+      reason = `Room is ~${Math.round(roomTempC)}°C — add a mid layer to keep baby warm.`;
+    }
+  }
+
+  const clothingSlugs = [
+    ...babyClothing.map((l) => l.slug).filter((s): s is WardrobeSlug => s !== "diaper_only"),
+    ...accessories.map((a) => a.slug),
+  ];
+  const missing = clothingSlugs.filter((s) => !owned.has(s));
+
+  return {
+    babyClothing,
+    accessories,
+    sleepAccessories,
+    transportExtras: [],
+    missingHelpfulItems,
+    missing,
+    reason,
+    notes,
+    safetyAdvice,
+    effectiveTempC: roomTempC,
   };
 }
 
@@ -191,7 +366,6 @@ function buildReason(
 ) {
   const rounded = Math.round(feelsLike);
   const eff = Math.round(effective);
-  if (situation === "home") return `Room feels around ${eff}°C for a baby.`;
   if (situation === "car") return `Feels like ${rounded}°C outside — cabin will be warmer.`;
 
   let base: string;
@@ -211,5 +385,6 @@ function buildReason(
   if (usedExtras.has("rain_cover")) base += " Rain cover adds warmth and reduces airflow, so the outfit is lighter.";
   if (usedExtras.has("footmuff")) base += " Footmuff adds warmth, so the outfit is lighter.";
   if (usedExtras.has("blanket")) base += " A blanket adds a little extra warmth.";
+  if (usedExtras.has("sun_hat")) base += " A sun hat helps protect from direct sunlight.";
   return base;
 }

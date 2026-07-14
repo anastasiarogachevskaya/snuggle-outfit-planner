@@ -1,76 +1,84 @@
-# Auto-recommend transport extras & age-aware transport
+# Hot weather safety + home activity modes
 
-## Scope
-Move rain cover / footmuff / blanket / babywearing cover from manual toggles into the recommendation engine. Hide Pram for babies > 6 months. Split output into three groups.
+Two related upgrades to the recommendation engine and Today screen: add sun/UV protection guidance for warm outdoor weather, and split Home mode into Playing vs Sleeping with hot-room logic.
 
-## 1. `src/lib/recommend.ts`
+## 1. Weather: add UV index
 
-Remove the boolean inputs `rainCoverUsed`, `footmuffUsed`, `blanketUsed`, `babywearingCoverUsed` from `RecommendInput`. Add optional `isRaining?: boolean` (from weather).
+**`src/lib/weather.ts`**
+- Extend Open-Meteo `current` query with `uv_index`.
+- Add `uvIndex?: number` to `Weather` type (undefined when API omits it).
 
-New output shape:
-```ts
-type Recommendation = {
-  babyClothing: Layer[];        // was `layers`
-  transportExtras: Accessory[]; // owned extras actually used
-  missingHelpfulItems: Accessory[]; // suggested-for-next-time
-  reason: string;
-  notes: string[];
-  effectiveTempC: number;
-};
-```
+## 2. Wardrobe catalog: add sun/sleep items
 
-New extras decision flow (walk only), run BEFORE clothing thresholds so warmth adjustments apply only for owned items:
+**`src/lib/wardrobe-catalog.ts`**
+- Extend `WardrobeSlug` union with: `sun_hat`, `sleep_sack_light`, `sleep_sack_warm`, `swaddle`.
+- Add `sun_hat` tile to the Accessories step.
+- Add a small "Sleep" step (or extend Base) with sleep sacks + swaddle tiles.
+- Keep `QUICK_SETUP_OWNED` unchanged.
 
-- Pram / sitting-stroller:
-  - If `isRaining`: consider `rain_cover`. If owned → include in `transportExtras`, apply +2°C. If not owned → push to `missingHelpfulItems`, no warmth adjustment.
-  - If `effective < 10`: consider `footmuff`. Owned → include, +2°C. Missing → suggest, no adjustment.
-  - If still `effective < 16` after footmuff decision (or no footmuff owned and cold): consider `blanket`. Owned → include, +1°C. Missing → suggest.
-- Carrier:
-  - Base carrier +3°C always.
-  - If `effective < 8`: consider `babywearing_cover`. Owned → include, +2°C. Missing → suggest.
-  - If `effective < 12`: consider `blanket`. Owned → include, +1°C. Missing → suggest.
-- Car + long trip + cold: keep existing blanket note logic under `transportExtras` if owned; suggest otherwise.
+## 3. Recommendation engine
 
-Clothing thresholds (base / bottom / mid / outer / hat / socks / mittens) stay as today but now use `effective` after only owned-extra adjustments — so missing extras naturally lead to warmer clothing.
+**`src/lib/recommend.ts`**
 
-Reason text:
-- Mention only extras actually used ("Rain cover keeps it warmer and reduces airflow, so outfit is lighter." / "Footmuff adds warmth, so outfit adjusted lighter." / carrier + cover phrasing).
-- If a helpful extra is missing, add note: "No footmuff — outfit adjusted warmer to compensate."
+New input fields:
+- `homeActivity?: "playing" | "sleeping"` (used when `situation === "home"`).
+- `ageMonths?: number | null` (needed for sun-safety copy + swaddle rules).
+- `uvIndex?: number`.
 
-Safety notes (existing) triggered only when the extra is actually included.
+New output field:
+- `safetyAdvice: string[]` (rendered as its own "Weather safety" / "Safety advice" section). Existing `notes` stays for transport-specific tips; safety advice is the new dedicated bucket for sun + hot-room messages.
+- Add optional `sleepAccessories: Accessory[]` (only populated for sleep).
 
-## 2. `src/routes/_authenticated/today.tsx`
+### Sun hat + sun safety (walk mode)
+- If `effective >= 18` and situation is `walk`: consider `sun_hat` — owned → push into `accessories` (rendered under Baby clothing accessories as today) and skip the normal `thin_hat` at that temp band; missing → push into `missingHelpfulItems`.
+- If outdoor `feelsLikeC >= 22` (warm enough to matter) OR `uvIndex >= 3`:
+  - `ageMonths != null && ageMonths < 6`: push shade-first advice (three lines from spec).
+  - Else: push sun-hat + shade + SPF 30+ advice.
+- UV bands (only when `uvIndex` defined): 3–5 / 6–7 / 8+ add the corresponding line to `safetyAdvice`.
+- If UV undefined, fall back to temperature-only trigger above.
 
-- Remove the `covers` state and the entire "Any extra cover?" block.
-- Remove passing cover booleans into `recommend()`.
-- Compute baby age from `baby.birthdate` (months). Build transport options list:
-  - `pram` only if age ≤ 6 months (default only if age < 4 months, otherwise `sitting-stroller` is default).
-  - `sitting-stroller` always.
-  - `carrier` always.
-- On baby load, if current `transportMode` is invalid for age, set to `sitting-stroller`.
-- Pass `isRaining` derived from `weatherQ.data.condition` (simple check for rain/showers/drizzle) to `recommend()`.
+### Home mode: activity + hot-room
+- When `homeActivity === "sleeping"`, replace daytime layer logic with sleep-specific bands (using `roomTempC`, ignoring outdoor temp):
+  - 18–20°C: `pajamas` + `sleep_sack_warm` (fallback to `sleep_sack_light`, else `pajamas` only).
+  - 21–23°C: `pajamas` + `sleep_sack_light` (fallback: pajamas only).
+  - 24–26°C: `short_sleeve_bodysuit`, no sleep sack.
+  - ≥27°C: diaper only (no clothing rows; safety advice explains).
+  - Newborn (`ageMonths != null && ageMonths < 4`) and owns `swaddle`: offer swaddle instead of sleep sack in the 18–23°C bands.
+  - Missing sleep sack/swaddle → push to `missingHelpfulItems`, don't change today's outfit warmth.
+- When `homeActivity === "playing"` (default), keep current daytime layering but apply hot-room overrides:
+  - `roomTempC >= 28`: diaper only.
+  - `roomTempC >= 26`: short-sleeve bodysuit only (or diaper only if `>= 27`).
+  - `roomTempC >= 24`: base + optional light bottom; strip mid/outer.
+- Add safety advice for warm rooms (≥26°C): "The room is very warm. Avoid extra blankets. Check baby's neck/chest for overheating."
 
-Render three sections in the recommendation card:
-1. **Baby clothing** — `rec.babyClothing` (same Row component).
-2. **Transport extras** — `rec.transportExtras` (only shown if non-empty).
-3. **Suggested for next time** — `rec.missingHelpfulItems` (muted styling, links to `/wardrobe`).
+### Reason text
+- Home sleeping: "Room is ~X°C — sleep clothing chosen for that range."
+- Home hot room: "Room is very warm — reduce layers to prevent overheating."
+- Walk sun/UV lines added to reason only if a sun hat is used; otherwise they live in `safetyAdvice`.
 
-Update the "layers count → headline" mapping to use `babyClothing.length`.
+## 4. Today screen
 
-Remove the old `missing` badge (its role is now split between the three groups); wardrobe-item mismatches for clothing itself still shown via `dim` + "Not in your wardrobe" hint on each row.
+**`src/routes/_authenticated/today.tsx`**
+- Add `homeActivity` state (default `"playing"`). When `situation === "home"`, render a Playing / Sleeping toggle above the room-temp slider.
+- Pass `homeActivity`, `ageMonths`, and `weatherQ.data?.uvIndex` into `recommend()`.
+- Rendering order inside the recommendation card:
+  1. Baby clothing (existing block; empty when diaper-only — show a single "Diaper only" row instead).
+  2. Accessories (existing).
+  3. Sleep accessories (new, only when sleeping and non-empty).
+  4. Transport extras (existing).
+  5. Weather safety / Safety advice (new — renders `safetyAdvice` with ☀️ / 🌡️ prefixes as returned).
+  6. Suggested for next time (existing).
+- Diaper-only handling: recommend returns an empty `babyClothing` plus a synthetic row `{ slot: "base", slug: "diaper_only", label: "Diaper only" }` (special-cased in Row rendering — not a real wardrobe slug, so ownership check is skipped).
 
-## 3. Weather
-
-`src/lib/weather.ts` already returns a `condition` string; derive `isRaining` in `today.tsx` via a small helper (`/rain|drizzle|shower/i`). No API change needed.
-
-## Out of scope
-- No schema changes.
-- No changes to onboarding wardrobe wizard.
-- No changes to home/car UI beyond what the new output shape requires.
+## 5. Out of scope
+- No schema changes; feedback insert keeps the same shape (recommendation JSON is a superset).
+- No new onboarding steps beyond the extra wardrobe tiles.
+- No push notifications, no history for safety advice.
 
 ## Acceptance
-- Walk screen shows only Transport + Duration.
-- Owned rain cover on rainy walk appears under Transport extras and lightens outfit; missing rain cover appears under Suggested for next time and outfit stays warmer.
-- Same for footmuff / blanket / babywearing cover.
-- Pram hidden for babies > 6 months; Stroller available at 0+.
-- Reason text references only extras actually used and calls out compensation when a helpful item is missing.
+- Warm walk (≥18°C) recommends a sun hat from wardrobe or as a suggestion.
+- Babies <6 months get shade-first advice with no sunscreen line; ≥6 months get SPF 30+ line.
+- UV bands render matching messages when Open-Meteo returns UV; missing UV falls back to temp-only trigger.
+- Home mode asks Playing vs Sleeping; sleeping uses pajamas/sleep sacks, playing uses daytime clothes.
+- Hot rooms strip layers (short-sleeve at ≥26°C, diaper only at ≥28°C) with safety advice.
+- Missing sleep sacks/sun hats go to "Suggested for next time" without warming up today's outfit.

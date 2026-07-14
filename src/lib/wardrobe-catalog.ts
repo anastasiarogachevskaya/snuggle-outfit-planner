@@ -28,12 +28,17 @@ export type WardrobeSlug =
   // Accessories
   | "thin_hat"
   | "warm_hat"
+  | "sun_hat"
   | "balaclava"
   | "mittens"
   | "wool_socks"
   | "booties"
   | "winter_boots"
   | "neck_warmer"
+  // Sleep
+  | "sleep_sack_light"
+  | "sleep_sack_warm"
+  | "swaddle"
   // Transport
   | "stroller"
   | "footmuff"
@@ -108,12 +113,23 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
     items: [
       { slug: "thin_hat", label: "Thin hat", hint: "Cotton hat", emoji: "🧢" },
       { slug: "warm_hat", label: "Warm hat", hint: "Wool / fleece", emoji: "🎩" },
+      { slug: "sun_hat", label: "Sun hat", hint: "Brim for shade", emoji: "👒" },
       { slug: "balaclava", label: "Balaclava", hint: "Head & neck", emoji: "🥶" },
       { slug: "mittens", label: "Mittens", hint: "For cold days", emoji: "🧤" },
       { slug: "wool_socks", label: "Wool socks", hint: "Warm feet", emoji: "🧦" },
       { slug: "booties", label: "Booties", hint: "Soft shoes", emoji: "👟" },
       { slug: "winter_boots", label: "Winter boots", hint: "For snow", emoji: "🥾" },
       { slug: "neck_warmer", label: "Neck warmer", hint: "Scarf alternative", emoji: "🧣" },
+    ],
+  },
+  {
+    id: "sleep",
+    title: "Sleep",
+    question: "What does baby sleep in?",
+    items: [
+      { slug: "sleep_sack_light", label: "Light sleep sack", hint: "Warm rooms", emoji: "🌙" },
+      { slug: "sleep_sack_warm", label: "Warm sleep sack", hint: "Cooler rooms", emoji: "🛌" },
+      { slug: "swaddle", label: "Swaddle", hint: "Newborn", emoji: "👶" },
     ],
   },
   {

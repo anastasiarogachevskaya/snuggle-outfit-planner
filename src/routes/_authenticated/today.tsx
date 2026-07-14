@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchWeather } from "@/lib/weather";
-import { recommend, type Situation, type TransportMode } from "@/lib/recommend";
+import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 
@@ -73,6 +73,7 @@ function TodayPage() {
   }, [ageMonths]);
 
   const [duration, setDuration] = useState<15 | 30 | 60>(30);
+  const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
 
   const owned = useMemo(
     () => new Set<WardrobeSlug>((wardrobeQ.data ?? []).filter((i) => i.owned).map((i) => i.slug as WardrobeSlug)),
@@ -92,8 +93,11 @@ function TodayPage() {
       isRaining: situation === "walk" ? isRaining : undefined,
       durationMin: duration,
       owned,
+      homeActivity: situation === "home" ? homeActivity : undefined,
+      ageMonths,
+      uvIndex: weatherQ.data.uvIndex,
     });
-  }, [babyQ.data, weatherQ.data, situation, roomTemp, transportMode, isRaining, duration, owned]);
+  }, [babyQ.data, weatherQ.data, situation, roomTemp, transportMode, isRaining, duration, owned, homeActivity, ageMonths]);
 
   const feedback = useMutation({
     mutationFn: async (rating: "comfortable" | "cold" | "warm") => {
@@ -201,15 +205,19 @@ function TodayPage() {
                 Baby clothing
               </p>
               <div className="space-y-3">
-                {rec.babyClothing.map((l) => (
-                  <Row
-                    key={l.slot + l.slug}
-                    chip={l.slot.slice(0, 3).toUpperCase()}
-                    label={l.label}
-                    hint={owned.has(l.slug) ? "In your wardrobe" : "Not in your wardrobe"}
-                    dim={!owned.has(l.slug)}
-                  />
-                ))}
+                {rec.babyClothing.map((l) => {
+                  const isSynthetic = l.slug === "diaper_only";
+                  const isOwned = !isSynthetic && owned.has(l.slug as WardrobeSlug);
+                  return (
+                    <Row
+                      key={l.slot + l.slug}
+                      chip={l.slot.slice(0, 3).toUpperCase()}
+                      label={l.label}
+                      hint={isSynthetic ? "" : isOwned ? "In your wardrobe" : "Not in your wardrobe"}
+                      dim={!isSynthetic && !isOwned}
+                    />
+                  );
+                })}
                 {rec.accessories.map((a) => (
                   <Row
                     key={"acc-" + a.slug}
@@ -222,6 +230,19 @@ function TodayPage() {
                 ))}
               </div>
 
+              {rec.sleepAccessories.length > 0 && (
+                <>
+                  <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
+                    Sleep accessories
+                  </p>
+                  <div className="space-y-3">
+                    {rec.sleepAccessories.map((a) => (
+                      <Row key={"sleep-" + a.slug} chip="🌙" label={a.label} hint="From your wardrobe" />
+                    ))}
+                  </div>
+                </>
+              )}
+
               {rec.transportExtras.length > 0 && (
                 <>
                   <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
@@ -230,6 +251,21 @@ function TodayPage() {
                   <div className="space-y-3">
                     {rec.transportExtras.map((a) => (
                       <Row key={"tx-" + a.slug} chip="🧳" label={a.label} hint="From your wardrobe" />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {rec.safetyAdvice.length > 0 && (
+                <>
+                  <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-accent/70 mb-2">
+                    Weather safety
+                  </p>
+                  <div className="space-y-2">
+                    {rec.safetyAdvice.map((s, i) => (
+                      <p key={i} className="text-sm text-ink/80 bg-accent/5 border border-accent/10 rounded-2xl px-4 py-3">
+                        {s}
+                      </p>
                     ))}
                   </div>
                 </>
@@ -283,20 +319,41 @@ function TodayPage() {
         {/* Situation extras */}
         <section className="mb-10 bg-surface/60 rounded-2xl p-5 border border-black/5">
           {situation === "home" && (
-            <label className="block">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-ink/70">Room temperature</span>
-                <span className="font-medium">{roomTemp}°C</span>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-ink/70 mb-2">What will baby be doing?</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["playing", "sleeping"] as HomeActivity[]).map((a) => (
+                    <button
+                      key={a}
+                      onClick={() => setHomeActivity(a)}
+                      className={
+                        "py-2 rounded-xl text-sm capitalize " +
+                        (homeActivity === a
+                          ? "bg-primary/15 text-primary font-medium"
+                          : "bg-canvas text-ink/70")
+                      }
+                    >
+                      {a === "playing" ? "🧸 Playing" : "😴 Sleeping"}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <input
-                type="range"
-                min={15}
-                max={28}
-                value={roomTemp}
-                onChange={(e) => setRoomTemp(Number(e.target.value))}
-                className="w-full accent-primary"
-              />
-            </label>
+              <label className="block">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-ink/70">Room temperature</span>
+                  <span className="font-medium">{roomTemp}°C</span>
+                </div>
+                <input
+                  type="range"
+                  min={15}
+                  max={30}
+                  value={roomTemp}
+                  onChange={(e) => setRoomTemp(Number(e.target.value))}
+                  className="w-full accent-primary"
+                />
+              </label>
+            </div>
           )}
           {situation === "walk" && (
             <div className="space-y-4">
