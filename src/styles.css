@@ -35,7 +35,10 @@
   --color-ink: var(--ink);
   --font-serif: var(--font-serif);
   --font-sans: var(--font-sans);
+  --color-activity: var(--activity);
+  --color-activity-foreground: var(--activity-foreground);
 }
+
 
 :root {
   --radius: 1rem;
@@ -64,10 +67,13 @@
   --border: oklch(0.28 0.005 250 / 8%);
   --input: oklch(0.28 0.005 250 / 12%);
   --ring: oklch(0.62 0.055 130);
+  --activity: oklch(0.68 0.11 45);          /* warm clay */
+  --activity-foreground: oklch(0.99 0.005 85);
 
   --font-serif: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
+
 
 @layer base {
   * { border-color: var(--color-border); }

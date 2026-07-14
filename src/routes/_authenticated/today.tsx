@@ -135,7 +135,14 @@ function TodayPage() {
     { id: "carrier", label: "Carrier" },
   ];
 
+  const situationOptions: { id: Situation; icon: string; label: string; description: string }[] = [
+    { id: "home", icon: "🏠", label: "Home", description: "Indoors" },
+    { id: "walk", icon: "🚶", label: "Walk", description: "Outside" },
+    { id: "car", icon: "🚗", label: "Car", description: "In the car" },
+  ];
+
   return (
+
     <div className="min-h-screen bg-canvas font-sans text-ink pb-16">
       <div className="mx-auto max-w-md px-6 py-6">
         {/* Header */}
@@ -186,27 +193,37 @@ function TodayPage() {
 
 
         {/* Situation */}
-        <section className="mb-6">
-          <p className="text-xs font-medium uppercase tracking-widest text-primary/60 mb-4">
+        <section className="mb-8">
+          <p className="text-xs font-serif font-medium uppercase tracking-widest text-ink/60 mb-4">
             Today's activity
           </p>
           <div className="grid grid-cols-3 gap-3">
-            {(["home", "walk", "car"] as Situation[]).map((s) => (
+            {situationOptions.map((s) => (
               <button
-                key={s}
-                onClick={() => setSituation(s)}
+                key={s.id}
+                onClick={() => setSituation(s.id)}
                 className={
-                  "py-4 rounded-2xl font-medium transition-colors capitalize " +
-                  (situation === s
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                    : "bg-surface border border-black/5 hover:bg-canvas")
+                  "flex flex-col items-center gap-1.5 py-5 px-2 rounded-2xl transition-all " +
+                  (situation === s.id
+                    ? "bg-activity text-activity-foreground shadow-md shadow-activity/25 scale-[1.02]"
+                    : "bg-surface border border-black/5 hover:bg-canvas text-ink")
                 }
               >
-                {s === "home" ? "🏠 Home" : s === "walk" ? "🚶 Walk" : "🚗 Car"}
+                <span className="text-2xl">{s.icon}</span>
+                <span className="text-sm font-medium font-sans">{s.label}</span>
+                <span
+                  className={
+                    "text-[10px] leading-tight " +
+                    (situation === s.id ? "text-activity-foreground/80" : "text-ink/60")
+                  }
+                >
+                  {s.description}
+                </span>
               </button>
             ))}
           </div>
         </section>
+
 
         {/* Situation extras */}
         <section className="mb-10 bg-surface/60 rounded-2xl p-5 border border-black/5">
