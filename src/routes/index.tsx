@@ -9,7 +9,7 @@ function Landing() {
     <div className="min-h-screen bg-canvas">
       <div className="mx-auto max-w-md px-6 py-10 font-sans">
         <header className="flex items-center justify-between mb-16">
-          <span className="font-serif text-lg font-semibold">Layer</span>
+          <span className="font-serif text-lg font-semibold">Layerly</span>
           <Link to="/auth" className="text-sm text-primary font-medium">
             Sign in
           </Link>
@@ -25,9 +25,8 @@ function Landing() {
             <span className="italic">Baby dressed right.</span>
           </h1>
           <p className="mt-5 text-ink/60 leading-relaxed">
-            Layer reads today's weather where you are, weighs your baby's temperature
-            preference and the clothes you actually own, and answers the only question
-            that matters at 7&nbsp;am.
+            Layer reads today's weather where you are, weighs your baby's temperature preference and the clothes you
+            actually own, and answers the only question that matters at 7&nbsp;am.
           </p>
         </section>
 
@@ -50,9 +49,7 @@ function Landing() {
         >
           Get started — it's free
         </Link>
-        <p className="mt-4 text-center text-xs text-ink/40">
-          Weather from Open-Meteo. No ads, no tracking.
-        </p>
+        <p className="mt-4 text-center text-xs text-ink/40">Weather from Open-Meteo. No ads, no tracking.</p>
       </div>
     </div>
   );
