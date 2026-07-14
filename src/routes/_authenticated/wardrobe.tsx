@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WARDROBE_CATALOG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
+import { ClothingIcon } from "@/components/icons";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
   head: () => ({
@@ -124,6 +125,9 @@ function WardrobePage() {
                       >
                         {owned ? "✓" : ""}
                       </div>
+                      <span className={"inline-flex items-center justify-center " + (owned ? "text-primary" : "text-ink/50")}>
+                        <ClothingIcon slug={item.slug as WardrobeSlug} size={22} />
+                      </span>
                       <span className="text-sm font-medium">{item.label}</span>
                     </button>
                   );

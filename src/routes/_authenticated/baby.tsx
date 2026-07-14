@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import wardrobeIcon from "@/assets/wardrobe-icon.png.asset.json";
+import { WardrobeIcon, SettingsIcon } from "@/components/icons";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
@@ -231,8 +231,8 @@ function BabyPage() {
               title="Wardrobe"
               desc="Update what you own"
               icon={
-                <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center">
-                  <img src={wardrobeIcon.url} alt="" className="w-8 h-8" />
+                <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center text-primary">
+                  <WardrobeIcon size={22} />
                 </span>
               }
             />
@@ -241,8 +241,8 @@ function BabyPage() {
               title="Account & data"
               desc="Sign out, export, delete"
               icon={
-                <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center text-3xl">
-                  ⚙
+                <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center text-primary">
+                  <SettingsIcon size={22} />
                 </span>
               }
             />

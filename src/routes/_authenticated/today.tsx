@@ -6,6 +6,16 @@ import { fetchWeather } from "@/lib/weather";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
+import {
+  HomeIcon,
+  WalkIcon,
+  CarIcon,
+  PlayingIcon,
+  SleepingIcon,
+  ClothingIcon,
+  type IconProps,
+} from "@/components/icons";
+import type { ComponentType } from "react";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({
@@ -148,10 +158,10 @@ function TodayPage() {
     { id: "carrier", label: "Carrier" },
   ];
 
-  const situationOptions: { id: Situation; icon: string; label: string; description: string }[] = [
-    { id: "home", icon: "🏠", label: "Home", description: "Indoors" },
-    { id: "walk", icon: "🚶", label: "Walk", description: "Outside" },
-    { id: "car", icon: "🚗", label: "Car", description: "In the car" },
+  const situationOptions: { id: Situation; Icon: ComponentType<IconProps>; label: string; description: string }[] = [
+    { id: "home", Icon: HomeIcon, label: "Home", description: "Indoors" },
+    { id: "walk", Icon: WalkIcon, label: "Walk", description: "Outside" },
+    { id: "car", Icon: CarIcon, label: "Car", description: "In the car" },
   ];
 
   return (
@@ -222,8 +232,8 @@ function TodayPage() {
                     : "bg-surface border border-black/5 hover:bg-canvas text-ink/70")
                 }
               >
-                <span className={"text-2xl " + (situation === s.id ? "" : "opacity-60 grayscale-[25%]")}>
-                  {s.icon}
+                <span className={situation === s.id ? "" : "opacity-70"}>
+                  <s.Icon size={28} strokeWidth={situation === s.id ? 2 : 1.75} />
                 </span>
                 <span className={"text-sm font-sans " + (situation === s.id ? "font-bold" : "font-medium")}>
                   {s.label}
@@ -254,13 +264,14 @@ function TodayPage() {
                       key={a}
                       onClick={() => setHomeActivity(a)}
                       className={
-                        "py-2 rounded-xl text-sm capitalize " +
+                        "py-2 rounded-xl text-sm capitalize inline-flex items-center justify-center gap-2 " +
                         (homeActivity === a
                           ? "bg-primary/15 text-primary font-medium"
                           : "bg-canvas text-ink/70")
                       }
                     >
-                      {a === "playing" ? "🧸 Playing" : "😴 Sleeping"}
+                      {a === "playing" ? <PlayingIcon size={18} /> : <SleepingIcon size={18} />}
+                      {a === "playing" ? "Playing" : "Sleeping"}
                     </button>
                   ))}
                 </div>
@@ -375,6 +386,7 @@ function TodayPage() {
                   return (
                     <Row
                       key={l.slot + l.slug}
+                      slug={isSynthetic ? undefined : (l.slug as WardrobeSlug)}
                       chip={l.slot.slice(0, 3).toUpperCase()}
                       label={l.label}
                       hint={isSynthetic ? "" : isOwned ? "In your wardrobe" : "Not in your wardrobe"}
@@ -385,6 +397,7 @@ function TodayPage() {
                 {rec.accessories.map((a) => (
                   <Row
                     key={"acc-" + a.slug}
+                    slug={a.slug}
                     chip="+"
                     label={a.label}
                     hint={owned.has(a.slug) ? "" : "Not in your wardrobe"}
@@ -401,7 +414,7 @@ function TodayPage() {
                   </p>
                   <div className="space-y-3">
                     {rec.sleepAccessories.map((a) => (
-                      <Row key={"sleep-" + a.slug} chip="🌙" label={a.label} hint="From your wardrobe" />
+                      <Row key={"sleep-" + a.slug} slug={a.slug} chip="ZZ" label={a.label} hint="From your wardrobe" />
                     ))}
                   </div>
                 </>
@@ -414,7 +427,7 @@ function TodayPage() {
                   </p>
                   <div className="space-y-3">
                     {rec.transportExtras.map((a) => (
-                      <Row key={"tx-" + a.slug} chip="🧳" label={a.label} hint="From your wardrobe" />
+                      <Row key={"tx-" + a.slug} slug={a.slug} chip="+" label={a.label} hint="From your wardrobe" />
                     ))}
                   </div>
                 </>
@@ -442,7 +455,7 @@ function TodayPage() {
                   </p>
                   <div className="space-y-3">
                     {rec.missingHelpfulItems.map((a) => (
-                      <Row key={"miss-" + a.slug} chip="?" label={a.label} hint="Not in your wardrobe" accent dim />
+                      <Row key={"miss-" + a.slug} slug={a.slug} chip="?" label={a.label} hint="Not in your wardrobe" accent dim />
                     ))}
                   </div>
                   <p className="mt-3 text-xs text-ink/50">
@@ -496,22 +509,28 @@ function Row({
   hint,
   accent,
   dim,
+  slug,
 }: {
   chip: string;
   label: string;
   hint?: string;
   accent?: boolean;
   dim?: boolean;
+  slug?: WardrobeSlug;
 }) {
   return (
     <div className={"flex items-center gap-4 p-3 bg-canvas/60 rounded-2xl " + (dim ? "opacity-60" : "")}>
       <div
         className={
-          "size-10 bg-white rounded-lg border border-black/5 flex items-center justify-center text-xs font-medium " +
+          "size-10 bg-white rounded-lg border border-black/5 flex items-center justify-center " +
           (accent ? "text-accent" : "text-primary")
         }
       >
-        {chip}
+        {slug ? (
+          <ClothingIcon slug={slug} size={22} />
+        ) : (
+          <span className="text-xs font-medium">{chip}</span>
+        )}
       </div>
       <div>
         <p className="text-sm font-medium">{label}</p>
