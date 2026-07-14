@@ -9,13 +9,20 @@ import { toast } from "sonner";
 import {
   HomeIcon,
   WalkIcon,
+  WalkIconA,
+  WalkIconB,
+  WalkIconC,
   CarIcon,
+  CarIconA,
+  CarIconB,
+  CarIconC,
   PlayingIcon,
   SleepingIcon,
   ClothingIcon,
   type IconProps,
 } from "@/components/icons";
 import type { ComponentType } from "react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({
