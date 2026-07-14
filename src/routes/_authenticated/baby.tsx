@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import wardrobeIcon from "@/assets/wardrobe-icon.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
@@ -229,13 +230,21 @@ function BabyPage() {
               to="/wardrobe"
               title="Wardrobe"
               desc="Update what you own"
-              icon="👕"
+              icon={
+                <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center">
+                  <img src={wardrobeIcon.url} alt="" className="w-8 h-8" />
+                </span>
+              }
             />
             <NavCard
               to="/account"
               title="Account & data"
               desc="Sign out, export, delete"
-              icon="⚙"
+              icon={
+                <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center text-3xl">
+                  ⚙
+                </span>
+              }
             />
           </div>
         )}
@@ -271,14 +280,14 @@ function NavCard({
   to: "/wardrobe" | "/account";
   title: string;
   desc: string;
-  icon: string;
+  icon: React.ReactNode;
 }) {
   return (
     <Link
       to={to}
       className="flex items-center gap-3 p-4 rounded-2xl bg-surface border border-black/5 hover:border-primary/30 transition-colors"
     >
-      <span className="text-2xl" aria-hidden>{icon}</span>
+      <span className="inline-flex items-center justify-center" aria-hidden>{icon}</span>
       <div className="flex-1">
         <p className="text-sm font-medium">{title}</p>
         <p className="text-xs text-ink/50">{desc}</p>
