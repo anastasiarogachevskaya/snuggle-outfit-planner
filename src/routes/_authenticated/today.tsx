@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchWeather } from "@/lib/weather";
-import { recommend, type Situation, type TransportMode } from "@/lib/recommend";
+import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 
