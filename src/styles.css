@@ -37,6 +37,10 @@
   --font-sans: var(--font-sans);
   --color-activity: var(--activity);
   --color-activity-foreground: var(--activity-foreground);
+  --color-activity-selected: var(--activity-selected);
+  --color-activity-selected-foreground: var(--activity-selected-foreground);
+  --color-activity-selected-border: var(--activity-selected-border);
+  --color-activity-selected-shadow: var(--activity-selected-shadow);
 }
 
 
