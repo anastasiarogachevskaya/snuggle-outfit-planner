@@ -8,8 +8,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Layer" },
-      { name: "description", content: "Sign in to Layer to get today's outfit for your baby." },
+      { title: "Sign in — Layerly" },
+      { name: "description", content: "Sign in to Layerly to get today's outfit for your baby." },
     ],
   }),
   component: AuthPage,
@@ -94,7 +94,7 @@ function AuthPage() {
             {mode === "signin" ? "Welcome back" : "New here"}
           </p>
           <h1 className="text-3xl font-serif font-semibold">
-            {mode === "signin" ? "Sign in to Layer." : "Create your Layer account."}
+            {mode === "signin" ? "Sign in to Layerly." : "Create your Layerly account."}
           </h1>
         </div>
 
@@ -105,7 +105,7 @@ function AuthPage() {
               disabled={busy}
               className="w-full flex items-center justify-center gap-2 rounded-2xl bg-ink text-canvas py-3 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-               Continue with Apple
+              Continue with Apple
             </button>
             <button
               onClick={() => oauth("google")}
