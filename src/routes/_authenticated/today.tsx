@@ -105,6 +105,11 @@ function TodayPage() {
   const [duration, setDuration] = useState<15 | 30 | 60>(30);
   const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
 
+  const [walkIconIdx, setWalkIconIdx] = useLocalStorage("layerly-walk-icon", 0);
+  const [carIconIdx, setCarIconIdx] = useLocalStorage("layerly-car-icon", 0);
+  const WalkIconSelected = walkIconVariants[Math.max(0, Math.min(walkIconVariants.length - 1, walkIconIdx))];
+  const CarIconSelected = carIconVariants[Math.max(0, Math.min(carIconVariants.length - 1, carIconIdx))];
+
   const owned = useMemo(
     () => new Set<WardrobeSlug>((wardrobeQ.data ?? []).filter((i) => i.owned).map((i) => i.slug as WardrobeSlug)),
     [wardrobeQ.data],
