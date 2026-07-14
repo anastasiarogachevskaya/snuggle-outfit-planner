@@ -232,8 +232,8 @@ function TodayPage() {
                     : "bg-surface border border-black/5 hover:bg-canvas text-ink/70")
                 }
               >
-                <span className={"text-2xl " + (situation === s.id ? "" : "opacity-60 grayscale-[25%]")}>
-                  {s.icon}
+                <span className={situation === s.id ? "" : "opacity-70"}>
+                  <s.Icon size={28} strokeWidth={situation === s.id ? 2 : 1.75} />
                 </span>
                 <span className={"text-sm font-sans " + (situation === s.id ? "font-bold" : "font-medium")}>
                   {s.label}
