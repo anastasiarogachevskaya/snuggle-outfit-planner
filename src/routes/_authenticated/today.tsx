@@ -257,6 +257,25 @@ function TodayPage() {
               </button>
             ))}
           </div>
+
+          {/* Icon variant selector */}
+          <div className="mt-4 pt-4 border-t border-black/5">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-ink/40 mb-2.5">Icon style</p>
+            <div className="flex gap-4">
+              <IconVariantPicker
+                label="Walk"
+                variants={walkIconVariants}
+                selected={walkIconIdx}
+                onSelect={setWalkIconIdx}
+              />
+              <IconVariantPicker
+                label="Car"
+                variants={carIconVariants}
+                selected={carIconIdx}
+                onSelect={setCarIconIdx}
+              />
+            </div>
+          </div>
         </section>
 
 
