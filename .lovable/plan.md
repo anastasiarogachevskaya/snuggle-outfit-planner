@@ -1,37 +1,47 @@
-## Reorder Today screen
+## Plan: Make the activity section look better
 
-Rework `src/routes/_authenticated/today.tsx` so activity context comes before the outfit result.
+### Goal
+Redesign the activity selector (Home / Walk / Car) on the Today screen so it feels more intentional, warm, and tactile, while keeping the rest of the screen unchanged.
 
-### New section order
-1. Header (location + avatar) — unchanged
-2. Compact weather summary
-3. Today's activity (renamed from "Where are you headed?")
-4. Activity details (Home / Walk / Car — only relevant controls)
-5. Today's recommendation (hero card)
-6. How is baby feeling? (feedback)
-7. Footer nav — unchanged
+### Locked design choices
+- **Palette**: Warm Clay — terracotta/sand accents against the existing Soft Nordic cream/canvas base.
+- **Typography**: Elegant serif — the "Today's activity" label stays in Fraunces (`font-serif`), card labels in Outfit (`font-sans`).
+- **Layout**: Three cards — Home, Walk, and Car as three equal cards with icon + label.
 
 ### Changes
 
-**Weather (compact)**
-- Shrink from `text-6xl` italic temperature to a single-line row: e.g. `18° · Feels like 17° · Mostly clear`.
-- Use `text-2xl` for the temp, muted body text for condition/feels-like. Keep it as a small block, not a hero.
+**1. Activity selector as three cards**
+- Replace the current three plain grid buttons with three card buttons.
+- Each card shows:
+  - Top: emoji icon (🏠, 🚶, 🚗)
+  - Middle: label (Home / Walk / Car)
+  - Optional: one-line descriptor (Indoors / Outside / In the car)
+- Selected card:
+  - Warm clay background using a semantic token (reuse existing `--accent` or add a new terracotta token).
+  - White/primary-foreground text.
+  - Soft elevated shadow.
+  - `rounded-2xl`.
+- Unselected card:
+  - Surface background, subtle border, muted ink text.
+  - Hover: light canvas tint.
 
-**Today's activity**
-- Move the current Situation grid + Situation extras block up, directly under the weather.
-- Rename the section label "Where are you headed?" → "Today's activity".
-- Keep the existing Home (Play/Sleep + room temp slider), Walk (transport + duration), Car (duration) conditionals as they are — they already show only relevant controls.
+**2. Section label and spacing**
+- Keep "Today's activity" as a small uppercase serif label.
+- Add more breathing room below the label so the cards sit cleanly.
+- Leave the compact weather summary above it untouched.
 
-**Recommendation (hero)**
-- Move the existing recommendation `<section>` to sit AFTER the activity details.
-- Keep it as the visually dominant card (rounded-[32px], large serif headline, full contents: baby clothing, transport extras, sleep accessories, weather safety, suggested for next time).
-- No logic changes — `useMemo` already recomputes on activity/detail changes, so it updates immediately.
+**3. Activity details block**
+- Keep the existing Home / Walk / Car conditional controls.
+- Ensure the details block reads as a child of the selected activity by tightening its top margin and keeping its rounded surface card style.
 
-**Feedback**
-- Stays directly below the recommendation (already the case after reorder).
-
-### Out of scope (not requested, skipping)
-- Collapsing selected activity into a "Walk • Stroller • 30 min" summary chip with expand/edit — the task lists it as "consider", and it adds new state/UI. Happy to add in a follow-up if you want it.
+**4. Tokens**
+- Add any new warm-clay color to `src/styles.css` as a semantic token if the existing `--accent` is too light/saturated.
+- No hardcoded hex values in the component; everything references CSS variables.
 
 ### Files touched
-- `src/routes/_authenticated/today.tsx` — reorder JSX sections, compact weather markup, rename label. No changes to recommendation logic, queries, or other routes.
+- `src/routes/_authenticated/today.tsx` — activity selector markup and selected states.
+- `src/styles.css` — only if a new semantic token is needed.
+
+### Out of scope
+- Recommendation logic, weather fetching, feedback, or other routes stay as-is.
+- No new state or interactions beyond the existing `situation` selector.
