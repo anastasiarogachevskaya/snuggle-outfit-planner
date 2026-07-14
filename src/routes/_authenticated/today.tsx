@@ -205,16 +205,20 @@ function TodayPage() {
                 className={
                   "flex flex-col items-center gap-1.5 py-5 px-2 rounded-2xl transition-all " +
                   (situation === s.id
-                    ? "bg-activity text-activity-foreground border border-activity-foreground/15 shadow-sm shadow-activity/20 scale-[1.02]"
-                    : "bg-surface border border-black/5 hover:bg-canvas text-ink")
+                    ? "bg-activity-selected text-activity-selected-foreground border-2 border-activity-selected-border shadow-sm shadow-activity-selected-shadow/25 scale-[1.02]"
+                    : "bg-surface border border-black/5 hover:bg-canvas text-ink/70")
                 }
               >
-                <span className="text-2xl">{s.icon}</span>
-                <span className="text-sm font-medium font-sans">{s.label}</span>
+                <span className={"text-2xl " + (situation === s.id ? "" : "opacity-60 grayscale-[25%]")}>
+                  {s.icon}
+                </span>
+                <span className={"text-sm font-sans " + (situation === s.id ? "font-bold" : "font-medium")}>
+                  {s.label}
+                </span>
                 <span
                   className={
                     "text-[10px] leading-tight " +
-                    (situation === s.id ? "text-activity-foreground/80" : "text-ink/60")
+                    (situation === s.id ? "text-activity-selected-foreground/80" : "text-ink/60")
                   }
                 >
                   {s.description}

@@ -37,6 +37,10 @@
   --font-sans: var(--font-sans);
   --color-activity: var(--activity);
   --color-activity-foreground: var(--activity-foreground);
+  --color-activity-selected: var(--activity-selected);
+  --color-activity-selected-foreground: var(--activity-selected-foreground);
+  --color-activity-selected-border: var(--activity-selected-border);
+  --color-activity-selected-shadow: var(--activity-selected-shadow);
 }
 
 
@@ -69,6 +73,10 @@
   --ring: oklch(0.62 0.055 130);
   --activity: oklch(0.94 0.015 160);          /* soft sage */
   --activity-foreground: oklch(0.55 0.04 165); /* muted sage */
+  --activity-selected: #A8B894;
+  --activity-selected-foreground: #2F3A2E;
+  --activity-selected-border: #8E9F7D;
+  --activity-selected-shadow: #8E9F7D;
 
   --font-serif: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
