@@ -8,7 +8,20 @@ import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/today")({
-  head: () => ({ meta: [{ title: "Today — Layer" }] }),
+  head: () => ({
+    meta: [
+      { title: "Today's outfit — Layerly" },
+      {
+        name: "description",
+        content:
+          "See today's recommended baby outfit based on the local weather, your activity, and the clothes you own.",
+      },
+      { property: "og:title", content: "Today's outfit — Layerly" },
+      { property: "og:url", content: "https://layerly.online/today" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://layerly.online/today" }],
+  }),
   component: TodayPage,
 });
 
