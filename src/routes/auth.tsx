@@ -9,8 +9,15 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — Layerly" },
-      { name: "description", content: "Sign in to Layerly to get today's outfit for your baby." },
+      {
+        name: "description",
+        content:
+          "Sign in to Layerly to get today's baby outfit tailored to your weather, wardrobe, and preferences.",
+      },
+      { property: "og:title", content: "Sign in — Layerly" },
+      { property: "og:url", content: "https://layerly.online/auth" },
     ],
+    links: [{ rel: "canonical", href: "https://layerly.online/auth" }],
   }),
   component: AuthPage,
 });
