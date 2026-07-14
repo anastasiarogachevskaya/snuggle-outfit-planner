@@ -28,12 +28,17 @@ export type WardrobeSlug =
   // Accessories
   | "thin_hat"
   | "warm_hat"
+  | "sun_hat"
   | "balaclava"
   | "mittens"
   | "wool_socks"
   | "booties"
   | "winter_boots"
   | "neck_warmer"
+  // Sleep
+  | "sleep_sack_light"
+  | "sleep_sack_warm"
+  | "swaddle"
   // Transport
   | "stroller"
   | "footmuff"
