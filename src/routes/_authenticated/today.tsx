@@ -8,15 +8,12 @@ import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import {
   HomeIcon,
-  walkIconVariants,
-  carIconVariants,
+  WalkIcon,
+  CarIcon,
   PlayingIcon,
   SleepingIcon,
   ClothingIcon,
-  type IconProps,
 } from "@/components/icons";
-import type { ComponentType } from "react";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({
