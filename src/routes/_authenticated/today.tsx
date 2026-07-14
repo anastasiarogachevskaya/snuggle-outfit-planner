@@ -73,6 +73,7 @@ function TodayPage() {
   }, [ageMonths]);
 
   const [duration, setDuration] = useState<15 | 30 | 60>(30);
+  const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
 
   const owned = useMemo(
     () => new Set<WardrobeSlug>((wardrobeQ.data ?? []).filter((i) => i.owned).map((i) => i.slug as WardrobeSlug)),
@@ -92,8 +93,11 @@ function TodayPage() {
       isRaining: situation === "walk" ? isRaining : undefined,
       durationMin: duration,
       owned,
+      homeActivity: situation === "home" ? homeActivity : undefined,
+      ageMonths,
+      uvIndex: weatherQ.data.uvIndex,
     });
-  }, [babyQ.data, weatherQ.data, situation, roomTemp, transportMode, isRaining, duration, owned]);
+  }, [babyQ.data, weatherQ.data, situation, roomTemp, transportMode, isRaining, duration, owned, homeActivity, ageMonths]);
 
   const feedback = useMutation({
     mutationFn: async (rating: "comfortable" | "cold" | "warm") => {
