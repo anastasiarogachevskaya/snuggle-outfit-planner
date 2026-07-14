@@ -230,13 +230,13 @@ function BabyPage() {
               to="/wardrobe"
               title="Wardrobe"
               desc="Update what you own"
-              icon="👕"
+              icon={<img src={wardrobeIcon.url} alt="" className="w-6 h-6" />}
             />
             <NavCard
               to="/account"
               title="Account & data"
               desc="Sign out, export, delete"
-              icon="⚙"
+              icon={<span className="text-2xl">⚙</span>}
             />
           </div>
         )}
