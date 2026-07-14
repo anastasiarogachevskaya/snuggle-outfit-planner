@@ -126,6 +126,7 @@ function OnboardingWardrobe() {
                     label={i.label}
                     hint={i.hint}
                     emoji={i.emoji}
+                    slug={i.slug}
                     selected={selected.has(i.slug)}
                     onClick={() => toggle(i.slug)}
                     compact
@@ -178,6 +179,7 @@ function OnboardingWardrobe() {
             label={i.label}
             hint={i.hint}
             emoji={i.emoji}
+            slug={i.slug}
             selected={selected.has(i.slug)}
             onClick={() => toggle(i.slug)}
           />
