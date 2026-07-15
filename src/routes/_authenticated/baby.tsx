@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { WardrobeIcon, SettingsIcon } from "@/components/icons";
+import { WardrobeIcon, SettingsIcon, HeartIcon } from "@/components/icons";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
