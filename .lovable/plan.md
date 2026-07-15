@@ -1,19 +1,14 @@
-Replace the Walk activity icon with a Nordic-minimal outdoor/nature icon.
+Add a "Support Layerly" support row to the Baby Profile screen.
 
-## Proposed icon directions
-Choose one SVG concept for the Walk activity card:
+Changes:
+- Add a `HeartIcon` SVG to `src/components/icons/index.tsx` in the existing Nordic-minimal style (24x24, 1.75 stroke, rounded caps).
+- Update `src/routes/_authenticated/baby.tsx` to insert a new `SupportLayerly` row directly below the Settings row.
+- The row will reuse the existing `NavCard` pattern (same spacing, typography, circular icon background, chevron) and link to `https://buymeacoffee.com/nastasija` using a standard `<a>` with `target="_blank"` and `rel="noopener noreferrer"` so it opens in the system browser.
+- The row will be optional, non-intrusive, and appear only after a baby profile exists (same condition as the Wardrobe/Settings rows).
 
-1. **Simple tree** — rounded evergreen / lollipop tree with a short trunk and 2–3 soft tiers.
-2. **Tree + path** — a small tree plus a gentle curved path line to suggest "going outside".
-3. **Tree + sun** — a small tree with a tiny radiating sun, keeping the outdoor idea readable.
-
-All options stay within the existing icon system: 24×24 viewBox, 1.75px stroke, `currentColor`, rounded caps/joins, no fill.
-
-## Implementation
-1. **Update `src/components/icons/index.tsx`** — replace the `WalkIcon` SVG with the chosen outdoor icon. Keep the same component signature (`IconProps`) so the existing `today.tsx` import and sizing work unchanged.
-2. **Visual check** — verify the icon renders clearly inside the activity selector cards at both selected (dark green) and unselected (muted/white) states.
-3. **Build check** — run `bun run build` to confirm no TypeScript/JSX errors from the SVG path changes.
-
-No other files need to change; the activity label stays "Walk" unless you also want to rename it to "Outside" or "Outdoors".
-
-Which icon direction do you prefer — 1, 2, or 3?
+Acceptance criteria:
+- "Support Layerly" appears directly below "Settings".
+- The row visually matches the existing Wardrobe and Settings rows.
+- Tapping it opens `https://buymeacoffee.com/nastasija` in the system browser.
+- No donation prompts or popups are shown automatically.
+- Supporting remains completely optional.
