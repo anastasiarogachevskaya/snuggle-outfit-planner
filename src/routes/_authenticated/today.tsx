@@ -491,18 +491,40 @@ function TodayPage() {
 
         {/* Feedback */}
         <section className="bg-accent/5 rounded-3xl p-6 border border-accent/10">
-          <h3 className="text-center font-serif text-lg mb-4">How is {baby.name} feeling?</h3>
+          <h3 className="text-center font-serif text-lg mb-1">How was today's outfit?</h3>
+          <p className="text-center text-xs text-ink/50 mb-4">
+            Your feedback helps Layerly learn what works for {baby.name}.
+          </p>
           <div className="flex justify-between items-center gap-2">
-            <FeedbackBtn emoji="🥶" label="Too cold" onClick={() => feedback.mutate("cold")} />
+            <FeedbackBtn
+              emoji="🥶"
+              label="Too cold"
+              disabled={feedback.isPending}
+              onClick={() => feedback.mutate("cold")}
+            />
             <FeedbackBtn
               emoji="😊"
               label="Just right"
               primary
+              disabled={feedback.isPending}
               onClick={() => feedback.mutate("comfortable")}
             />
-            <FeedbackBtn emoji="🥵" label="Too warm" onClick={() => feedback.mutate("warm")} />
+            <FeedbackBtn
+              emoji="🥵"
+              label="Too warm"
+              disabled={feedback.isPending}
+              onClick={() => feedback.mutate("warm")}
+            />
           </div>
+          {confirmation && (
+            <div className="mt-4 rounded-2xl bg-white/70 border border-accent/20 px-4 py-3 text-center text-sm text-ink/80 animate-in fade-in">
+              {confirmation === "comfortable" && "😊 Thanks! We'll remember this recommendation worked well."}
+              {confirmation === "cold" && "🥶 Thanks! We'll make future recommendations slightly warmer."}
+              {confirmation === "warm" && "🥵 Thanks! We'll make future recommendations slightly lighter."}
+            </div>
+          )}
         </section>
+
 
         {/* Footer nav */}
         <footer className="mt-10 pt-6 border-t border-black/5 flex justify-between text-sm">
