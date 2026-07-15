@@ -1,45 +1,37 @@
-## Goal
-Turn the feedback prompt into a rich data-collection surface that stores full recommendation context for future learning — without changing recommendation logic yet.
+## What's wrong
 
-## 1. Database (migration)
-Extend `public.feedback` with columns to capture full context. Keep existing rows valid (all new columns nullable):
-- `baby_age_months` int
-- `activity` text (mirrors `situation`, kept for clarity; keep existing `situation` too)
-- `home_activity` text ('playing' | 'sleeping')
-- `transport_mode` text ('pram' | 'sitting-stroller' | 'carrier')
-- `duration_min` int
-- `room_temp_c` double precision
-- `weather_condition` text
-- `uv_index` double precision
-- `wind_kph` double precision
-- `temperature_pref` int (baby's warmth pref at time of feedback)
-- `recommended_clothing` jsonb (subset of recommendation)
-- `recommended_transport_extras` jsonb
-- `feedback_details` jsonb (reserved for future follow-ups: `{ areas: ['head','body','legs','feet','not_sure'] }`)
+The public routes render cleanly at 393px (no horizontal scroll confirmed via Playwright). The real mobile issue is **iOS Safari auto-zooming when a form field is focused**, because our inputs use `text-sm` (14px) and iOS zooms whenever an input's font-size is under 16px. Once zoomed in, iOS doesn't zoom back out, which reads as "the page zoomed and won't reset."
 
-Existing `rating` column keeps values `comfortable | cold | warm`. Existing `recommendation` jsonb stays as full snapshot.
+Affected inputs:
+- `src/routes/auth.tsx` — email + password (`text-sm`)
+- `src/routes/_authenticated/baby.tsx` — name, date, location (`.input` uses `.875rem`)
+- Any future `<input>/<select>/<textarea>` in the app
 
-RLS/GRANTs unchanged (already scoped by baby ownership).
+Viewport meta is already correct (`width=device-width, initial-scale=1`, no `maximum-scale` — we keep it that way for accessibility; fixing font-size is the right remedy).
 
-## 2. UI changes in `src/routes/_authenticated/today.tsx`
-- Rename section heading from "How is {name} feeling?" to **"How was today's outfit?"** with subcopy "Your feedback helps Layerly learn what works for {name}."
-- Keep the three buttons: 🥶 Too cold · 😊 Just right · 🥵 Too warm.
-- On submit, insert into `feedback` with all new context fields populated from current state (`baby`, `weather`, `rec`, `situation`, `homeActivity`, `transportMode`, `duration`, `roomTemp`).
-- Replace the generic toast with an inline confirmation card below the buttons that shows for ~4 seconds then fades:
-  - Just right → "😊 Thanks! We'll remember this recommendation worked well."
-  - Too cold → "🥶 Thanks! We'll make future recommendations slightly warmer."
-  - Too warm → "🥵 Thanks! We'll make future recommendations slightly lighter."
-- Disable buttons while the mutation is in flight; on error, keep current toast.error behavior.
+## Changes
 
-## 3. No recommendation-logic changes
-`src/lib/recommend.ts` is untouched. Personalization / auto-tuning is deferred; the schema is shaped to support it later (per-baby aggregates on `rating` × `feels_like_c` × `temperature_pref` × `activity`).
+**1. `src/styles.css` — global safety net**
 
-## 4. Future-ready (not implemented now)
-- `feedback_details` jsonb leaves room for the "What felt too warm/cold?" follow-up (head/body/legs/feet/not_sure).
-- All fields needed for analytics (accuracy %, failure temp bands, warmth-pref suggestions) are captured on every submission.
+Add one base rule so every form control renders at ≥16px on mobile (scoped to `max-width: 640px` so desktop keeps compact 14px look):
 
-## Acceptance
-- Every feedback tap writes a row with full context (verifiable via a quick DB read).
-- Section reads "How was today's outfit?".
-- Inline rating-specific confirmation appears then auto-dismisses.
-- No visible change to recommendations.
+```css
+@layer base {
+  html, body { overflow-x: hidden; }         /* prevent any stray horizontal scroll */
+  @media (max-width: 640px) {
+    input, select, textarea { font-size: 16px; }
+  }
+}
+```
+
+**2. No component changes required** — the global rule covers `auth.tsx`, `baby.tsx`, and every future input without touching individual class strings. Range inputs (temperature slider) are unaffected visually.
+
+## Verification
+
+- Playwright at 393×698 already shows `scrollWidth === clientWidth` on `/`, `/auth`. After the change, re-run and confirm still no overflow.
+- Manually: focusing the email field on iOS should no longer trigger the zoom-in animation.
+
+## Not changing
+
+- Viewport meta (`maximum-scale` / `user-scalable=no` would break accessibility).
+- Any layout, spacing, or component structure — the audit shows current `max-w-md` + `px-6` + `flex-wrap`/grid patterns are already mobile-safe.
