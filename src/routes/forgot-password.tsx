@@ -25,9 +25,11 @@ function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
     setBusy(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -37,11 +39,14 @@ function ForgotPasswordPage() {
       setSent(true);
       toast.success("Check your email for a reset link");
     } catch (err: any) {
-      toast.error(err.message ?? "Something went wrong");
+      const msg = err?.message ?? "Something went wrong";
+      setErrorMsg(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-canvas font-sans">
@@ -86,14 +91,20 @@ function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-2xl border border-black/10 bg-canvas/60 px-4 py-3 text-sm outline-none focus:border-primary/40"
               />
+              {errorMsg && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                  {errorMsg}
+                </p>
+              )}
               <button
                 type="submit"
-                disabled={busy}
+                disabled={busy || !email}
                 className="w-full rounded-2xl bg-primary text-primary-foreground py-3 font-medium shadow-md shadow-primary/20 disabled:opacity-50"
               >
                 {busy ? "Sending…" : "Send reset link"}
               </button>
             </form>
+
           )}
         </div>
       </div>

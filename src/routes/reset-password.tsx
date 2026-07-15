@@ -68,8 +68,10 @@ function ResetPasswordPage() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      toast.success("Password updated");
-      navigate({ to: "/today", replace: true });
+      await supabase.auth.signOut();
+      toast.success("Password updated — please sign in");
+      navigate({ to: "/auth", replace: true });
+
     } catch (err: any) {
       toast.error(err.message ?? "Something went wrong");
     } finally {
@@ -101,14 +103,18 @@ function ResetPasswordPage() {
               <p className="text-sm text-ink/80">
                 This reset link is invalid or has expired.
               </p>
+              <p className="text-xs text-ink/50">
+                Reset links expire after 1 hour.
+              </p>
               <Link
                 to="/forgot-password"
-                className="inline-block text-primary font-medium text-sm"
+                className="inline-block rounded-2xl bg-primary text-primary-foreground px-4 py-2 text-sm font-medium shadow-md shadow-primary/20"
               >
                 Request a new link
               </Link>
             </div>
           )}
+
 
           {ready === "ok" && (
             <form onSubmit={submit} className="space-y-3">
