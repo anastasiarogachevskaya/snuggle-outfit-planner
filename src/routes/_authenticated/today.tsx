@@ -120,22 +120,41 @@ function TodayPage() {
     });
   }, [babyQ.data, weatherQ.data, situation, roomTemp, transportMode, isRaining, duration, owned, homeActivity, ageMonths]);
 
+  const [confirmation, setConfirmation] = useState<null | "cold" | "comfortable" | "warm">(null);
+
   const feedback = useMutation({
     mutationFn: async (rating: "comfortable" | "cold" | "warm") => {
       if (!babyQ.data || !weatherQ.data || !rec) return;
       const { error } = await supabase.from("feedback").insert({
         baby_id: babyQ.data.id,
         situation,
+        activity: situation,
+        home_activity: situation === "home" ? homeActivity : null,
+        transport_mode: situation === "walk" ? transportMode : null,
+        duration_min: situation === "home" ? null : duration,
+        room_temp_c: situation === "home" ? roomTemp : null,
         temp_c: weatherQ.data.tempC,
         feels_like_c: weatherQ.data.feelsLikeC,
+        weather_condition: weatherQ.data.condition,
+        uv_index: weatherQ.data.uvIndex ?? null,
+        wind_kph: weatherQ.data.windKph,
+        baby_age_months: ageMonths,
+        temperature_pref: babyQ.data.temperature_pref,
         recommendation: rec as any,
+        recommended_clothing: [...rec.babyClothing, ...rec.accessories, ...rec.sleepAccessories] as any,
+        recommended_transport_extras: rec.transportExtras as any,
+        feedback_details: null,
         rating,
       });
       if (error) throw error;
     },
-    onSuccess: () => toast.success("Thanks — we'll remember that."),
+    onSuccess: (_data, rating) => {
+      setConfirmation(rating);
+      setTimeout(() => setConfirmation((c) => (c === rating ? null : c)), 4000);
+    },
     onError: (e: any) => toast.error(e.message ?? "Couldn't save"),
   });
+
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -472,18 +491,40 @@ function TodayPage() {
 
         {/* Feedback */}
         <section className="bg-accent/5 rounded-3xl p-6 border border-accent/10">
-          <h3 className="text-center font-serif text-lg mb-4">How is {baby.name} feeling?</h3>
+          <h3 className="text-center font-serif text-lg mb-1">How was today's outfit?</h3>
+          <p className="text-center text-xs text-ink/50 mb-4">
+            Your feedback helps Layerly learn what works for {baby.name}.
+          </p>
           <div className="flex justify-between items-center gap-2">
-            <FeedbackBtn emoji="🥶" label="Too cold" onClick={() => feedback.mutate("cold")} />
+            <FeedbackBtn
+              emoji="🥶"
+              label="Too cold"
+              disabled={feedback.isPending}
+              onClick={() => feedback.mutate("cold")}
+            />
             <FeedbackBtn
               emoji="😊"
               label="Just right"
               primary
+              disabled={feedback.isPending}
               onClick={() => feedback.mutate("comfortable")}
             />
-            <FeedbackBtn emoji="🥵" label="Too warm" onClick={() => feedback.mutate("warm")} />
+            <FeedbackBtn
+              emoji="🥵"
+              label="Too warm"
+              disabled={feedback.isPending}
+              onClick={() => feedback.mutate("warm")}
+            />
           </div>
+          {confirmation && (
+            <div className="mt-4 rounded-2xl bg-white/70 border border-accent/20 px-4 py-3 text-center text-sm text-ink/80 animate-in fade-in">
+              {confirmation === "comfortable" && "😊 Thanks! We'll remember this recommendation worked well."}
+              {confirmation === "cold" && "🥶 Thanks! We'll make future recommendations slightly warmer."}
+              {confirmation === "warm" && "🥵 Thanks! We'll make future recommendations slightly lighter."}
+            </div>
+          )}
         </section>
+
 
         {/* Footer nav */}
         <footer className="mt-10 pt-6 border-t border-black/5 flex justify-between text-sm">
@@ -543,15 +584,18 @@ function FeedbackBtn({
   emoji,
   label,
   primary,
+  disabled,
   onClick,
 }: {
   emoji: string;
   label: string;
   primary?: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
-    <button onClick={onClick} className="flex-1 flex flex-col items-center gap-2 group">
+    <button onClick={onClick} disabled={disabled} className="flex-1 flex flex-col items-center gap-2 group disabled:opacity-50">
+
       <div
         className={
           "rounded-full bg-white border flex items-center justify-center group-active:scale-95 transition-transform shadow-sm " +
