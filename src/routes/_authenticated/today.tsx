@@ -584,15 +584,18 @@ function FeedbackBtn({
   emoji,
   label,
   primary,
+  disabled,
   onClick,
 }: {
   emoji: string;
   label: string;
   primary?: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
-    <button onClick={onClick} className="flex-1 flex flex-col items-center gap-2 group">
+    <button onClick={onClick} disabled={disabled} className="flex-1 flex flex-col items-center gap-2 group disabled:opacity-50">
+
       <div
         className={
           "rounded-full bg-white border flex items-center justify-center group-active:scale-95 transition-transform shadow-sm " +
