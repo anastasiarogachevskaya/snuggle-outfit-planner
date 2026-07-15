@@ -40,12 +40,10 @@ export const HomeIcon = (p: IconProps) => (
 
 export const WalkIcon = (p: IconProps) => (
   <Svg {...p}>
-    {/* person walking, mid-stride */}
-    <circle cx="13" cy="4.5" r="1.8" />
-    <path d="M13 7.5c-1.2 0-2 .7-2.4 1.7L9 13l-2 1.5" />
-    <path d="M10.6 9.2l2.2 2.3-.6 3.2 2.4 4.3" />
-    <path d="M12.6 14.7 9.8 19.5" />
-    <path d="M14.6 11.5l2.4 1.2" />
+    {/* outdoor tree */}
+    <path d="M12 20V16" />
+    <path d="M12 4 6 11h12L12 4Z" />
+    <path d="M12 9 7 16h10L12 9Z" />
   </Svg>
 );
 
