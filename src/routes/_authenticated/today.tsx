@@ -120,22 +120,41 @@ function TodayPage() {
     });
   }, [babyQ.data, weatherQ.data, situation, roomTemp, transportMode, isRaining, duration, owned, homeActivity, ageMonths]);
 
+  const [confirmation, setConfirmation] = useState<null | "cold" | "comfortable" | "warm">(null);
+
   const feedback = useMutation({
     mutationFn: async (rating: "comfortable" | "cold" | "warm") => {
       if (!babyQ.data || !weatherQ.data || !rec) return;
       const { error } = await supabase.from("feedback").insert({
         baby_id: babyQ.data.id,
         situation,
+        activity: situation,
+        home_activity: situation === "home" ? homeActivity : null,
+        transport_mode: situation === "walk" ? transportMode : null,
+        duration_min: situation === "home" ? null : duration,
+        room_temp_c: situation === "home" ? roomTemp : null,
         temp_c: weatherQ.data.tempC,
         feels_like_c: weatherQ.data.feelsLikeC,
+        weather_condition: weatherQ.data.condition,
+        uv_index: weatherQ.data.uvIndex ?? null,
+        wind_kph: weatherQ.data.windKph,
+        baby_age_months: ageMonths,
+        temperature_pref: babyQ.data.temperature_pref,
         recommendation: rec as any,
+        recommended_clothing: [...rec.babyClothing, ...rec.accessories, ...rec.sleepAccessories] as any,
+        recommended_transport_extras: rec.transportExtras as any,
+        feedback_details: null,
         rating,
       });
       if (error) throw error;
     },
-    onSuccess: () => toast.success("Thanks — we'll remember that."),
+    onSuccess: (_data, rating) => {
+      setConfirmation(rating);
+      setTimeout(() => setConfirmation((c) => (c === rating ? null : c)), 4000);
+    },
     onError: (e: any) => toast.error(e.message ?? "Couldn't save"),
   });
+
 
   const signOut = async () => {
     await qc.cancelQueries();
