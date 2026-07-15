@@ -246,6 +246,16 @@ function BabyPage() {
                 </span>
               }
             />
+            <NavCard
+              href="https://buymeacoffee.com/nastasija"
+              title="Support Layerly"
+              desc="Help support independent development"
+              icon={
+                <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center text-primary">
+                  <HeartIcon size={22} />
+                </span>
+              }
+            />
           </div>
         )}
 
@@ -273,26 +283,40 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function NavCard({
   to,
+  href,
   title,
   desc,
   icon,
 }: {
-  to: "/wardrobe" | "/account";
+  to?: "/wardrobe" | "/account";
+  href?: string;
   title: string;
   desc: string;
   icon: React.ReactNode;
 }) {
-  return (
-    <Link
-      to={to}
-      className="flex items-center gap-3 p-4 rounded-2xl bg-surface border border-black/5 hover:border-primary/30 transition-colors"
-    >
+  const className = "flex items-center gap-3 p-4 rounded-2xl bg-surface border border-black/5 hover:border-primary/30 transition-colors";
+  const children = (
+    <>
       <span className="inline-flex items-center justify-center" aria-hidden>{icon}</span>
       <div className="flex-1">
         <p className="text-sm font-medium">{title}</p>
         <p className="text-xs text-ink/50">{desc}</p>
       </div>
       <span className="text-primary">→</span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <Link to={to!} className={className}>
+      {children}
     </Link>
   );
 }
