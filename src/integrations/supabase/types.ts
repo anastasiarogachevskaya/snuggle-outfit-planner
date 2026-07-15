@@ -55,34 +55,73 @@ export type Database = {
       }
       feedback: {
         Row: {
+          activity: string | null
+          baby_age_months: number | null
           baby_id: string
           created_at: string
+          duration_min: number | null
+          feedback_details: Json | null
           feels_like_c: number | null
+          home_activity: string | null
           id: string
           rating: string
           recommendation: Json | null
+          recommended_clothing: Json | null
+          recommended_transport_extras: Json | null
+          room_temp_c: number | null
           situation: string
           temp_c: number | null
+          temperature_pref: number | null
+          transport_mode: string | null
+          uv_index: number | null
+          weather_condition: string | null
+          wind_kph: number | null
         }
         Insert: {
+          activity?: string | null
+          baby_age_months?: number | null
           baby_id: string
           created_at?: string
+          duration_min?: number | null
+          feedback_details?: Json | null
           feels_like_c?: number | null
+          home_activity?: string | null
           id?: string
           rating: string
           recommendation?: Json | null
+          recommended_clothing?: Json | null
+          recommended_transport_extras?: Json | null
+          room_temp_c?: number | null
           situation: string
           temp_c?: number | null
+          temperature_pref?: number | null
+          transport_mode?: string | null
+          uv_index?: number | null
+          weather_condition?: string | null
+          wind_kph?: number | null
         }
         Update: {
+          activity?: string | null
+          baby_age_months?: number | null
           baby_id?: string
           created_at?: string
+          duration_min?: number | null
+          feedback_details?: Json | null
           feels_like_c?: number | null
+          home_activity?: string | null
           id?: string
           rating?: string
           recommendation?: Json | null
+          recommended_clothing?: Json | null
+          recommended_transport_extras?: Json | null
+          room_temp_c?: number | null
           situation?: string
           temp_c?: number | null
+          temperature_pref?: number | null
+          transport_mode?: string | null
+          uv_index?: number | null
+          weather_condition?: string | null
+          wind_kph?: number | null
         }
         Relationships: [
           {
