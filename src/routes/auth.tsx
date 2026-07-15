@@ -152,6 +152,13 @@ function AuthPage() {
             >
               {mode === "signin" ? "Sign in" : "Create account"}
             </button>
+            {mode === "signin" && (
+              <div className="text-center pt-1">
+                <Link to="/forgot-password" className="text-sm text-primary font-medium">
+                  Forgot password?
+                </Link>
+              </div>
+            )}
           </form>
 
           <p className="mt-5 text-center text-sm text-ink/60">
