@@ -1,0 +1,24 @@
+{
+  "name": "Layerly — What should baby wear today?",
+  "short_name": "Layerly",
+  "description": "Layerly turns today's weather into a simple layered outfit for your baby, using clothes you already own.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF9F6",
+  "theme_color": "#7D8F69",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
