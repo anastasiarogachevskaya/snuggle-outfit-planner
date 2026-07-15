@@ -25,8 +25,24 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const navigate = useNavigate();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        navigate({ to: "/today", replace: true });
+      } else {
+        setChecking(false);
+      }
+    });
+  }, [navigate]);
+
+  if (checking) return <div className="min-h-screen bg-canvas" />;
+
   return (
     <div className="min-h-screen bg-canvas">
+
       <div className="mx-auto max-w-md px-6 py-10 font-sans">
         <header className="flex items-center justify-between mb-16">
           <span className="font-serif text-lg font-semibold">Layerly</span>
