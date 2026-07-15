@@ -25,9 +25,11 @@ function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
     setBusy(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -37,11 +39,14 @@ function ForgotPasswordPage() {
       setSent(true);
       toast.success("Check your email for a reset link");
     } catch (err: any) {
-      toast.error(err.message ?? "Something went wrong");
+      const msg = err?.message ?? "Something went wrong";
+      setErrorMsg(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-canvas font-sans">
