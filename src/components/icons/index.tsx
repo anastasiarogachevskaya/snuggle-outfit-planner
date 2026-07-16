@@ -311,6 +311,13 @@ export const SocksIcon = (p: IconProps) => (
     <path d="M9 8h6" />
   </Svg>
 );
+export const CottonSocksIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M9 3v9l-4 4a2.5 2.5 0 0 0 0 3.5l1.5 1.5a2.5 2.5 0 0 0 3.5 0l6.5-6.5a3 3 0 0 0 .5-3.5L15 8V3Z" />
+    <path d="M9 6h6" />
+    <path d="M9 10h6" />
+  </Svg>
+);
 export const WoolSocksIcon = SocksIcon;
 
 export const BootiesIcon = (p: IconProps) => (
@@ -457,6 +464,7 @@ export const iconMap: Record<WardrobeSlug, (p: IconProps) => ReactElement> = {
   sun_hat: SunHatIcon,
   balaclava: BalaclavaIcon,
   mittens: MittensIcon,
+  cotton_socks: CottonSocksIcon,
   wool_socks: WoolSocksIcon,
   booties: BootiesIcon,
   winter_boots: WinterBootsIcon,
