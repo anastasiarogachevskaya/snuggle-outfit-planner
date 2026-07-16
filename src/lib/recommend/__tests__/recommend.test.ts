@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, it, expect } from "bun:test";
 import { recommend } from "../../recommend";
 import type { WardrobeSlug } from "../../wardrobe-catalog";
