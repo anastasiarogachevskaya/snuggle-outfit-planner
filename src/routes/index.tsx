@@ -75,7 +75,7 @@ function Landing() {
             <li>· Long-sleeve bodysuit</li>
             <li>· Ribbed leggings</li>
             <li>· Fleece overall</li>
-            <li>· Wool hat &amp; socks</li>
+            <li>· Wool hat &amp; warm socks</li>
           </ul>
         </div>
 
