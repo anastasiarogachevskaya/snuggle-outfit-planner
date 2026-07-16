@@ -1,4 +1,4 @@
-/// <reference types="bun" />
+// @ts-expect-error bun:test is provided by the bun test runner
 import { describe, it, expect } from "bun:test";
 import { recommend } from "../../recommend";
 import type { WardrobeSlug } from "../../wardrobe-catalog";
