@@ -31,6 +31,7 @@ export type WardrobeSlug =
   | "sun_hat"
   | "balaclava"
   | "mittens"
+  | "cotton_socks"
   | "wool_socks"
   | "booties"
   | "winter_boots"
@@ -116,6 +117,7 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
       { slug: "sun_hat", label: "Sun hat", hint: "Brim for shade", emoji: "👒" },
       { slug: "balaclava", label: "Balaclava", hint: "Head & neck", emoji: "🥶" },
       { slug: "mittens", label: "Mittens", hint: "For cold days", emoji: "🧤" },
+      { slug: "cotton_socks", label: "Cotton socks", hint: "Everyday socks", emoji: "🧦" },
       { slug: "wool_socks", label: "Wool socks", hint: "Warm feet", emoji: "🧦" },
       { slug: "booties", label: "Booties", hint: "Soft shoes", emoji: "👟" },
       { slug: "winter_boots", label: "Winter boots", hint: "For snow", emoji: "🥾" },
@@ -166,6 +168,7 @@ export const QUICK_SETUP_OWNED: WardrobeSlug[] = [
   "sweater",
   "thin_hat",
   "warm_hat",
+  "cotton_socks",
   "wool_socks",
   "stroller",
 ];
