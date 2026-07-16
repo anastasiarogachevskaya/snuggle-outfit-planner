@@ -291,6 +291,7 @@ function recommendHome(args: {
       } else {
         suggest("sleep_sack_light", "Light sleep sack");
       }
+      if (roomTempC < 22) accessories.push(A("cotton_socks", "Cotton socks"));
       reason = `Room is ~${Math.round(roomTempC)}°C — pajamas with a light sleep sack.`;
     } else {
       // 18–20 (and below)
@@ -306,6 +307,8 @@ function recommendHome(args: {
       } else {
         missingHelpfulItems.push(A("sleep_sack_warm", "Warm sleep sack"));
       }
+      if (roomTempC < 18) accessories.push(A("wool_socks", "Warm socks"));
+      else accessories.push(A("cotton_socks", "Cotton socks"));
       reason = `Room is ~${Math.round(roomTempC)}°C — pajamas and a sleep sack for warmth.`;
     }
   } else {
