@@ -157,7 +157,8 @@ export function recommend(input: RecommendInput): Recommendation {
   }
 
   // Socks
-  if (effective < 20) accessories.push(A("wool_socks", "Warm socks"));
+  if (effective < 12) accessories.push(A("wool_socks", "Warm socks"));
+  else if (effective < 24) accessories.push(A("cotton_socks", "Cotton socks"));
 
   // Mittens
   if (effective < 4) accessories.push(A("mittens", "Mittens"));
@@ -332,7 +333,8 @@ function recommendHome(args: {
       babyClothing.push(L("base", "long_sleeve_bodysuit", "Long-sleeve bodysuit"));
       babyClothing.push(L("bottom", "leggings", "Leggings"));
       babyClothing.push(L("mid", "sweater", "Sweater"));
-      accessories.push(A("wool_socks", "Warm socks"));
+      if (roomTempC < 12) accessories.push(A("wool_socks", "Warm socks"));
+      else if (roomTempC < 24) accessories.push(A("cotton_socks", "Cotton socks"));
       reason = `Room is ~${Math.round(roomTempC)}°C — add a mid layer to keep baby warm.`;
     }
   }
