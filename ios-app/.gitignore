@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+web/node_modules/
+
+# Web build output (built in CI or locally before cap sync)
+web/dist/
+web/.output/
+web/.nitro/
+web/.tanstack/
+
+# Capacitor / Xcode build artifacts
+ios/App/Pods/
+ios/App/build/
+ios/App/App/public/
+ios/DerivedData/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/App.xcodeproj/project.xcworkspace/xcuserdata/
+
+# macOS
+.DS_Store
+
+# Env
+.env
+.env.local
