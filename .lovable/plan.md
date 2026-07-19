@@ -1,30 +1,61 @@
-## Problem
 
-The `ios-app/` folder was added to `.gitignore` last turn. Lovable's file state is backed by git, so anything gitignored isn't tracked and effectively vanishes from the project — that's why you can't find it. Confirmed just now: `ls ios-app/` returns "No such file or directory", and `.gitignore` still contains `ios-app/`.
+## What's happening
 
-## Fix
+Two separate issues in your terminal output:
 
-Recreate the scaffold and keep it tracked in the web repo as a plain subfolder. You extract it manually into a new repo when you're ready — the two-repo split happens at push time, not in Lovable.
+1. **`npm error Missing script: "build"`** — Your `web/` folder currently only contains the placeholder `README.md` from the scaffold. The actual Layerly web repo was never added as a submodule, so there's no `package.json` with a `build` script inside `web/`.
+2. **`ios platform has not been added yet`** — The Xcode project (`ios/` folder) doesn't exist in your local repo. It needs to be generated once with `npx cap add ios`.
 
-## Changes
+## Fix (run from `~/Layerly-iOS-app`)
 
-1. **`.gitignore`** — remove the `ios-app/` entry (and its comment) so the folder is tracked.
-2. **Recreate `ios-app/` scaffold** (same contents as before):
-   - `ios-app/README.md` — setup guide: how to copy this folder into a new GitHub repo, add the web repo as a git submodule at `web/`, run `npx cap add ios`, open in Xcode.
-   - `ios-app/package.json` — Capacitor 7.x core + CLI + iOS + plugins (`app`, `geolocation`, `preferences`, `splash-screen`, `status-bar`, `@capacitor-community/apple-sign-in`).
-   - `ios-app/capacitor.config.ts` — production config: `appId: online.layerly.app`, `server.url: https://www.layerly.online`.
-   - `ios-app/capacitor.config.local.ts` — local dev config: `webDir: web/dist`, no `server.url`.
-   - `ios-app/.gitignore` — for the future standalone repo: ignore `node_modules/`, `ios/App/Pods/`, `ios/App/build/`, `web/dist/`, `web/node_modules/`.
-   - `ios-app/web/README.md` — placeholder explaining that `web/` becomes a git submodule pointing at the Lovable-synced web repo.
-   - `ios-app/.github/workflows/build-ios.yml` — CI stub: checkout with submodules, build web, `npx cap sync ios`, archive, TestFlight upload placeholder.
+### Step 1 — Replace the placeholder `web/` with the real submodule
 
-## What you do after
+```bash
+# remove the placeholder folder that shipped with the scaffold
+rm -rf web
 
-1. Download the codebase (or copy `ios-app/` out of the Lovable file tree).
-2. Create a new empty GitHub repo, push the contents of `ios-app/` to it.
-3. In that new repo: `git submodule add <web-repo-url> web`, then `cd ios-app && bun install && cd web && bun install && bun run build && cd .. && npx cap add ios`.
-4. Open `ios/App/App.xcworkspace` in Xcode.
+# add your Lovable-synced web repo as a submodule
+git submodule add https://github.com/<your-username>/<your-web-repo>.git web
+git submodule update --init --recursive
+```
 
-## Out of scope
+Replace `<your-username>/<your-web-repo>` with the GitHub repo Lovable syncs this project to. After this, `web/package.json` will exist and `npm run build` inside `web/` will work.
 
-No changes to the web app itself — the wrapper loads `https://www.layerly.online` and needs no web-side edits.
+### Step 2 — Build the web bundle
+
+```bash
+cd web
+npm install
+npm run build
+cd ..
+```
+
+### Step 3 — Switch to local config and add the iOS platform
+
+```bash
+cp capacitor.config.local.ts capacitor.config.ts
+npx cap add ios
+npx cap sync ios
+npx cap open ios
+```
+
+`npx cap add ios` is the one-time step that creates `ios/App/App.xcodeproj`. After that, `sync` and `open` will work on every subsequent build.
+
+## Alternative — skip the submodule entirely
+
+If you only want the wrapper to load the live site at `https://www.layerly.online` (no offline bundle), you don't need the `web/` submodule at all. Just:
+
+```bash
+rm -rf web
+# keep the default production capacitor.config.ts (do NOT copy the .local one)
+npx cap add ios
+npx cap sync ios
+npx cap open ios
+```
+
+## What I need from you before continuing
+
+Tell me which path you want:
+
+- **A.** Bundled/offline builds → I'll update `ios-app/README.md` with the exact `git submodule add` command once you share your web repo's GitHub URL.
+- **B.** Live-site-only wrapper → I'll simplify the scaffold: drop the `web/` folder and `capacitor.config.local.ts`, and clean up the README so this confusion doesn't happen again.
