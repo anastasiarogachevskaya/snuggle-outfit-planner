@@ -31,5 +31,3 @@ dist-ssr
 *.sln
 *.sw?
 
-# iOS app wrapper lives in its own repo
-ios-app/
