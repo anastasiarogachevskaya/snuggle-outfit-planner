@@ -72,7 +72,7 @@ function WardrobePage() {
 
   if (!babyQ.data) {
     return (
-      <div className="min-h-screen bg-canvas font-sans p-6 max-w-md mx-auto">
+        <div className="mx-auto min-h-screen w-full max-w-md overflow-x-hidden bg-canvas p-6 font-sans">
         <Link to="/today" className="text-sm text-ink/60">← Today</Link>
         <p className="mt-8 text-ink/60">Set up a baby profile first.</p>
         <Link to="/baby" className="mt-4 inline-block text-primary font-medium">Baby profile →</Link>
@@ -83,8 +83,8 @@ function WardrobePage() {
   const groups = Array.from(new Set(WARDROBE_CATALOG.map((i) => i.group)));
 
   return (
-    <div className="min-h-screen bg-canvas font-sans text-ink">
-      <div className="mx-auto max-w-md px-6 py-8">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas font-sans text-ink">
+      <div className="mx-auto w-full max-w-md min-w-0 px-6 py-8">
         <Link to="/baby" className="text-sm text-ink/60">
           ← Baby profile
         </Link>
@@ -109,7 +109,7 @@ function WardrobePage() {
                         toggle.mutate({ slug: item.slug as WardrobeSlug, owned: !owned })
                       }
                       className={
-                        "w-full flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left " +
+                        "w-full min-w-0 flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left " +
                         (owned
                           ? "bg-surface border-primary/30"
                           : "bg-canvas/60 border-black/5 opacity-60")
@@ -117,7 +117,7 @@ function WardrobePage() {
                     >
                       <div
                         className={
-                          "size-6 rounded-full flex items-center justify-center text-xs " +
+                          "size-6 shrink-0 rounded-full flex items-center justify-center text-xs " +
                           (owned
                             ? "bg-primary text-primary-foreground"
                             : "bg-white border border-black/10")
@@ -125,10 +125,10 @@ function WardrobePage() {
                       >
                         {owned ? "✓" : ""}
                       </div>
-                      <span className={"inline-flex items-center justify-center " + (owned ? "text-primary" : "text-ink/50")}>
+                      <span className={"inline-flex shrink-0 items-center justify-center " + (owned ? "text-primary" : "text-ink/50")}>
                         <ClothingIcon slug={item.slug as WardrobeSlug} size={22} />
                       </span>
-                      <span className="text-sm font-medium">{item.label}</span>
+                      <span className="min-w-0 break-words text-sm font-medium">{item.label}</span>
                     </button>
                   );
                 })}

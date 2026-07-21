@@ -21,7 +21,8 @@ const config: CapacitorConfig = {
   },
   ios: {
     scheme: 'Layerly',
-    contentInset: 'always',
+    contentInset: 'never',
+    backgroundColor: '#A8B894',
   },
   plugins: {
     SplashScreen: {
