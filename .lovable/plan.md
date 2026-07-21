@@ -1,60 +1,20 @@
-## What the logs actually say
+## Plan
 
-The Xcode messages you pasted are **warnings, not errors** — the build succeeded:
+1. **Keep Layerly inside the iOS app**
+   - Update the Capacitor iOS config so the app loads the canonical `layerly.online` origin and allows all Layerly/auth hosts needed for redirects.
+   - Change iOS safe-area behavior from forced inset handling to WebView-friendly behavior to avoid the blank shell / odd scrolling effect.
+   - Add a native background color matching Layerly so launch-to-web rendering does not flash black/white.
 
-- `WKProcessPool deprecated` — comes from Capacitor's Cordova compatibility layer. Harmless; will be fixed in a future Capacitor release. Ignore.
-- `[CP] Embed Pods Frameworks / Copy XCFrameworks will run every build` — CocoaPods housekeeping warning. Harmless.
+2. **Remove WebView horizontal overflow**
+   - Audit the mobile layout wrappers for elements wider than the viewport.
+   - Add global mobile-safe sizing (`box-sizing`, constrained body/root width, overflow clipping) without changing the visual design.
+   - Patch any route-level mobile layout that can exceed the viewport, especially authenticated mobile screens like Today/Wardrobe.
 
-So the real problem is the **black screen at runtime**, not the build.
+3. **Make the installed app feel native on iOS**
+   - Ensure the web shell uses safe-area-aware spacing only where needed, not duplicated by Capacitor and CSS at the same time.
+   - Keep the max-width mobile-first app layout centered, but prevent horizontal scroll indicators.
 
-## Likely causes of the black screen (live-site wrapper)
-
-In order of likelihood:
-
-1. **`capacitor.config.ts` still points at `web/dist` (local mode)**, so the WebView has nothing to load. We need it back on the production config with `server.url = https://www.layerly.online`.
-2. **App Transport Security / network** — simulator can't reach the live site (rare, but possible on a restricted network).
-3. **JS runtime error on first paint** — the site loads but a client-side error blanks the screen. Only relevant once #1 is confirmed correct.
-
-## Diagnosis plan (you run, share output)
-
-From `~/Projects/Layerly-iOS-app`:
-
-```bash
-# 1. Confirm which config Capacitor is actually using
-cat capacitor.config.ts
-```
-
-Expected: a `server: { url: 'https://www.layerly.online', cleartext: false }` block. If instead you see `webDir: 'web/dist'` and no `server.url`, that is the cause.
-
-If it's wrong, restore the production config:
-
-```bash
-# Overwrite capacitor.config.ts with the production version tracked in the repo
-git checkout -- capacitor.config.ts   # if it's committed
-# OR, if git can't restore it, copy the production template that ships in this Lovable repo:
-# (see ios-app/capacitor.config.ts in the web repo)
-
-npx cap sync ios
-# In Xcode: Product → Clean Build Folder, then Run again
-```
-
-## Inspect the WebView to see the real error
-
-While the black screen is showing in the simulator, open **Safari on your Mac → Develop → Simulator → Layerly** (enable Develop menu in Safari > Settings > Advanced first). That gives you the WebView's console and network tab. Share:
-
-- Any red console errors
-- Whether `https://www.layerly.online` loaded (200) or failed
-- The current URL shown in the WebView
-
-## After diagnosis
-
-- If it's config: fix as above.
-- If it's a network/ATS issue: I'll add the right `NSAppTransportSecurity` exceptions to `Info.plist`.
-- If it's a JS error on the live site inside the WebView: I'll fix it in the web app.
-
-## What I need from you
-
-1. Paste the output of `cat capacitor.config.ts`.
-2. Paste any errors from Safari → Develop → Simulator → Layerly (console + failing network requests).
-
-Once I see those, I'll issue the concrete fix.
+4. **Validation steps for you after implementation**
+   - Run `npx cap sync ios` from `ios-app/`.
+   - In Xcode: Product → Clean Build Folder → Run.
+   - Confirm tapping the Layerly app stays inside the simulator app, does not open Safari, and shows no horizontal scrollbar.
