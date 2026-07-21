@@ -1,61 +1,32 @@
+## Current state
 
-## What's happening
+- `npx cap add ios` succeeded — `ios/App/App.xcworkspace` exists and Xcode is open.
+- `npx cap sync ios` failed with `Could not find the web assets directory: ./web/dist` because the web submodule hasn't been built yet.
+- Your `capacitor.config.ts` has `webDir: 'web/dist'`, so Capacitor expects a built bundle there.
 
-Two separate issues in your terminal output:
+## Fix — build the web submodule, then re-sync
 
-1. **`npm error Missing script: "build"`** — Your `web/` folder currently only contains the placeholder `README.md` from the scaffold. The actual Layerly web repo was never added as a submodule, so there's no `package.json` with a `build` script inside `web/`.
-2. **`ios platform has not been added yet`** — The Xcode project (`ios/` folder) doesn't exist in your local repo. It needs to be generated once with `npx cap add ios`.
-
-## Fix (run from `~/Layerly-iOS-app`)
-
-### Step 1 — Replace the placeholder `web/` with the real submodule
-
-```bash
-# remove the placeholder folder that shipped with the scaffold
-rm -rf web
-
-# add your Lovable-synced web repo as a submodule
-git submodule add https://github.com/<your-username>/<your-web-repo>.git web
-git submodule update --init --recursive
-```
-
-Replace `<your-username>/<your-web-repo>` with the GitHub repo Lovable syncs this project to. After this, `web/package.json` will exist and `npm run build` inside `web/` will work.
-
-### Step 2 — Build the web bundle
+Run from your iOS repo root (`~/Layerly-iOS-app`):
 
 ```bash
 cd web
 npm install
 npm run build
 cd ..
-```
-
-### Step 3 — Switch to local config and add the iOS platform
-
-```bash
-cp capacitor.config.local.ts capacitor.config.ts
-npx cap add ios
 npx cap sync ios
-npx cap open ios
 ```
 
-`npx cap add ios` is the one-time step that creates `ios/App/App.xcodeproj`. After that, `sync` and `open` will work on every subsequent build.
+After `npm run build` completes, `web/dist/index.html` will exist and `cap sync` will copy it into the iOS project.
 
-## Alternative — skip the submodule entirely
+## If `npm run build` fails inside `web/`
 
-If you only want the wrapper to load the live site at `https://www.layerly.online` (no offline bundle), you don't need the `web/` submodule at all. Just:
+The Layerly web app is a TanStack Start SSR app. `npm run build` produces a server build, not a static `dist/` folder — so `web/dist` may not appear even after a successful build. If that happens, we have two options:
 
-```bash
-rm -rf web
-# keep the default production capacitor.config.ts (do NOT copy the .local one)
-npx cap add ios
-npx cap sync ios
-npx cap open ios
-```
+- **A. Switch to the live-site config** — copy `capacitor.config.ts` back to the production version (loads `https://www.layerly.online`), no `web/dist` needed. Simpler, but the app requires network on first load.
+- **B. Add a static client-only build script** to the web repo that outputs to `web/dist` for Capacitor bundling. More work; needed only if you want true offline support.
 
-## What I need from you before continuing
+## What I need from you
 
-Tell me which path you want:
+Run the four commands above and share the output. Based on whether `web/dist/index.html` gets created, I'll either confirm you're done or propose the exact change for option A or B.
 
-- **A.** Bundled/offline builds → I'll update `ios-app/README.md` with the exact `git submodule add` command once you share your web repo's GitHub URL.
-- **B.** Live-site-only wrapper → I'll simplify the scaffold: drop the `web/` folder and `capacitor.config.local.ts`, and clean up the README so this confusion doesn't happen again.
+No code changes needed from me right now — this is a local build step on your machine.
