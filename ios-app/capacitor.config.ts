@@ -7,8 +7,17 @@ const config: CapacitorConfig = {
   appName: 'Layerly',
   webDir: 'web/dist',
   server: {
-    url: 'https://www.layerly.online',
+    url: 'https://layerly.online',
     cleartext: false,
+    allowNavigation: [
+      'layerly.online',
+      'www.layerly.online',
+      '*.layerly.online',
+      '*.lovable.app',
+      '*.supabase.co',
+      'accounts.google.com',
+      'appleid.apple.com',
+    ],
   },
   ios: {
     scheme: 'Layerly',
