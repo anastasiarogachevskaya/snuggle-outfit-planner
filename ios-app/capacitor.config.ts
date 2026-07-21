@@ -6,6 +6,7 @@ const config: CapacitorConfig = {
   appId: 'online.layerly.app',
   appName: 'Layerly',
   webDir: 'web/dist',
+  backgroundColor: '#A8B894',
   server: {
     url: 'https://layerly.online',
     cleartext: false,
@@ -21,7 +22,8 @@ const config: CapacitorConfig = {
   },
   ios: {
     scheme: 'Layerly',
-    contentInset: 'always',
+    contentInset: 'never',
+    backgroundColor: '#A8B894',
   },
   plugins: {
     SplashScreen: {

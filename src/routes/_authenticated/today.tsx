@@ -183,21 +183,21 @@ function TodayPage() {
 
   return (
 
-    <div className="min-h-screen bg-canvas font-sans text-ink pb-16">
-      <div className="mx-auto max-w-md px-6 py-6">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas font-sans text-ink pb-16">
+      <div className="mx-auto w-full max-w-md min-w-0 px-6 py-6">
         {/* Header */}
-        <header className="flex justify-between items-center mb-8">
-          <div>
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 mb-8">
+          <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-widest text-primary/60">
               Current location
             </p>
-            <h2 className="text-lg font-serif font-semibold">
+            <h2 className="truncate text-lg font-serif font-semibold">
               {baby.location_label ?? "Somewhere"}
             </h2>
           </div>
           <Link
             to="/baby"
-            className="size-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-serif font-semibold"
+            className="size-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 text-primary font-serif font-semibold"
           >
             {baby.name.charAt(0).toUpperCase()}
           </Link>
@@ -379,7 +379,7 @@ function TodayPage() {
         {/* Recommendation (hero) */}
         {rec && (
           <section className="mb-10">
-            <div className="bg-surface rounded-[32px] p-7 shadow-sm border border-black/5">
+              <div className="w-full max-w-full overflow-hidden bg-surface rounded-[32px] p-7 shadow-sm border border-black/5">
               <h1 className="text-3xl font-serif font-semibold mb-2">
                 {rec.babyClothing.length >= 3 ? "Go with layers." : rec.babyClothing.length === 2 ? "Keep it light." : "Just the basics."}
               </h1>
@@ -495,7 +495,7 @@ function TodayPage() {
           <p className="text-center text-xs text-ink/50 mb-4">
             Your feedback helps Layerly learn what works for {baby.name}.
           </p>
-          <div className="flex justify-between items-center gap-2">
+          <div className="grid grid-cols-3 items-start gap-2">
             <FeedbackBtn
               emoji="🥶"
               label="Too cold"
@@ -527,14 +527,14 @@ function TodayPage() {
 
 
         {/* Footer nav */}
-        <footer className="mt-10 pt-6 border-t border-black/5 flex justify-between text-sm">
+        <footer className="mt-10 grid grid-cols-3 items-center gap-2 border-t border-black/5 pt-6 text-sm">
           <Link to="/wardrobe" className="text-primary font-medium">
             Wardrobe →
           </Link>
-          <Link to="/baby" className="text-ink/60">
+          <Link to="/baby" className="text-center text-ink/60">
             Baby profile
           </Link>
-          <button onClick={signOut} className="text-ink/40">
+          <button onClick={signOut} className="text-right text-ink/40">
             Sign out
           </button>
         </footer>
@@ -559,10 +559,10 @@ function Row({
   slug?: WardrobeSlug;
 }) {
   return (
-    <div className={"flex items-center gap-4 p-3 bg-canvas/60 rounded-2xl " + (dim ? "opacity-60" : "")}>
+    <div className={"flex min-w-0 items-center gap-4 p-3 bg-canvas/60 rounded-2xl " + (dim ? "opacity-60" : "")}>
       <div
         className={
-          "size-10 bg-white rounded-lg border border-black/5 flex items-center justify-center " +
+          "size-10 shrink-0 bg-white rounded-lg border border-black/5 flex items-center justify-center " +
           (accent ? "text-accent" : "text-primary")
         }
       >
@@ -572,8 +572,8 @@ function Row({
           <span className="text-xs font-medium">{chip}</span>
         )}
       </div>
-      <div>
-        <p className="text-sm font-medium">{label}</p>
+      <div className="min-w-0">
+        <p className="break-words text-sm font-medium">{label}</p>
         {hint && <p className="text-[11px] text-ink/40">{hint}</p>}
       </div>
     </div>
@@ -594,7 +594,7 @@ function FeedbackBtn({
   onClick: () => void;
 }) {
   return (
-    <button onClick={onClick} disabled={disabled} className="flex-1 flex flex-col items-center gap-2 group disabled:opacity-50">
+    <button onClick={onClick} disabled={disabled} className="min-w-0 flex flex-col items-center gap-2 group disabled:opacity-50">
 
       <div
         className={
@@ -604,7 +604,7 @@ function FeedbackBtn({
       >
         <span className="text-xl">{emoji}</span>
       </div>
-      <span className={"text-[10px] uppercase tracking-tighter " + (primary ? "font-bold text-primary" : "font-medium")}>
+      <span className={"max-w-full text-center text-[10px] uppercase tracking-tighter " + (primary ? "font-bold text-primary" : "font-medium")}>
         {label}
       </span>
     </button>
@@ -613,7 +613,7 @@ function FeedbackBtn({
 
 function Loading() {
   return (
-    <div className="min-h-screen bg-canvas flex items-center justify-center">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas flex items-center justify-center">
       <p className="text-ink/40 text-sm">Loading…</p>
     </div>
   );
@@ -621,8 +621,8 @@ function Loading() {
 
 function NoBaby() {
   return (
-    <div className="min-h-screen bg-canvas font-sans">
-      <div className="mx-auto max-w-md px-6 py-16 text-center">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas font-sans">
+      <div className="mx-auto w-full max-w-md px-6 py-16 text-center">
         <p className="text-xs font-medium uppercase tracking-widest text-primary/70 mb-2">
           One quick step
         </p>
