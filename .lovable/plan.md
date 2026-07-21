@@ -1,45 +1,60 @@
-## What the build output tells us
+## What the logs actually say
 
-The web build succeeded, but it's a TanStack Start SSR build:
-- Client assets → `web/.output/public/assets/*`
-- SSR server (Nitro worker) → `web/.output/server/`
-- **No standalone `index.html`** — the initial HTML is rendered at request time by the server worker.
+The Xcode messages you pasted are **warnings, not errors** — the build succeeded:
 
-There is no `web/dist/` because TanStack Start doesn't produce one. Even if we point Capacitor at `web/.output/public`, there's no `index.html` to load, and the client bundle expects the SSR server for the first render, hydration, and every `createServerFn` call (auth, Supabase auth token attachment, email routes, etc.).
+- `WKProcessPool deprecated` — comes from Capacitor's Cordova compatibility layer. Harmless; will be fixed in a future Capacitor release. Ignore.
+- `[CP] Embed Pods Frameworks / Copy XCFrameworks will run every build` — CocoaPods housekeeping warning. Harmless.
 
-## This means option A isn't viable as-is
+So the real problem is the **black screen at runtime**, not the build.
 
-True offline bundling would require converting the Layerly web app from SSR to a client-only SPA, or introducing a second build target that pre-renders every route to static HTML. Either is a significant refactor of the web app (auth flows, loaders, and email/webhook routes all assume the server side exists) and would degrade the web app's SEO and initial-load story.
+## Likely causes of the black screen (live-site wrapper)
 
-## Recommendation: switch to option B (live-site wrapper)
+In order of likelihood:
 
-The production `capacitor.config.ts` already points at `https://www.layerly.online`. Using it means:
-- The iOS app loads the deployed web app over the network.
-- All SSR, server functions, and auth callbacks keep working exactly as they do in Safari.
-- Web deploys ship instantly to the iOS app with no App Store release.
-- Downside: the app needs network on cold launch (no true offline mode).
+1. **`capacitor.config.ts` still points at `web/dist` (local mode)**, so the WebView has nothing to load. We need it back on the production config with `server.url = https://www.layerly.online`.
+2. **App Transport Security / network** — simulator can't reach the live site (rare, but possible on a restricted network).
+3. **JS runtime error on first paint** — the site loads but a client-side error blanks the screen. Only relevant once #1 is confirmed correct.
 
-Steps for you to run in `~/Layerly-iOS-app`:
+## Diagnosis plan (you run, share output)
+
+From `~/Projects/Layerly-iOS-app`:
 
 ```bash
-# Your current capacitor.config.ts is already the .local (bundled) version
-# because you copied it earlier. Restore the production config from git:
-git checkout capacitor.config.ts
-
-# Confirm it points at https://www.layerly.online and webDir is unused
+# 1. Confirm which config Capacitor is actually using
 cat capacitor.config.ts
-
-# Re-sync (webDir is ignored when server.url is set, so no web/dist needed)
-npx cap sync ios
-npx cap open ios
 ```
 
-If `git checkout capacitor.config.ts` doesn't restore it (e.g. the committed version was already the local one), I'll edit `ios-app/capacitor.config.ts` on the Lovable side so you can pull it fresh.
+Expected: a `server: { url: 'https://www.layerly.online', cleartext: false }` block. If instead you see `webDir: 'web/dist'` and no `server.url`, that is the cause.
 
-## If you want true offline later
+If it's wrong, restore the production config:
 
-That's a separate project: convert the web app to also emit a client-only SPA build (a second Vite config targeting static output, with loaders adapted or gated). Worth doing only if App Store review requires offline functionality or you want the app to work without connectivity. Not needed for a first TestFlight.
+```bash
+# Overwrite capacitor.config.ts with the production version tracked in the repo
+git checkout -- capacitor.config.ts   # if it's committed
+# OR, if git can't restore it, copy the production template that ships in this Lovable repo:
+# (see ios-app/capacitor.config.ts in the web repo)
+
+npx cap sync ios
+# In Xcode: Product → Clean Build Folder, then Run again
+```
+
+## Inspect the WebView to see the real error
+
+While the black screen is showing in the simulator, open **Safari on your Mac → Develop → Simulator → Layerly** (enable Develop menu in Safari > Settings > Advanced first). That gives you the WebView's console and network tab. Share:
+
+- Any red console errors
+- Whether `https://www.layerly.online` loaded (200) or failed
+- The current URL shown in the WebView
+
+## After diagnosis
+
+- If it's config: fix as above.
+- If it's a network/ATS issue: I'll add the right `NSAppTransportSecurity` exceptions to `Info.plist`.
+- If it's a JS error on the live site inside the WebView: I'll fix it in the web app.
 
 ## What I need from you
 
-Confirm you want to go with **option B (live-site wrapper)**. If yes, run the three commands above and share the result. If `git checkout` doesn't work, tell me and I'll refresh `ios-app/capacitor.config.ts` in this repo so you can copy it over.
+1. Paste the output of `cat capacitor.config.ts`.
+2. Paste any errors from Safari → Develop → Simulator → Layerly (console + failing network requests).
+
+Once I see those, I'll issue the concrete fix.
