@@ -37,8 +37,10 @@ export type WardrobeSlug =
   | "winter_boots"
   | "neck_warmer"
   // Sleep
-  | "sleep_sack_light"
-  | "sleep_sack_warm"
+  | "sleep_sack_05"
+  | "sleep_sack_10"
+  | "sleep_sack_25"
+  | "sleep_sack_35"
   | "swaddle"
   // Transport
   | "stroller"
