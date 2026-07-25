@@ -98,7 +98,7 @@ describe("recommendation engine", () => {
     expect(extras).toContain("footmuff");
   });
 
-  it("home sleeping 21°C → light pajamas + light sleep sack", () => {
+  it("home sleeping 21°C → light pajamas + 1.0 TOG sleep sack", () => {
     const r = recommend({
       feelsLikeC: 20,
       tempPref: 3,
@@ -111,7 +111,78 @@ describe("recommendation engine", () => {
     const clothing = r.babyClothing;
     const sleep = slugs(r.sleepAccessories);
     expect(clothing[0].label).toMatch(/pajamas/i);
-    expect(sleep).toContain("sleep_sack_light");
+    expect(sleep).toContain("sleep_sack_10");
+  });
+
+  it("home sleeping 21°C with only 2.5 TOG owned → lighter base + 2.5 TOG + ideal suggestion", () => {
+    const set = new Set<WardrobeSlug>([
+      "short_sleeve_bodysuit",
+      "long_sleeve_bodysuit",
+      "pajamas",
+      "sleep_sack_25",
+    ]);
+    const r = recommend({
+      feelsLikeC: 20,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 21,
+      ageMonths: 8,
+      owned: set,
+    });
+    expect(slugs(r.sleepAccessories)).toContain("sleep_sack_25");
+    expect(r.missingHelpfulItems.map((i) => i.slug)).toContain("sleep_sack_10");
+    expect(r.babyClothing[0].slug).toBe("short_sleeve_bodysuit");
+  });
+
+  it("home sleeping 17°C with only 1.0 TOG owned → warmer pajamas + 1.0 sack + 2.5 suggested", () => {
+    const set = new Set<WardrobeSlug>([
+      "long_sleeve_bodysuit",
+      "pajamas",
+      "sleep_sack_10",
+      "wool_socks",
+    ]);
+    const r = recommend({
+      feelsLikeC: 17,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 17,
+      ageMonths: 8,
+      owned: set,
+    });
+    expect(slugs(r.sleepAccessories)).toContain("sleep_sack_10");
+    expect(r.missingHelpfulItems.map((i) => i.slug)).toContain("sleep_sack_25");
+    expect(slugs(r.accessories)).toContain("wool_socks");
+  });
+
+  it("home sleeping 21°C with no sack owned → pajamas + ideal 1.0 TOG suggested", () => {
+    const set = new Set<WardrobeSlug>(["long_sleeve_bodysuit", "pajamas"]);
+    const r = recommend({
+      feelsLikeC: 20,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 21,
+      ageMonths: 8,
+      owned: set,
+    });
+    expect(r.sleepAccessories.length).toBe(0);
+    expect(r.missingHelpfulItems.map((i) => i.slug)).toContain("sleep_sack_10");
+  });
+
+  it("home sleeping 28°C → no sleep sack, diaper only", () => {
+    const r = recommend({
+      feelsLikeC: 28,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 28,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.sleepAccessories.length).toBe(0);
+    expect(r.babyClothing[0].slug).toBe("diaper_only");
   });
 
   it("long 90-min walk at 24°C → adds a heat safety note, no mid layer", () => {
