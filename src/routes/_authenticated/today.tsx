@@ -80,7 +80,18 @@ function TodayPage() {
   });
 
   const [situation, setSituation] = useState<Situation>("walk");
+  const babyId = babyQ.data?.id;
   const [roomTemp, setRoomTemp] = useState(21);
+  useEffect(() => {
+    if (!babyId || typeof window === "undefined") return;
+    const stored = window.localStorage.getItem(`layerly:roomTemp:${babyId}`);
+    const n = stored ? Number(stored) : NaN;
+    setRoomTemp(Number.isFinite(n) ? n : 21);
+  }, [babyId]);
+  useEffect(() => {
+    if (!babyId || typeof window === "undefined") return;
+    window.localStorage.setItem(`layerly:roomTemp:${babyId}`, String(roomTemp));
+  }, [babyId, roomTemp]);
   const ageMonths = ageInMonths(babyQ.data?.dob);
   const pramAllowed = ageMonths === null || ageMonths <= 6;
 

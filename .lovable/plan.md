@@ -1,20 +1,21 @@
-## Plan
+## Remember last room temperature
 
-1. **Keep Layerly inside the iOS app**
-   - Update the Capacitor iOS config so the app loads the canonical `layerly.online` origin and allows all Layerly/auth hosts needed for redirects.
-   - Change iOS safe-area behavior from forced inset handling to WebView-friendly behavior to avoid the blank shell / odd scrolling effect.
-   - Add a native background color matching Layerly so launch-to-web rendering does not flash black/white.
+Persist the Home room temperature per baby so users don't reset it each visit.
 
-2. **Remove WebView horizontal overflow**
-   - Audit the mobile layout wrappers for elements wider than the viewport.
-   - Add global mobile-safe sizing (`box-sizing`, constrained body/root width, overflow clipping) without changing the visual design.
-   - Patch any route-level mobile layout that can exceed the viewport, especially authenticated mobile screens like Today/Wardrobe.
+### Behavior
+- First-time: slider defaults to 21°C.
+- On change: save immediately (debounced) to localStorage keyed by baby id.
+- On load / baby switch: hydrate slider from stored value (fallback 21°C).
+- Recommendation continues to update live while dragging (already does).
 
-3. **Make the installed app feel native on iOS**
-   - Ensure the web shell uses safe-area-aware spacing only where needed, not duplicated by Capacitor and CSS at the same time.
-   - Keep the max-width mobile-first app layout centered, but prevent horizontal scroll indicators.
+### Storage
+Use `localStorage` with key `layerly:roomTemp:<babyId>`. Client-only preference — no schema change, no server round-trip, no migration. (If we later want cross-device sync, we can add a column to `babies`; not needed for this task.)
 
-4. **Validation steps for you after implementation**
-   - Run `npx cap sync ios` from `ios-app/`.
-   - In Xcode: Product → Clean Build Folder → Run.
-   - Confirm tapping the Layerly app stays inside the simulator app, does not open Safari, and shows no horizontal scrollbar.
+### Changes
+- `src/routes/_authenticated/today.tsx`:
+  - Replace `useState(21)` with lazy init that reads localStorage for the active baby id.
+  - Add `useEffect` on `babyQ.data?.id` to re-hydrate when the selected baby changes.
+  - Add `useEffect` on `[babyId, roomTemp]` to persist the value.
+  - Guard `localStorage` access for SSR (`typeof window !== "undefined"`).
+
+No UI/copy changes, no onboarding change, no confirmation dialog.
