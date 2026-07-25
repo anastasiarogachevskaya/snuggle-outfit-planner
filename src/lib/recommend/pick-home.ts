@@ -2,6 +2,7 @@ import { TEMP } from "./temperature";
 import type { LayerNeed, AccessoryNeed } from "./layers";
 import type { HomeActivity } from "../recommend";
 import type { WardrobeSlug } from "../wardrobe-catalog";
+import { pickSleep } from "./pick-sleep";
 
 export type HomeContext = {
   roomTempC: number;
