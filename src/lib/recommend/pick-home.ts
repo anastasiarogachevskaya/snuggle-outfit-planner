@@ -2,6 +2,7 @@ import { TEMP } from "./temperature";
 import type { LayerNeed, AccessoryNeed } from "./layers";
 import type { HomeActivity } from "../recommend";
 import type { WardrobeSlug } from "../wardrobe-catalog";
+import { pickSleep } from "./pick-sleep";
 
 export type HomeContext = {
   roomTempC: number;
@@ -47,45 +48,44 @@ export function pickHome(ctx: HomeContext): HomePick {
   const round = Math.round(roomTempC);
 
   if (homeActivity === "sleeping") {
+    // Safety advice tied purely to room temperature
     if (roomTempC >= TEMP.VERY_HOT + 1) {
-      // 27+
-      out.layers.base = "diaper_only";
       out.safetyAdvice.push("🌡️ The room is very warm. Avoid sleep sacks and extra blankets.");
       out.safetyAdvice.push("🌡️ Check baby's neck or chest for signs of overheating.");
-      out.reason = `Room is ~${round}°C — very warm for sleep, so no sleep clothing needed.`;
     } else if (roomTempC >= TEMP.HOT + 2) {
-      // 24+
-      out.layers.base = "short_sleeve";
-      out.safetyAdvice.push("🌡️ Warm room — skip the sleep sack or use only a very lightweight one.");
-      out.reason = `Room is ~${round}°C — a short-sleeve bodysuit is enough for sleep.`;
-    } else if (roomTempC >= TEMP.WARM + 3) {
-      // 21+
-      out.layers.base = "pajamas_light";
-      const newborn = ageMonths !== null && ageMonths < 4;
-      if (newborn && owned.has("swaddle")) {
-        out.sleepAccessories.push({ slug: "swaddle", label: "Swaddle", owned: true });
-      } else {
-        suggest("sleep_sack_light", "Light sleep sack", owned, out);
-      }
-      out.reason = `Room is ~${round}°C — pajamas with a light sleep sack.`;
-    } else {
-      out.layers.base = "pajamas";
-      const newborn = ageMonths !== null && ageMonths < 4;
-      if (newborn && owned.has("swaddle")) {
-        out.sleepAccessories.push({ slug: "swaddle", label: "Swaddle", owned: true });
-      } else if (owned.has("sleep_sack_warm")) {
-        out.sleepAccessories.push({ slug: "sleep_sack_warm", label: "Warm sleep sack", owned: true });
-      } else if (owned.has("sleep_sack_light")) {
-        out.sleepAccessories.push({ slug: "sleep_sack_light", label: "Light sleep sack", owned: true });
-        out.notes.push(
-          "No warm sleep sack — using a light one; add pajamas underneath if baby feels cool.",
-        );
-      } else {
-        out.missingSleep.push({ slug: "sleep_sack_warm", label: "Warm sleep sack" });
-      }
-      out.accessories.socks = roomTempC < TEMP.WARM ? "wool" : "cotton";
-      out.reason = `Room is ~${round}°C — pajamas and a sleep sack for warmth.`;
+      out.safetyAdvice.push("🌡️ Warm room — use a low-TOG sleep sack (around 0.5).");
     }
+
+    // Newborns in a swaddle: swaddle replaces the sleep sack entirely.
+    const newborn = ageMonths !== null && ageMonths < 4;
+    if (newborn && owned.has("swaddle") && roomTempC < TEMP.VERY_HOT + 1) {
+      // Sensible baseline pajamas based on room temp, no TOG suggestion.
+      if (roomTempC >= TEMP.HOT + 2) out.layers.base = "short_sleeve";
+      else if (roomTempC >= TEMP.WARM + 3) out.layers.base = "pajamas_light";
+      else out.layers.base = "pajamas";
+      out.sleepAccessories.push({ slug: "swaddle", label: "Swaddle", owned: true });
+      out.reason = `Room is ~${round}°C — swaddle with sleepwear underneath.`;
+      return out;
+    }
+
+    // TOG-driven sleep pick
+    const sleep = pickSleep(roomTempC, owned);
+    out.layers.base = sleep.base;
+    out.accessories.socks = sleep.socks;
+
+    if (sleep.chosen) {
+      out.sleepAccessories.push({
+        slug: sleep.chosen.slug,
+        label: sleep.chosen.label,
+        owned: true,
+      });
+    }
+    if (sleep.suggestion) {
+      out.missingSleep.push({ slug: sleep.suggestion.slug, label: sleep.suggestion.label });
+    }
+
+    out.reason = `Room is ~${round}°C — ${sleep.explanation}`;
+    out.notes.push(sleep.explanation);
     return out;
   }
 

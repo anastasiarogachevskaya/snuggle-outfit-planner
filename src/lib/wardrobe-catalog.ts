@@ -37,8 +37,10 @@ export type WardrobeSlug =
   | "winter_boots"
   | "neck_warmer"
   // Sleep
-  | "sleep_sack_light"
-  | "sleep_sack_warm"
+  | "sleep_sack_05"
+  | "sleep_sack_10"
+  | "sleep_sack_25"
+  | "sleep_sack_35"
   | "swaddle"
   // Transport
   | "stroller"
@@ -129,8 +131,10 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
     title: "Sleep",
     question: "What does baby sleep in?",
     items: [
-      { slug: "sleep_sack_light", label: "Light sleep sack", hint: "Warm rooms", emoji: "🌙" },
-      { slug: "sleep_sack_warm", label: "Warm sleep sack", hint: "Cooler rooms", emoji: "🛌" },
+      { slug: "sleep_sack_05", label: "Sleep sack (0.5 TOG)", hint: "Very warm rooms 24–26°C", emoji: "🌙" },
+      { slug: "sleep_sack_10", label: "Sleep sack (1.0 TOG)", hint: "Warm rooms 20–23°C", emoji: "🌙" },
+      { slug: "sleep_sack_25", label: "Sleep sack (2.5 TOG)", hint: "Cool rooms 16–19°C", emoji: "🛌" },
+      { slug: "sleep_sack_35", label: "Sleep sack (3.5 TOG)", hint: "Cold rooms below 16°C", emoji: "🛌" },
       { slug: "swaddle", label: "Swaddle", hint: "Newborn", emoji: "👶" },
     ],
   },
