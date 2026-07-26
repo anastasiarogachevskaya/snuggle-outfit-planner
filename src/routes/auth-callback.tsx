@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { clearStoredAuthNext, getStoredAuthNext } from "@/lib/auth-redirect";
+import { clearStoredAuthNext, getStoredAuthNext, takeAuthReturnUrl } from "@/lib/auth-redirect";
 
 export const Route = createFileRoute("/auth-callback")({
   head: () => ({
@@ -23,6 +23,12 @@ function AuthCallbackPage() {
     let retryTimer: number | undefined;
 
     const goNext = () => {
+      const returnUrl = takeAuthReturnUrl();
+      if (returnUrl) {
+        clearStoredAuthNext();
+        window.location.replace(returnUrl);
+        return;
+      }
       const next = getStoredAuthNext();
       clearStoredAuthNext();
       navigate({ to: next, replace: true });

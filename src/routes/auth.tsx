@@ -2,7 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { clearStoredAuthNext, getStoredAuthNext, storeAuthNext } from "@/lib/auth-redirect";
+import {
+  clearStoredAuthNext,
+  getStoredAuthNext,
+  storeAuthNext,
+  takeAuthReturnUrl,
+} from "@/lib/auth-redirect";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -32,6 +37,12 @@ function AuthPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
+        const returnUrl = takeAuthReturnUrl();
+        if (returnUrl) {
+          clearStoredAuthNext();
+          window.location.replace(returnUrl);
+          return;
+        }
         const next = getStoredAuthNext();
         clearStoredAuthNext();
         navigate({ to: next, replace: true });
@@ -61,6 +72,11 @@ function AuthPage() {
         if (error) throw error;
       }
       clearStoredAuthNext();
+      const returnUrl = takeAuthReturnUrl();
+      if (returnUrl) {
+        window.location.replace(returnUrl);
+        return;
+      }
       navigate({ to: "/today", replace: true });
     } catch (err: any) {
       toast.error(err.message ?? "Something went wrong");
