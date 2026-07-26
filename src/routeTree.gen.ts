@@ -20,6 +20,7 @@ import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedBabyRouteImport } from './routes/_authenticated/baby'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedOnboardingWardrobeRouteImport } from './routes/_authenticated/onboarding.wardrobe'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 
@@ -78,6 +79,11 @@ const AuthenticatedOnboardingWardrobeRoute =
     path: '/onboarding/wardrobe',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
   id: '/lovable/email/auth/webhook',
   path: '/lovable/email/auth/webhook',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/baby': typeof AuthenticatedBabyRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/baby': typeof AuthenticatedBabyRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/_authenticated/baby': typeof AuthenticatedBabyRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/baby'
     | '/today'
     | '/wardrobe'
+    | '/.lovable/oauth/consent'
     | '/onboarding/wardrobe'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/baby'
     | '/today'
     | '/wardrobe'
+    | '/.lovable/oauth/consent'
     | '/onboarding/wardrobe'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/_authenticated/baby'
     | '/_authenticated/today'
     | '/_authenticated/wardrobe'
+    | '/.lovable/oauth/consent'
     | '/_authenticated/onboarding/wardrobe'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -186,6 +198,7 @@ export interface RootRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
 }
@@ -269,6 +282,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingWardrobeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/auth/webhook': {
       id: '/lovable/email/auth/webhook'
       path: '/lovable/email/auth/webhook'
@@ -312,6 +332,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
 }
