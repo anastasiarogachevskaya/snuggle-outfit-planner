@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://xloxfkhxzrsygvhsozll.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "layerly-mcp",
+      "version": "0.1.0",
+      "title": "Layerly"
+    },
+    "tools": [
+      {
+        "name": "list_babies",
+        "title": "List baby profiles",
+        "description": "List the signed-in parent's baby profiles with age, location and temperature preference.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_wardrobe",
+        "title": "Get wardrobe",
+        "description": "List which wardrobe items a baby owns, and which catalog items are still missing.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "baby_id": {
+              "type": "string",
+              "description": "Baby profile id from list_babies."
+            }
+          },
+          "required": [
+            "baby_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_wardrobe",
+        "title": "Update wardrobe",
+        "description": "Add or remove wardrobe items for a baby. Use slugs returned by get_wardrobe.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "baby_id": {
+              "type": "string",
+              "description": "Baby profile id from list_babies."
+            },
+            "add": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Wardrobe slugs to mark as owned."
+            },
+            "remove": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Wardrobe slugs to remove."
+            }
+          },
+          "required": [
+            "baby_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_outfit_recommendation",
+        "title": "Get outfit recommendation",
+        "description": "Recommend what a baby should wear right now, based on live weather (or room temperature at home), the baby's profile and the wardrobe the parent owns.",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "baby_id": {
+              "type": "string",
+              "description": "Baby profile id from list_babies."
+            },
+            "situation": {
+              "type": "string",
+              "enum": [
+                "home",
+                "walk",
+                "car"
+              ],
+              "description": "Where the baby will be."
+            },
+            "room_temp_c": {
+              "type": "number",
+              "description": "Room temperature in Celsius, for situation=home."
+            },
+            "home_activity": {
+              "type": "string",
+              "enum": [
+                "playing",
+                "sleeping"
+              ],
+              "description": "Home activity, for situation=home."
+            },
+            "transport_mode": {
+              "type": "string",
+              "enum": [
+                "pram",
+                "sitting-stroller",
+                "carrier"
+              ],
+              "description": "Transport for situation=walk."
+            },
+            "duration_min": {
+              "type": "number",
+              "description": "Planned time outside in minutes."
+            },
+            "feels_like_c": {
+              "type": "number",
+              "description": "Override the outdoor feels-like temperature instead of fetching live weather."
+            }
+          },
+          "required": [
+            "baby_id",
+            "situation"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "log_comfort_feedback",
+        "title": "Log comfort feedback",
+        "description": "Record how comfortable the baby was in an outfit, so Layerly can learn from it.",
+        "annotations": {
+          "readOnlyHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "baby_id": {
+              "type": "string",
+              "description": "Baby profile id from list_babies."
+            },
+            "rating": {
+              "type": "string",
+              "enum": [
+                "too_cold",
+                "just_right",
+                "too_warm"
+              ],
+              "description": "How the baby felt."
+            },
+            "situation": {
+              "type": "string",
+              "enum": [
+                "home",
+                "walk",
+                "car"
+              ],
+              "description": "Where the outfit was worn."
+            },
+            "room_temp_c": {
+              "type": "number",
+              "description": "Room temperature in Celsius, if at home."
+            },
+            "feels_like_c": {
+              "type": "number",
+              "description": "Outdoor feels-like temperature in Celsius."
+            }
+          },
+          "required": [
+            "baby_id",
+            "rating",
+            "situation"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
