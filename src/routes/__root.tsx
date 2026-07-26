@@ -21,6 +21,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { initPlatform } from "@/lib/platform";
+import { PlatformDebugBadge } from "@/components/platform-debug-badge";
 
 function NotFoundComponent() {
   return (
@@ -131,6 +133,10 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    initPlatform();
+  }, []);
+
+  useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
@@ -143,6 +149,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <Toaster position="top-center" closeButton richColors />
+      <PlatformDebugBadge />
     </QueryClientProvider>
   );
 }
