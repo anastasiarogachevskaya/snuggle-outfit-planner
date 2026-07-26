@@ -9,27 +9,28 @@ jobs:
   build:
     runs-on: macos-14
     steps:
-      - name: Checkout (with submodules)
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
-      - name: Install web deps and build
-        working-directory: web
+      - name: Install web deps and build (repository root)
         run: |
           bun install --frozen-lockfile
           bun run build
 
       - name: Install iOS wrapper deps
-        run: bun install --frozen-lockfile
+        working-directory: ios-app
+        run: bun install
 
-      - name: Capacitor sync
-        run: npx cap sync ios
+      - name: Add and sync iOS platform
+        working-directory: ios-app
+        run: |
+          npx cap add ios || true
+          npx cap sync ios
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
@@ -50,12 +51,14 @@ jobs:
       #     api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
       #
       # - name: Archive
+      #   working-directory: ios-app
       #   run: |
       #     xcodebuild -workspace ios/App/App.xcworkspace \
       #       -scheme App -configuration Release \
       #       -archivePath build/App.xcarchive archive
       #
       # - name: Export IPA
+      #   working-directory: ios-app
       #   run: |
       #     xcodebuild -exportArchive \
       #       -archivePath build/App.xcarchive \
@@ -65,7 +68,7 @@ jobs:
       # - name: Upload to TestFlight
       #   uses: apple-actions/upload-testflight-build@v1
       #   with:
-      #     app-path: build/App.ipa
+      #     app-path: ios-app/build/App.ipa
       #     issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
       #     api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
       #     api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
