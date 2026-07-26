@@ -2,10 +2,12 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 // Production config: the app loads the live web app so web deploys
 // ship instantly without an App Store release.
+// webDir still points at the root build output so `cap sync` has a
+// valid local directory even in server mode.
 const config: CapacitorConfig = {
   appId: 'online.layerly.app',
   appName: 'Layerly',
-  webDir: 'web/dist',
+  webDir: '../dist/client',
   backgroundColor: '#A8B894',
   server: {
     url: 'https://layerly.online',
