@@ -21,6 +21,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { initPlatform } from "@/lib/platform";
+import { PlatformDebugBadge } from "@/components/platform-debug-badge";
 
 function NotFoundComponent() {
   return (
