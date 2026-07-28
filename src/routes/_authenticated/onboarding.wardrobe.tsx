@@ -137,7 +137,7 @@ function OnboardingWardrobe() {
           ))}
         </div>
         <FooterNote />
-        <div className="mt-6 sticky bottom-[calc(var(--safe-area-bottom)+1rem)]">
+        <div data-native-bottom-bar className="mt-6 sticky bottom-[calc(var(--safe-area-bottom)+1rem)]">
           <button
             onClick={() => persist(Array.from(selected))}
             disabled={saving}

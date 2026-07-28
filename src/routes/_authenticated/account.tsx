@@ -270,6 +270,9 @@ function AccountPage() {
             </label>
             <input
               className="w-full border border-black/10 bg-canvas/60 px-4 py-3 rounded-2xl text-sm outline-none focus:border-primary/40"
+              autoComplete="off"
+              autoCapitalize="words"
+              enterKeyHint="done"
               value={deleteInput}
               onChange={(e) => setDeleteInput(e.target.value)}
               placeholder={babyQ.data?.name}

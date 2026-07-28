@@ -147,6 +147,11 @@ function AuthPage() {
             <input
               type="email"
               required
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              enterKeyHint="next"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -156,6 +161,8 @@ function AuthPage() {
               type="password"
               required
               minLength={6}
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              enterKeyHint="done"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
