@@ -153,6 +153,9 @@ function BabyPage() {
             <input
               className="input"
               required
+              autoComplete="given-name"
+              autoCapitalize="words"
+              enterKeyHint="next"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Leo"
@@ -189,6 +192,8 @@ function BabyPage() {
             <div className="flex gap-2">
               <input
                 className="input flex-1"
+                autoComplete="address-level2"
+                enterKeyHint="search"
                 value={locLabel}
                 onChange={(e) => setLocLabel(e.target.value)}
                 placeholder="City name"

@@ -86,6 +86,11 @@ function ForgotPasswordPage() {
               <input
                 type="email"
                 required
+                inputMode="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                enterKeyHint="send"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

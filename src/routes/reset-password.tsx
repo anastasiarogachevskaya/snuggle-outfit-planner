@@ -122,6 +122,8 @@ function ResetPasswordPage() {
                 type="password"
                 required
                 minLength={6}
+                autoComplete="new-password"
+                enterKeyHint="next"
                 placeholder="New password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -131,6 +133,8 @@ function ResetPasswordPage() {
                 type="password"
                 required
                 minLength={6}
+                autoComplete="new-password"
+                enterKeyHint="done"
                 placeholder="Confirm new password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
