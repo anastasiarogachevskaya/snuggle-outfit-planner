@@ -117,6 +117,23 @@ html.native-ios {
   bottom: calc(var(--safe-area-bottom) + var(--tw-safe-bottom-extra, 0px));
 }
 
+/* Native keyboard handling — web is never affected (class is only added inside Capacitor). */
+html.native-app.keyboard-open {
+  --safe-area-bottom: 0px;
+}
+/* Hide fixed/sticky bottom bars while typing in the native app. */
+html.native-app.keyboard-open [data-native-bottom-bar] {
+  display: none;
+}
+/* Keep focused fields clear of headers and the keyboard. */
+html.native-app input:focus,
+html.native-app textarea:focus,
+html.native-app select:focus {
+  scroll-margin-top: calc(var(--safe-area-top) + 1rem);
+  scroll-margin-bottom: 6rem;
+}
+
+
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;
