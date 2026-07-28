@@ -135,6 +135,7 @@ function RootComponent() {
 
   useEffect(() => {
     initPlatform();
+    initializeNativeUI();
   }, []);
 
   useEffect(() => {
