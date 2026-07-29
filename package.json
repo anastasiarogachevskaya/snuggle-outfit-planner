@@ -12,6 +12,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@capacitor/app": "^7.0.1",
     "@capacitor/core": "^8.4.2",
     "@capacitor/geolocation": "^7.1.4",
     "@capacitor/keyboard": "^7.0.3",
