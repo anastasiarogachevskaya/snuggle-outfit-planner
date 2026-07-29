@@ -49,6 +49,8 @@ function BabyPage() {
   const [locLabel, setLocLabel] = useState("");
   const [lat, setLat] = useState<number | null>(null);
   const [lon, setLon] = useState<number | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locError, setLocError] = useState<LocationFailureStatus | null>(null);
 
   useEffect(() => {
     if (babyQ.data) {
