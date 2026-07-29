@@ -4,6 +4,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { WardrobeIcon, SettingsIcon, HeartIcon } from "@/components/icons";
+import {
+  getCurrentLocation,
+  locationErrorMessage,
+  canOpenAppSettings,
+  openAppSettings,
+  type LocationFailureStatus,
+} from "@/lib/location-service";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
