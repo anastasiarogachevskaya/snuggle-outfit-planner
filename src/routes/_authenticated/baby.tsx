@@ -221,16 +221,47 @@ function BabyPage() {
             <button
               type="button"
               onClick={useGPS}
-              className="mt-2 text-sm text-primary font-medium"
+              disabled={locating}
+              className="mt-2 text-sm text-primary font-medium disabled:opacity-60"
             >
-              Use my current location
+              {locating ? "Finding your location…" : "Use my current location"}
             </button>
+            {locError && (
+              <div className="mt-2 rounded-2xl border border-black/10 bg-surface p-3">
+                <p className="text-xs text-ink/70">{locationErrorMessage(locError)}</p>
+                <div className="mt-2 flex flex-wrap gap-3 text-xs font-medium text-primary">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocError(null);
+                      document.querySelector<HTMLInputElement>('input[placeholder="City name"]')?.focus();
+                    }}
+                  >
+                    Choose location manually
+                  </button>
+                  {(locError === "timeout" ||
+                    locError === "unavailable" ||
+                    locError === "error") && (
+                    <button type="button" onClick={useGPS}>
+                      Retry
+                    </button>
+                  )}
+                  {canOpenAppSettings() &&
+                    (locError === "permission-denied" || locError === "location-disabled") && (
+                      <button type="button" onClick={() => void openAppSettings()}>
+                        Open Settings
+                      </button>
+                    )}
+                </div>
+              </div>
+            )}
             {lat !== null && lon !== null && (
               <p className="text-[11px] text-ink/40 mt-1">
                 {lat.toFixed(3)}, {lon.toFixed(3)}
               </p>
             )}
           </Field>
+
 
           <button
             type="submit"
