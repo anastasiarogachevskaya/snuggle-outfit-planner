@@ -62,3 +62,20 @@ Universal Links for `https://www.layerly.online/auth-callback` also work once yo
 ## CI
 
 `.github/workflows/build-ios.yml` is a stub: build the root web app, `npx cap add ios`, `cap sync ios`, archive, upload to TestFlight. Fill in the App Store Connect API key secrets before enabling.
+
+## Location permission (required after `npx cap add ios`)
+
+Layerly uses foreground location only, to look up local weather. The native project is not
+committed here, so after generating it add this key to `ios/App/App/Info.plist`:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Layerly uses your location to check the local weather and recommend suitable clothing for your baby.</string>
+```
+
+Do **not** add `NSLocationAlwaysUsageDescription`, `NSLocationAlwaysAndWhenInUseUsageDescription`,
+or the `location` background mode — Layerly never tracks location in the background.
+
+The permission prompt only appears when the user taps **Use my current location** on the baby
+profile screen; nothing is requested at launch. `@capacitor/geolocation` is installed here and is
+picked up automatically by `bun run sync:ios`.

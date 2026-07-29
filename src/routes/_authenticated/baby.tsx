@@ -4,6 +4,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { WardrobeIcon, SettingsIcon, HeartIcon } from "@/components/icons";
+import {
+  getCurrentLocation,
+  locationErrorMessage,
+  canOpenAppSettings,
+  openAppSettings,
+  type LocationFailureStatus,
+} from "@/lib/location-service";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
@@ -42,6 +49,8 @@ function BabyPage() {
   const [locLabel, setLocLabel] = useState("");
   const [lat, setLat] = useState<number | null>(null);
   const [lon, setLon] = useState<number | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locError, setLocError] = useState<LocationFailureStatus | null>(null);
 
   useEffect(() => {
     if (babyQ.data) {
@@ -54,30 +63,33 @@ function BabyPage() {
     }
   }, [babyQ.data]);
 
-  const useGPS = () => {
-    if (!navigator.geolocation) {
-      toast.error("Geolocation not supported");
+  const useGPS = async () => {
+    if (locating) return;
+    setLocating(true);
+    setLocError(null);
+    const result = await getCurrentLocation();
+    setLocating(false);
+
+    if (result.status !== "success") {
+      setLocError(result.status);
       return;
     }
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        setLat(pos.coords.latitude);
-        setLon(pos.coords.longitude);
-        try {
-          const r = await fetch(
-            `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&count=1&language=en`,
-          );
-          const j = await r.json();
-          const place = j.results?.[0];
-          if (place) setLocLabel(`${place.name}${place.country ? ", " + place.country : ""}`);
-          else setLocLabel(`${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`);
-        } catch {
-          setLocLabel(`${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`);
-        }
-        toast.success("Location saved");
-      },
-      () => toast.error("Couldn't get your location"),
-    );
+
+    const { latitude, longitude } = result;
+    setLat(latitude);
+    setLon(longitude);
+    try {
+      const r = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&count=1&language=en`,
+      );
+      const j = await r.json();
+      const place = j.results?.[0];
+      if (place) setLocLabel(`${place.name}${place.country ? ", " + place.country : ""}`);
+      else setLocLabel(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+    } catch {
+      setLocLabel(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+    }
+    toast.success("Location saved");
   };
 
   const searchCity = async () => {
@@ -209,16 +221,47 @@ function BabyPage() {
             <button
               type="button"
               onClick={useGPS}
-              className="mt-2 text-sm text-primary font-medium"
+              disabled={locating}
+              className="mt-2 text-sm text-primary font-medium disabled:opacity-60"
             >
-              Use my current location
+              {locating ? "Finding your location…" : "Use my current location"}
             </button>
+            {locError && (
+              <div className="mt-2 rounded-2xl border border-black/10 bg-surface p-3">
+                <p className="text-xs text-ink/70">{locationErrorMessage(locError)}</p>
+                <div className="mt-2 flex flex-wrap gap-3 text-xs font-medium text-primary">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocError(null);
+                      document.querySelector<HTMLInputElement>('input[placeholder="City name"]')?.focus();
+                    }}
+                  >
+                    Choose location manually
+                  </button>
+                  {(locError === "timeout" ||
+                    locError === "unavailable" ||
+                    locError === "error") && (
+                    <button type="button" onClick={useGPS}>
+                      Retry
+                    </button>
+                  )}
+                  {canOpenAppSettings() &&
+                    (locError === "permission-denied" || locError === "location-disabled") && (
+                      <button type="button" onClick={() => void openAppSettings()}>
+                        Open Settings
+                      </button>
+                    )}
+                </div>
+              </div>
+            )}
             {lat !== null && lon !== null && (
               <p className="text-[11px] text-ink/40 mt-1">
                 {lat.toFixed(3)}, {lon.toFixed(3)}
               </p>
             )}
           </Field>
+
 
           <button
             type="submit"
