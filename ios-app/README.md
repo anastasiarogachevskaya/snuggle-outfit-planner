@@ -41,10 +41,43 @@ In Xcode: select the **App** target → Signing & Capabilities → set your Appl
 
 | Script | What it does |
 | --- | --- |
+| `bun run check:capacitor` | Validates that root + ios-app Capacitor packages share one major version |
 | `bun run build:web` | Builds the root Layerly web app (`../dist/client`) |
 | `bun run sync:ios` | `cap sync ios` (requires `ios/` to exist) |
 | `bun run open:ios` | Opens the Xcode workspace |
-| `bun run prepare:ios` | Installs root deps if needed, builds the web app, verifies `../dist/client`, then runs `cap sync ios` only if `ios/` exists — otherwise prints the `npx cap add ios` instruction |
+| `bun run prepare:ios` | Runs the Capacitor version check, installs root deps if needed, builds the web app, verifies `../dist/client`, then runs `cap sync ios` only if `ios/` exists — otherwise prints the `npx cap add ios` instruction |
+
+## Dependency rules & troubleshooting
+
+**Capacitor majors must stay aligned.** The repository is pinned to **Capacitor 7** in both
+the root `package.json` and `ios-app/package.json`. Never bump only one side to 8 — run
+`bun run check:capacitor` (root or here) after any dependency change; it fails with a clear
+message if `@capacitor/core`, `@capacitor/cli`, `@capacitor/ios`, or a plugin drifts.
+
+**Build error:**
+
+```
+pagePrerenderOptionsSchema.optional(...).prefault is not a function
+```
+
+This is **not** a TanStack bug. It means an incompatible Zod version was hoisted over the one
+TanStack Start expects (`.prefault()` only exists on the newer Zod schema API). Fix it by
+installing the committed `package.json` + `bun.lock` versions — Zod is an explicit root
+dependency (`^3.25.76`) so resolution is deterministic. Do **not** randomly upgrade the
+TanStack packages to work around it.
+
+**Clean-install verification:**
+
+```bash
+rm -rf node_modules ios-app/node_modules
+bun install
+cd ios-app && bun install && cd ..
+bun run build
+bun run check:capacitor
+```
+
+This never requires deleting the native `ios/` directory.
+
 
 ## Two config modes
 
