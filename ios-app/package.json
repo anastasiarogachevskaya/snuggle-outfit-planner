@@ -7,7 +7,8 @@
     "build:web": "cd .. && bun run build",
     "sync:ios": "cap sync ios",
     "open:ios": "cap open ios",
-    "prepare:ios": "node scripts/prepare-ios.mjs"
+    "check:capacitor": "cd .. && bun run check:capacitor",
+    "prepare:ios": "bun run check:capacitor && node scripts/prepare-ios.mjs"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.0.0",
