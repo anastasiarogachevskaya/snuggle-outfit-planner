@@ -49,10 +49,11 @@ In Xcode: select the **App** target → Signing & Capabilities → set your Appl
 | Script | What it does |
 | --- | --- |
 | `bun run check:capacitor` | Validates that root + ios-app Capacitor packages share one major version |
-| `bun run build:web` | Builds the root Layerly web app (`../dist/client`) |
+| `bun run build:web` | Builds the root Layerly web app (static assets in `../dist/client`) |
 | `bun run sync:ios` | `cap sync ios` (requires `ios/` to exist) |
 | `bun run open:ios` | Opens the Xcode workspace |
-| `bun run prepare:ios` | Runs the Capacitor version check, installs root deps if needed, builds the web app, verifies `../dist/client`, then runs `cap sync ios` only if `ios/` exists — otherwise prints the `npx cap add ios` instruction |
+| `bun run prepare:ios` | Runs the Capacitor version check, installs root deps if needed, builds the web app, detects the static output from the build manifest, then runs `cap sync ios` only if `ios/` exists — otherwise prints the `npx cap add ios` instruction |
+
 
 ## Dependency rules & troubleshooting
 
@@ -89,7 +90,7 @@ This never requires deleting the native `ios/` directory.
 ## Two config modes
 
 - **Default (`capacitor.config.ts`)** — loads the live site from `https://layerly.online`. Web deploys ship instantly; no App Store release needed for content changes.
-- **Local (`capacitor.config.local.ts`)** — bundles `../dist/client` into the app. Because Layerly is server-rendered, this mode requires a prerendered/static build to have an `index.html`; use it only for offline experiments.
+- **Local (`capacitor.config.local.ts`)** — bundles the detected static output (currently `../dist/client`) into the app. Because Layerly is server-rendered, this mode requires a prerendered/static build to have an `index.html`; use it only for offline experiments.
 
 Switch by copying whichever config over `capacitor.config.ts` before `bun run sync:ios`.
 
