@@ -133,6 +133,15 @@ html.native-app select:focus {
   scroll-margin-bottom: 6rem;
 }
 
+/* iOS auto-zooms any focused control below 16px. Native app only — the
+   website keeps its original typography. */
+html.native-ios input,
+html.native-ios textarea,
+html.native-ios select,
+html.native-ios [contenteditable="true"] {
+  font-size: 16px;
+}
+
 
 @layer base {
   *, *::before, *::after {
