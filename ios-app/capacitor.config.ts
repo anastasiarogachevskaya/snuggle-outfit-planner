@@ -1,14 +1,15 @@
 import type { CapacitorConfig } from '@capacitor/cli';
-import { relativeWebOutputDir } from './scripts/detect-web-output.mjs';
 
 // Production config: the app loads the live web app so web deploys
 // ship instantly without an App Store release.
-// webDir still points at the root build output (detected from the build
-// manifest) so `cap sync` has a valid local directory even in server mode.
+// webDir points at the root build's static output (TanStack Start + Nitro
+// currently emits ../dist/client) so `cap sync` has a valid local directory
+// even in server mode. `bun run prepare:ios` verifies this path against the
+// build manifest and warns if the build output ever moves.
 const config: CapacitorConfig = {
   appId: 'online.layerly.app',
   appName: 'Layerly',
-  webDir: relativeWebOutputDir(import.meta.dirname) ?? '../dist/client',
+  webDir: '../dist/client',
   backgroundColor: '#A8B894',
   server: {
     url: 'https://layerly.online',
