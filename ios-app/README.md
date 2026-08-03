@@ -7,19 +7,25 @@ Capacitor wrapper for Layerly. It wraps the **existing web app in the repository
 ```
 ios-app/
 ├── capacitor.config.ts             # Production: loads https://layerly.online
-├── capacitor.config.local.ts       # Local bundled mode: detected static output
+├── capacitor.config.local.ts       # Local bundled mode: webDir ../dist/client
+├── tsconfig.json                   # CommonJS/node settings so the Capacitor CLI can read the TS config
 ├── package.json
 ├── scripts/detect-web-output.mjs   # Reads the build manifest to find static assets
 ├── scripts/prepare-ios.mjs         # build web + detect output + conditional cap sync
 └── .github/workflows/build-ios.yml
 ```
 
+Both config files are plain static ESM (`import type` + `export default`) with no
+runtime imports, so the Capacitor CLI can transpile them without `exports is not
+defined` errors. Keep them free of `require()`, `module.exports` and computed values.
+
 The root `bun run build` uses TanStack Start + Nitro. The static client assets
-currently land in `../dist/client` (server bundle in `../dist/server`), and the
-directory is read from the Nitro build manifest (`dist/nitro.json` →
-`publicDir`), so a future switch to `.output/public` needs no script change.
-Fallback order if no manifest exists: `.output/public`, `dist/client`, `dist`.
+currently land in `../dist/client` (server bundle in `../dist/server`), which is
+what `webDir` points to. `bun run prepare:ios` reads the Nitro build manifest
+(`dist/nitro.json` → `publicDir`, fallbacks `.output/public`, `dist/client`,
+`dist`) and warns if the build output ever moves away from `webDir`.
 No `ios/` folder is committed — you generate it on a Mac.
+
 
 
 ## Prerequisites (Mac)

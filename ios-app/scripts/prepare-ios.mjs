@@ -41,6 +41,18 @@ if (!clientDist) {
 }
 console.log(`\n✔ Web assets ready at ${clientDist}`);
 
+// The Capacitor config files are plain static ESM (no runtime imports), so we
+// verify their webDir here instead of computing it inside the config.
+const configuredWebDir = "../dist/client";
+const expectedWebDir = path.relative(iosApp, clientDist).split(path.sep).join("/");
+if (configuredWebDir !== expectedWebDir) {
+  console.warn(
+    `\n⚠ capacitor.config.ts webDir is "${configuredWebDir}" but the build output is "${expectedWebDir}".` +
+      `\n  Update webDir in capacitor.config.ts and capacitor.config.local.ts.`,
+  );
+}
+
+
 function installAppIcons() {
   const source = path.join(iosApp, "resources", "AppIcon.appiconset");
   const target = path.join(iosApp, "ios", "App", "App", "Assets.xcassets", "AppIcon.appiconset");
