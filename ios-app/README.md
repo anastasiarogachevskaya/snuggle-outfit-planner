@@ -112,3 +112,24 @@ or the `location` background mode — Layerly never tracks location in the backg
 The permission prompt only appears when the user taps **Use my current location** on the baby
 profile screen; nothing is requested at launch. `@capacitor/geolocation` is installed here and is
 picked up automatically by `bun run sync:ios`.
+
+
+## App icon
+
+Master artwork: `ios-app/resources/AppIcon-master-1024.png` (1024x1024, opaque,
+square, no rounded corners) — generated from the PWA icon `public/icon-512.png`,
+so the website, PWA and iOS app all share one piece of artwork.
+
+The Xcode asset catalog is committed at
+`ios-app/resources/AppIcon.appiconset` (25 catalog entries / 19 PNGs covering
+20, 29, 40, 50, 57, 58, 60, 72, 76, 80, 87, 100, 114, 120, 144, 152, 167, 180
+and 1024 px for iPhone, iPad and the App Store marketing icon).
+
+`bun run prepare:ios` copies it over
+`ios/App/App/Assets.xcassets/AppIcon.appiconset` after `cap sync`, replacing the
+Capacitor placeholder. To regenerate the sizes after changing the master (macOS
+only, uses the built-in `sips`):
+
+```bash
+cd ios-app && bun run icons:ios
+```

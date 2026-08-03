@@ -8,7 +8,8 @@
     "sync:ios": "cap sync ios",
     "open:ios": "cap open ios",
     "check:capacitor": "cd .. && bun run check:capacitor",
-    "prepare:ios": "bun run check:capacitor && node scripts/prepare-ios.mjs"
+    "prepare:ios": "bun run check:capacitor && node scripts/prepare-ios.mjs",
+    "icons:ios": "node scripts/generate-app-icons.mjs"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.0.0",
