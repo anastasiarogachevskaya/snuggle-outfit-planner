@@ -1,7 +1,9 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import { relativeWebOutputDir } from './scripts/detect-web-output.mjs';
 
-// Local / bundled config: ships the built web assets from the repository
-// root build (../dist/client) inside the .ipa.
+// Local / bundled config: ships the built static web assets from the root build
+// inside the .ipa. The output directory is detected from the build manifest
+// (currently dist/client; .output/public is also supported).
 // Use for offline testing or App Review builds where you don't want the app
 // to depend on the live URL. Copy this file over capacitor.config.ts before
 // running `bun run sync:ios`.
@@ -11,7 +13,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'online.layerly.app',
   appName: 'Layerly',
-  webDir: '../dist/client',
+  webDir: relativeWebOutputDir(import.meta.dirname) ?? '../dist/client',
   backgroundColor: '#A8B894',
   ios: {
     scheme: 'Layerly',

@@ -2,18 +2,17 @@
 // Prepares everything Capacitor needs, without generating the native project.
 //   1. installs root web deps if missing
 //   2. builds the root Layerly web app
-//   3. verifies the generated client dist directory exists
+//   3. detects the generated static output directory (from the build manifest)
 //   4. runs `cap sync ios` only when ios/ already exists
 //   5. installs the Layerly AppIcon asset catalog into the native project
 import { existsSync, mkdirSync, readdirSync, rmSync, copyFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { detectWebOutputDir, webRoot } from "./detect-web-output.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const iosApp = path.resolve(here, "..");
-const webRoot = path.resolve(iosApp, "..");
-const clientDist = path.join(webRoot, "dist", "client");
 
 function run(cmd, args, cwd) {
   console.log(`\n> ${cmd} ${args.join(" ")}  (${cwd})`);
@@ -31,8 +30,12 @@ if (!existsSync(path.join(webRoot, "node_modules"))) {
 
 run(pm, ["run", "build"], webRoot);
 
-if (!existsSync(clientDist)) {
-  console.error(`\n✖ Expected web output at ${clientDist} but it does not exist.`);
+const clientDist = detectWebOutputDir();
+
+if (!clientDist) {
+  console.error("\n✖ Could not find the generated static web output.");
+  console.error("  Looked at the build manifest (.output/nitro.json, dist/nitro.json)");
+  console.error("  and the fallbacks .output/public, dist/client, dist.");
   console.error("  Run the root build manually and re-run `bun run prepare:ios`.");
   process.exit(1);
 }
