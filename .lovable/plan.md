@@ -1,71 +1,52 @@
-# TOG-based sleep sack recommendations
+# Try Layerly — guest mode (no registration)
 
-Replace the two vague "light / warm" sleep sacks with four TOG-rated items and make the sleep engine choose sleepwear based on the sleep sack the parent actually owns.
+Let anyone get a real outfit recommendation in two taps: pick baby's age, allow (or skip) location. Accounts are only asked for when saving is involved.
 
-## Wardrobe changes
+## Flow
 
-`src/lib/wardrobe-catalog.ts`
-- Replace `sleep_sack_light` and `sleep_sack_warm` with:
-  - `sleep_sack_05` — Sleep sack (0.5 TOG)
-  - `sleep_sack_10` — Sleep sack (1.0 TOG)
-  - `sleep_sack_25` — Sleep sack (2.5 TOG)
-  - `sleep_sack_35` — Sleep sack (3.5 TOG)
-- Update the Sleep onboarding step and `WardrobeSlug` union. `swaddle` stays.
-- Migrate any existing rows in `wardrobe_items` (Lovable Cloud): map `sleep_sack_light` → `sleep_sack_10`, `sleep_sack_warm` → `sleep_sack_25`. Old rows for the removed slugs get deleted after migration.
+```text
+/            Landing: [ Try Layerly ]  (primary)
+             "Already have an account? Sign in"  (secondary)
+   |
+/try         "How old is your baby?" — 5 tap options, Continue
+   |
+/try/location  Use my location  /  Choose a city manually  /  Skip for now
+   |
+/try/today   Full recommendation screen (Home/Walk/Car, Play/Sleep,
+             transport, duration, weather, explanation)
+```
 
-`src/components/icons/index.tsx`
-- Add icon entries for the four new slugs (reuse moon/bed style; drop the two old ones).
+Signed-in users hitting `/` still go straight to `/today`. Guests who land on `/try/today` without a guest profile are sent back to `/try`.
 
-## New engine module
+## Guest profile
 
-`src/lib/recommend/pick-sleep.ts`
-- Export `TOG_ITEMS`: ordered list `[{slug, tog: 0.5|1.0|2.5|3.5, label}]`.
-- `idealTogFor(roomTempC)` → number | null using the spec:
-  - ≥27 → null (no sack)
-  - 24–26 → 0.5
-  - 20–23 → 1.0
-  - 16–19 → 2.5
-  - <16 → 3.5
-- `chooseSleepSack(roomTempC, owned)` → `{ chosen: {slug,tog}|null, ideal: number|null, ownedIdeal: boolean, suggestion: {slug,tog}|null }`
-  - If ideal is null: `chosen = null`.
-  - Else if owned includes ideal TOG: use it.
-  - Else pick the owned sack whose TOG is numerically closest to ideal (ties → warmer).
-  - `suggestion` = the ideal-TOG sack when not owned (for "Suggested for next time").
-- `sleepwearForDelta(roomTempC, chosenTog, idealTog)` → `BaseKind` selecting pajamas warmth based on how far chosen TOG is from ideal:
-  - No sack + hot → `diaper_only` / `short_sleeve` per current thresholds.
-  - Chosen ≈ ideal → normal pajamas for band (light pajamas 21–23, pajamas <21, short-sleeve 24+).
-  - Chosen warmer than ideal → step down (e.g. `short_sleeve` or `sleeveless`).
-  - Chosen cooler than ideal → step up (`pajamas` with note; add socks="wool" when very cold).
-- Return a short `explanation` string matching the examples ("Using your 2.5 TOG sleep sack, so lighter sleepwear is recommended underneath.", "A 1.0 TOG sleep sack would be ideal for this room temperature.", etc.).
+Stored in `localStorage` (`layerly:guest`), no database writes:
+- name `Baby`, warmth preference `3`
+- date of birth derived from the chosen age band (midpoint of the range)
+- location: coords + label, when granted or chosen
+- default wardrobe: short/long-sleeve bodysuit, pants, sweater, cotton socks, thin hat, warm hat, fleece overall, winter overall, stroller, blanket, pajamas. Nothing specialized (no footmuff, rain cover, babywearing cover, wool layers, balaclava, rain overall).
+- Home room temperature is remembered per guest, same as for signed-in users.
+- "1+ years" is shown but disabled with a "Coming soon" tag.
 
-## Wire into pickHome
+## Registration prompts
 
-`src/lib/recommend/pick-home.ts`
-- In the `homeActivity === "sleeping"` branch, replace the current cascade with a call to the new sleep module. Keep the existing very-hot safety advice (≥27) and warm-room advice (≥24) but drive base layer + sleep sack + missingSleep from `chooseSleepSack` + `sleepwearForDelta`.
-- Newborn swaddle branch keeps priority when `ageMonths < 4` and `owned.has("swaddle")` — swaddle replaces the sack; still show the ideal-TOG sack under `missingSleep` only if not owned AND no swaddle used? No — swaddle-first babies don't need a sack suggestion. Keep suggestion suppressed when swaddle is used.
-- Populate `reason` with room temp; append the sleep-sack explanation to `notes` (or set as a dedicated field surfaced through the existing `notes` array to avoid UI changes).
+A shared sheet with the copy from the brief and the buttons **Create account** / **Maybe later**, triggered only when a guest tries to:
+- edit the wardrobe
+- rate a recommendation
+- edit the baby profile
 
-## Public types
+"Create account" goes to `/auth`; on successful sign-up the guest's age, location and default wardrobe are used to seed the new baby profile so nothing is retyped. "Maybe later" just closes the sheet and leaves the recommendation usable.
 
-`src/lib/recommend.ts` — no shape changes. `sleepAccessories` continues to carry the chosen sack; `missingHelpfulItems` carries the ideal-TOG suggestion when not owned. The Today screen already renders both under "Sleep accessories" and "Suggested for next time".
+## Guest limits
 
-## Tests
+No saved wardrobe, profile, history, feedback or cross-device sync. Everything else works identically.
 
-`src/lib/recommend/__tests__/recommend.test.ts`
-- Add cases: 21°C room + owns 1.0 → pajamas + 1.0 sack; 21°C + owns only 2.5 → short-sleeve + 2.5 sack + note; 17°C + owns only 1.0 → warm pajamas + 1.0 sack + wool socks; 21°C + owns no sack → pajamas + suggestion for 1.0 TOG under missing; 28°C + any → diaper only, no sack.
+## Technical notes
 
-## Data migration
-
-Single Lovable Cloud migration:
-- `UPDATE public.wardrobe_items SET slug = 'sleep_sack_10' WHERE slug = 'sleep_sack_light';`
-- `UPDATE public.wardrobe_items SET slug = 'sleep_sack_25' WHERE slug = 'sleep_sack_warm';`
-- No schema changes; slug is free-form text.
-
-## Acceptance mapping
-
-- Sleep sacks represented by TOG values ✓ (four slugs).
-- Multiple TOG sleep sacks can be owned ✓ (independent checklist items).
-- Best available TOG chosen ✓ (`chooseSleepSack`).
-- Pajamas adapt to chosen TOG ✓ (`sleepwearForDelta`).
-- Missing ideal TOG appears under "Suggested for next time" ✓ (via `missingHelpfulItems`).
-- Sleep explanation states why lighter/warmer sleepwear is used ✓ (returned string appended to notes).
+- Extract the Today screen body from `src/routes/_authenticated/today.tsx` into a shared `src/components/today-screen.tsx` that takes baby data, owned wardrobe set and callbacks (`onFeedback`, profile/wardrobe links) as props. The authenticated route keeps its Supabase queries; the guest route feeds the same component from localStorage. No change to `src/lib/recommend/*`.
+- New public routes: `src/routes/try.tsx` (layout `<Outlet />`), `try.index.tsx` (age), `try.location.tsx`, `try.today.tsx`, each with its own `head()` metadata (age/location steps `noindex`).
+- New `src/lib/guest-profile.ts`: read/write/clear guest state, age-band → dob mapping, default wardrobe slug list, and a `useGuestProfile()` hook that is hydration-safe (read in `useEffect`).
+- Location reuses the existing `src/lib/location-service.ts` (Capacitor on native, browser geolocation on web); permission is requested only on tap, with the existing denied/timeout fallbacks plus manual city entry.
+- New `src/components/save-prompt-sheet.tsx` for the three registration prompts.
+- After sign-up, `src/routes/auth-callback.tsx` / the post-auth path seeds the new baby from the stored guest profile, then clears `layerly:guest`.
+- `src/routes/index.tsx` rewritten to the new launch screen; existing authenticated routes, RLS, MCP tools and iOS wrapper untouched.
