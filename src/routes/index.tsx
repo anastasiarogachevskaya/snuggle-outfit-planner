@@ -80,12 +80,21 @@ function Landing() {
         </div>
 
         <Link
-          to="/auth"
+          to="/try"
           className="block w-full text-center rounded-2xl bg-primary text-primary-foreground py-4 font-medium shadow-md shadow-primary/20"
         >
-          Get started — it's free
+          Try Layerly — no account needed
         </Link>
-        <p className="mt-4 text-center text-xs text-ink/40">Weather from Open-Meteo. No ads, no tracking.</p>
+        <p className="mt-3 text-center text-xs text-ink/50">
+          Takes 20 seconds. Nothing is saved until you want it to be.
+        </p>
+        <Link
+          to="/auth"
+          className="mt-6 block w-full text-center rounded-2xl border border-primary/25 py-3.5 text-sm font-medium text-primary"
+        >
+          I already have an account
+        </Link>
+        <p className="mt-6 text-center text-xs text-ink/40">Weather from Open-Meteo. No ads, no tracking.</p>
       </div>
     </div>
   );
