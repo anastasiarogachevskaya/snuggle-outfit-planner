@@ -53,6 +53,12 @@ export function computeEffectiveTemp(ctx: OutdoorContext): number {
   return eff;
 }
 
+/**
+ * Outside feels cooler than inside at the same reading (wind, shade, stillness
+ * in a stroller), so the lower half of the "warm" band keeps long sleeves.
+ */
+const OUTDOOR_LONG_SLEEVE_ABOVE = 20.5;
+
 function pickLayers(effectiveC: number): LayerNeed {
   const band = bandFor(effectiveC);
   switch (band) {
@@ -61,7 +67,10 @@ function pickLayers(effectiveC: number): LayerNeed {
     case "hot":
       return { base: "short_sleeve", bottom: "shorts", mid: "none", outer: "none" };
     case "warm":
-      return { base: "short_sleeve", bottom: "pants", mid: "none", outer: "none" };
+      // 18–20°C outdoors → long sleeves; 21°C+ → short sleeves.
+      return effectiveC < OUTDOOR_LONG_SLEEVE_ABOVE
+        ? { base: "long_sleeve", bottom: "pants", mid: "none", outer: "none" }
+        : { base: "short_sleeve", bottom: "pants", mid: "none", outer: "none" };
     case "mild":
       return { base: "long_sleeve", bottom: "pants", mid: "none", outer: "none" };
     case "cool":
@@ -82,7 +91,8 @@ function pickAccessories(effectiveC: number, ctx: OutdoorContext): AccessoryNeed
   let hat: AccessoryNeed["hat"] = "none";
   if (ctx.situation === "walk") {
     if (band === "very_hot" || band === "hot") hat = "sun";
-    else if (band === "warm") hat = uv >= 3 ? "sun" : "none";
+    else if (band === "warm")
+      hat = uv >= 3 ? "sun" : effectiveC < OUTDOOR_LONG_SLEEVE_ABOVE ? "thin" : "none";
     else if (band === "mild" || band === "cool") hat = "thin";
     else hat = "warm";
   } else {
@@ -92,8 +102,9 @@ function pickAccessories(effectiveC: number, ctx: OutdoorContext): AccessoryNeed
 
   let socks: AccessoryNeed["socks"] = "none";
   if (effectiveC < TEMP.COOL) socks = "wool";
-  else if (effectiveC < TEMP.WARM) socks = "cotton";
-  // At WARM (18) and above → bare feet / no socks recommended.
+  else if (effectiveC < OUTDOOR_LONG_SLEEVE_ABOVE) socks = "cotton";
+  // At ~21°C and above → bare feet / no socks outdoors.
+
 
   const mittens = effectiveC < TEMP.COLD;
 
