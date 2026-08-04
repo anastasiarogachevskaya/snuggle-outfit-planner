@@ -201,23 +201,17 @@ function BabyPage() {
           </Field>
 
           <Field label="Location">
-            <div className="flex gap-2">
-              <input
-                className="input flex-1"
-                autoComplete="address-level2"
-                enterKeyHint="search"
-                value={locLabel}
-                onChange={(e) => setLocLabel(e.target.value)}
-                placeholder="City name"
-              />
-              <button
-                type="button"
-                onClick={searchCity}
-                className="px-3 rounded-2xl border border-black/10 text-sm"
-              >
-                Search
-              </button>
-            </div>
+            <CitySearch
+              value={locLabel}
+              onChange={setLocLabel}
+              placeholder="Start typing a city"
+              inputClassName="input w-full"
+              onSelect={(place) => {
+                setLat(place.latitude);
+                setLon(place.longitude);
+                setLocLabel(place.label);
+              }}
+            />
             <button
               type="button"
               onClick={useGPS}
