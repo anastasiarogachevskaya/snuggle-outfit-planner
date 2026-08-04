@@ -108,18 +108,20 @@ export function pickHome(ctx: HomeContext): HomePick {
     out.layers.base = "short_sleeve";
     out.layers.bottom = "shorts";
     out.reason = `Room is ~${round}°C — light clothing only.`;
-  } else if (roomTempC >= TEMP.WARM + 2) {
-    // 20–23
+  } else if (roomTempC >= TEMP.WARM) {
+    // 18–23 — most homes; babies are comfortable barefoot here.
     out.layers.base = "long_sleeve";
     out.layers.bottom = "pants";
-    out.accessories.socks = "cotton";
-    out.reason = `Room is ~${round}°C — comfortable for a regular outfit.`;
+    out.accessories.socks = "none";
+    out.reason = `Room is ~${round}°C — comfortable for a regular outfit, no socks needed.`;
   } else {
+    // 17 and below
     out.layers.base = "long_sleeve";
     out.layers.bottom = "leggings";
     out.layers.mid = "sweater";
-    out.accessories.socks = roomTempC < TEMP.COOL ? "wool" : "cotton";
-    out.reason = `Room is ~${round}°C — add a mid layer to keep baby warm.`;
+    out.accessories.socks = roomTempC < TEMP.MILD ? "wool" : "cotton";
+    out.reason = `Room is ~${round}°C — add a mid layer and socks to keep baby warm.`;
   }
+
   return out;
 }

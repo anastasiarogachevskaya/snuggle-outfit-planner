@@ -135,7 +135,7 @@ describe("recommendation engine", () => {
     expect(r.babyClothing[0].slug).toBe("short_sleeve_bodysuit");
   });
 
-  it("home sleeping 17°C with only 1.0 TOG owned → warmer pajamas + 1.0 sack + 2.5 suggested", () => {
+  it("home sleeping 17°C with only 1.0 TOG owned → warmer pajamas + 1.0 sack + 2.5 suggested, no socks", () => {
     const set = new Set<WardrobeSlug>([
       "long_sleeve_bodysuit",
       "pajamas",
@@ -153,8 +153,47 @@ describe("recommendation engine", () => {
     });
     expect(slugs(r.sleepAccessories)).toContain("sleep_sack_10");
     expect(r.missingHelpfulItems.map((i) => i.slug)).toContain("sleep_sack_25");
-    expect(slugs(r.accessories)).toContain("wool_socks");
+    expect(slugs(r.accessories)).not.toContain("wool_socks");
+    expect(slugs(r.accessories)).not.toContain("cotton_socks");
   });
+
+  it("home playing 21°C → long sleeve, pants, no socks", () => {
+    const set = new Set<WardrobeSlug>(["long_sleeve_bodysuit", "pants", "cotton_socks"]);
+    const r = recommend({
+      feelsLikeC: 21,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "playing",
+      roomTempC: 21,
+      ageMonths: 8,
+      owned: set,
+    });
+    expect(r.babyClothing.map((i) => i.slug)).toContain("long_sleeve_bodysuit");
+    expect(slugs(r.accessories)).not.toContain("cotton_socks");
+  });
+
+  it("walk 19°C is at least as warm as home 21°C — long sleeve + cotton socks", () => {
+    const set = new Set<WardrobeSlug>([
+      "long_sleeve_bodysuit",
+      "short_sleeve_bodysuit",
+      "pants",
+      "cotton_socks",
+      "thin_hat",
+    ]);
+    const r = recommend({
+      feelsLikeC: 19,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "sitting-stroller",
+      durationMin: 45,
+      ageMonths: 8,
+      owned: set,
+    });
+    const all = [...r.babyClothing.map((i) => i.slug), ...slugs(r.accessories)];
+    expect(all).toContain("long_sleeve_bodysuit");
+    expect(all).toContain("cotton_socks");
+  });
+
 
   it("home sleeping 21°C with no sack owned → pajamas + ideal 1.0 TOG suggested", () => {
     const set = new Set<WardrobeSlug>(["long_sleeve_bodysuit", "pajamas"]);
