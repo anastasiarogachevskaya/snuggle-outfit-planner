@@ -12,6 +12,7 @@ import {
 import { getCurrentLocation, locationErrorMessage } from "@/lib/location-service";
 import { TodayScreen } from "@/components/today-screen";
 import { SavePromptSheet, type SavePromptKind } from "@/components/save-prompt-sheet";
+import { CitySearch } from "@/components/city-search";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 
 export const Route = createFileRoute("/try")({
