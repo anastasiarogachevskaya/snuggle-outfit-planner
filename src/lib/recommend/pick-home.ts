@@ -112,7 +112,7 @@ export function pickHome(ctx: HomeContext): HomePick {
     // 20–23
     out.layers.base = "long_sleeve";
     out.layers.bottom = "pants";
-    out.accessories.socks = "cotton";
+    out.accessories.socks = "none";
     out.reason = `Room is ~${round}°C — comfortable for a regular outfit.`;
   } else {
     out.layers.base = "long_sleeve";
