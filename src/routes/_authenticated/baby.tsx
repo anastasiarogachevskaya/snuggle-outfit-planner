@@ -211,7 +211,9 @@ function BabyPage() {
                     type="button"
                     onClick={() => {
                       setLocError(null);
-                      document.querySelector<HTMLInputElement>('input[placeholder="City name"]')?.focus();
+                      document
+                        .querySelector<HTMLInputElement>('input[placeholder="Start typing a city"]')
+                        ?.focus();
                     }}
                   >
                     Choose location manually
