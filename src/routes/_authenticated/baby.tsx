@@ -11,6 +11,7 @@ import {
   openAppSettings,
   type LocationFailureStatus,
 } from "@/lib/location-service";
+import { CitySearch } from "@/components/city-search";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
