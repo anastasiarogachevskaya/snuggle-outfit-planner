@@ -93,26 +93,8 @@ function BabyPage() {
     toast.success("Location saved");
   };
 
-  const searchCity = async () => {
-    if (!locLabel.trim()) return;
-    try {
-      const r = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locLabel)}&count=1&language=en`,
-      );
-      const j = await r.json();
-      const p = j.results?.[0];
-      if (!p) {
-        toast.error("City not found");
-        return;
-      }
-      setLat(p.latitude);
-      setLon(p.longitude);
-      setLocLabel(`${p.name}${p.country ? ", " + p.country : ""}`);
-      toast.success("Location updated");
-    } catch {
-      toast.error("Search failed");
-    }
-  };
+
+
 
   const save = useMutation({
     mutationFn: async () => {
