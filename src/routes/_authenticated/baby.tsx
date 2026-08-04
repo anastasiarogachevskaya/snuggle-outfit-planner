@@ -11,6 +11,7 @@ import {
   openAppSettings,
   type LocationFailureStatus,
 } from "@/lib/location-service";
+import { CitySearch } from "@/components/city-search";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
@@ -92,26 +93,8 @@ function BabyPage() {
     toast.success("Location saved");
   };
 
-  const searchCity = async () => {
-    if (!locLabel.trim()) return;
-    try {
-      const r = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locLabel)}&count=1&language=en`,
-      );
-      const j = await r.json();
-      const p = j.results?.[0];
-      if (!p) {
-        toast.error("City not found");
-        return;
-      }
-      setLat(p.latitude);
-      setLon(p.longitude);
-      setLocLabel(`${p.name}${p.country ? ", " + p.country : ""}`);
-      toast.success("Location updated");
-    } catch {
-      toast.error("Search failed");
-    }
-  };
+
+
 
   const save = useMutation({
     mutationFn: async () => {
@@ -201,23 +184,17 @@ function BabyPage() {
           </Field>
 
           <Field label="Location">
-            <div className="flex gap-2">
-              <input
-                className="input flex-1"
-                autoComplete="address-level2"
-                enterKeyHint="search"
-                value={locLabel}
-                onChange={(e) => setLocLabel(e.target.value)}
-                placeholder="City name"
-              />
-              <button
-                type="button"
-                onClick={searchCity}
-                className="px-3 rounded-2xl border border-black/10 text-sm"
-              >
-                Search
-              </button>
-            </div>
+            <CitySearch
+              value={locLabel}
+              onChange={setLocLabel}
+              placeholder="Start typing a city"
+              inputClassName="input w-full"
+              onSelect={(place) => {
+                setLat(place.latitude);
+                setLon(place.longitude);
+                setLocLabel(place.label);
+              }}
+            />
             <button
               type="button"
               onClick={useGPS}
@@ -234,7 +211,9 @@ function BabyPage() {
                     type="button"
                     onClick={() => {
                       setLocError(null);
-                      document.querySelector<HTMLInputElement>('input[placeholder="City name"]')?.focus();
+                      document
+                        .querySelector<HTMLInputElement>('input[placeholder="Start typing a city"]')
+                        ?.focus();
                     }}
                   >
                     Choose location manually

@@ -12,6 +12,7 @@ import {
 import { getCurrentLocation, locationErrorMessage } from "@/lib/location-service";
 import { TodayScreen } from "@/components/today-screen";
 import { SavePromptSheet, type SavePromptKind } from "@/components/save-prompt-sheet";
+import { CitySearch } from "@/components/city-search";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 
 export const Route = createFileRoute("/try")({
@@ -131,12 +132,14 @@ function LocationStep({
 }) {
   const [busy, setBusy] = useState(false);
   const [manual, setManual] = useState("");
+  const [gpsFailed, setGpsFailed] = useState(false);
 
   const useGps = async () => {
     setBusy(true);
     const res = await getCurrentLocation();
     if (res.status !== "success") {
       setBusy(false);
+      setGpsFailed(true);
       toast.error(locationErrorMessage(res.status));
       return;
     }
@@ -154,27 +157,6 @@ function LocationStep({
     onDone(res.latitude, res.longitude, label);
   };
 
-  const useManual = async () => {
-    if (!manual.trim()) return;
-    setBusy(true);
-    try {
-      const r = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(manual)}&count=1&language=en`,
-      );
-      const j = await r.json();
-      const hit = j?.results?.[0];
-      if (!hit) {
-        toast.error("Couldn't find that place. Try another spelling.");
-        return;
-      }
-      onDone(hit.latitude, hit.longitude, hit.name);
-    } catch {
-      toast.error("Couldn't look up that place right now.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <Shell title="Where are you?" subtitle="We use it only to read today's weather.">
       <button
@@ -185,22 +167,18 @@ function LocationStep({
         {busy ? "Locating…" : "Use my location"}
       </button>
       <div className="my-6 text-center text-xs uppercase tracking-widest text-ink/30">or</div>
-      <div className="flex gap-2">
-        <input
-          value={manual}
-          onChange={(e) => setManual(e.target.value)}
-          placeholder="City name"
-          autoComplete="address-level2"
-          className="min-w-0 flex-1 rounded-2xl border border-black/10 bg-surface px-4 py-3 text-base text-ink"
-        />
-        <button
-          onClick={useManual}
-          disabled={busy}
-          className="shrink-0 rounded-2xl border border-primary/30 px-4 py-3 text-sm font-medium text-primary disabled:opacity-60"
-        >
-          Set
-        </button>
-      </div>
+      {gpsFailed && (
+        <p className="mb-3 text-sm text-ink/60">
+          No problem — search for your city instead.
+        </p>
+      )}
+      <CitySearch
+        value={manual}
+        onChange={setManual}
+        autoFocus={gpsFailed}
+        placeholder="Start typing a city"
+        onSelect={(place) => onDone(place.latitude, place.longitude, place.label)}
+      />
       <p className="mt-6 text-center text-xs text-ink/40">
         Not sure? You can change this later.
       </p>
