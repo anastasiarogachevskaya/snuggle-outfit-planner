@@ -130,7 +130,13 @@ function togLabel(t: TogValue): string {
 
 export function pickSleep(roomTempC: number, owned: Set<WardrobeSlug>): SleepPick {
   const { chosen, ideal, suggestion } = chooseSleepSack(roomTempC, owned);
-  const { base, socks } = sleepwearFor(roomTempC, chosen, ideal);
+  const { base, socks: rawSocks } = sleepwearFor(roomTempC, chosen, ideal);
+  // Socks are not part of a normal sleep outfit — warmth comes from sleepwear,
+  // the sleep sack and the room. Only keep them for a genuinely cold room
+  // without a suitable sack.
+  const coldRoomWithoutSack = roomTempC < 17 && (!chosen || (ideal !== null && chosen.tog < ideal));
+  const socks: SockKind = coldRoomWithoutSack ? rawSocks : "none";
+
 
   let explanation: string;
   if (ideal === null) {
