@@ -104,9 +104,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icon-192.png" },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "mask-icon", href: "/mask-icon.svg", color: "#7D8F69" },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "Layerly",
+          description:
+            "Layerly helps parents decide what their baby should wear based on today's weather, your baby's age, and the clothes you already own.",
+          url: "https://layerly.online",
+          applicationCategory: "HealthApplication",
+          operatingSystem: "Web, iOS, Android",
+          browserRequirements: "Requires JavaScript",
+          logo: "https://layerly.online/icon-512.png",
+          image: "https://layerly.online/icon-512.png",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+          publisher: { "@type": "Organization", name: "Layerly", url: "https://layerly.online" },
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,
