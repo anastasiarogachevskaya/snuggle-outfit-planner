@@ -59,7 +59,7 @@ const BANDS = [
   },
 ];
 
-export default function noop() {}
+
 
 function LayeringGuide() {
   return (
