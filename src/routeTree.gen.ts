@@ -18,6 +18,8 @@ import { Route as AuthCallbackRouteImport } from './routes/auth-callback'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuideStrollerWalksRouteImport } from './routes/guide.stroller-walks'
+import { Route as GuideBabyLayeringRouteImport } from './routes/guide.baby-layering'
 import { Route as AuthenticatedWardrobeRouteImport } from './routes/_authenticated/wardrobe'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedBabyRouteImport } from './routes/_authenticated/baby'
@@ -72,6 +74,16 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuideStrollerWalksRoute = GuideStrollerWalksRouteImport.update({
+  id: '/guide/stroller-walks',
+  path: '/guide/stroller-walks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuideBabyLayeringRoute = GuideBabyLayeringRouteImport.update({
+  id: '/guide/baby-layering',
+  path: '/guide/baby-layering',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWardrobeRoute = AuthenticatedWardrobeRouteImport.update({
@@ -149,6 +161,8 @@ export interface FileRoutesByFullPath {
   '/baby': typeof AuthenticatedBabyRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/guide/baby-layering': typeof GuideBabyLayeringRoute
+  '/guide/stroller-walks': typeof GuideStrollerWalksRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
@@ -170,6 +184,8 @@ export interface FileRoutesByTo {
   '/baby': typeof AuthenticatedBabyRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/guide/baby-layering': typeof GuideBabyLayeringRoute
+  '/guide/stroller-walks': typeof GuideStrollerWalksRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
@@ -193,6 +209,8 @@ export interface FileRoutesById {
   '/_authenticated/baby': typeof AuthenticatedBabyRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/guide/baby-layering': typeof GuideBabyLayeringRoute
+  '/guide/stroller-walks': typeof GuideStrollerWalksRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
@@ -216,6 +234,8 @@ export interface FileRouteTypes {
     | '/baby'
     | '/today'
     | '/wardrobe'
+    | '/guide/baby-layering'
+    | '/guide/stroller-walks'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/onboarding/wardrobe'
@@ -237,6 +257,8 @@ export interface FileRouteTypes {
     | '/baby'
     | '/today'
     | '/wardrobe'
+    | '/guide/baby-layering'
+    | '/guide/stroller-walks'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/onboarding/wardrobe'
@@ -259,6 +281,8 @@ export interface FileRouteTypes {
     | '/_authenticated/baby'
     | '/_authenticated/today'
     | '/_authenticated/wardrobe'
+    | '/guide/baby-layering'
+    | '/guide/stroller-walks'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/onboarding/wardrobe'
@@ -278,6 +302,8 @@ export interface RootRouteChildren {
   TryRoute: typeof TryRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  GuideBabyLayeringRoute: typeof GuideBabyLayeringRoute
+  GuideStrollerWalksRoute: typeof GuideStrollerWalksRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -347,6 +373,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide/stroller-walks': {
+      id: '/guide/stroller-walks'
+      path: '/guide/stroller-walks'
+      fullPath: '/guide/stroller-walks'
+      preLoaderRoute: typeof GuideStrollerWalksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide/baby-layering': {
+      id: '/guide/baby-layering'
+      path: '/guide/baby-layering'
+      fullPath: '/guide/baby-layering'
+      preLoaderRoute: typeof GuideBabyLayeringRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/wardrobe': {
@@ -461,6 +501,8 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  GuideBabyLayeringRoute: GuideBabyLayeringRoute,
+  GuideStrollerWalksRoute: GuideStrollerWalksRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
