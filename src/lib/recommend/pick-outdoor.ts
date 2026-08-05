@@ -91,8 +91,7 @@ function pickAccessories(effectiveC: number, ctx: OutdoorContext): AccessoryNeed
   let hat: AccessoryNeed["hat"] = "none";
   if (ctx.situation === "walk") {
     if (band === "very_hot" || band === "hot") hat = "sun";
-    else if (band === "warm")
-      hat = uv >= 3 ? "sun" : effectiveC < OUTDOOR_LONG_SLEEVE_ABOVE ? "thin" : "none";
+    else if (band === "warm") hat = uv >= 3 ? "sun" : "thin";
     else if (band === "mild" || band === "cool") hat = "thin";
     else hat = "warm";
   } else {
@@ -102,8 +101,9 @@ function pickAccessories(effectiveC: number, ctx: OutdoorContext): AccessoryNeed
 
   let socks: AccessoryNeed["socks"] = "none";
   if (effectiveC < TEMP.COOL) socks = "wool";
-  else if (effectiveC < OUTDOOR_LONG_SLEEVE_ABOVE) socks = "cotton";
-  // At ~21°C and above → bare feet / no socks outdoors.
+  else if (effectiveC < OUTDOOR_SHORT_SLEEVE_FROM) socks = "cotton";
+  // At 22°C and above → bare feet / no socks outdoors.
+
 
 
   const mittens = effectiveC < TEMP.COLD;
