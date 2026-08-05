@@ -55,9 +55,10 @@ export function computeEffectiveTemp(ctx: OutdoorContext): number {
 
 /**
  * Outside feels cooler than inside at the same reading (wind, shade, stillness
- * in a stroller), so the lower half of the "warm" band keeps long sleeves.
+ * in a stroller), so the whole "warm" band (18–21°C) keeps long sleeves and
+ * light socks. Short sleeves start once it is genuinely hot (22°C+).
  */
-const OUTDOOR_LONG_SLEEVE_ABOVE = 20.5;
+const OUTDOOR_SHORT_SLEEVE_FROM = TEMP.HOT;
 
 function pickLayers(effectiveC: number): LayerNeed {
   const band = bandFor(effectiveC);
@@ -67,10 +68,9 @@ function pickLayers(effectiveC: number): LayerNeed {
     case "hot":
       return { base: "short_sleeve", bottom: "shorts", mid: "none", outer: "none" };
     case "warm":
-      // 18–20°C outdoors → long sleeves; 21°C+ → short sleeves.
-      return effectiveC < OUTDOOR_LONG_SLEEVE_ABOVE
-        ? { base: "long_sleeve", bottom: "pants", mid: "none", outer: "none" }
-        : { base: "short_sleeve", bottom: "pants", mid: "none", outer: "none" };
+      // 18–21°C outdoors → long sleeves, never lighter than the same room temp indoors.
+      return { base: "long_sleeve", bottom: "pants", mid: "none", outer: "none" };
+
     case "mild":
       return { base: "long_sleeve", bottom: "pants", mid: "none", outer: "none" };
     case "cool":
