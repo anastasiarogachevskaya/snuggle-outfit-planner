@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthCallbackRouteImport } from './routes/auth-callback'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as IosRouteImport } from './routes/ios'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -68,6 +69,11 @@ const FaqRoute = FaqRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IosRoute = IosRouteImport.update({
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/auth-callback': typeof AuthCallbackRoute
   '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/ios': typeof IosRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -204,6 +211,7 @@ export interface FileRoutesByTo {
   '/auth-callback': typeof AuthCallbackRoute
   '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/ios': typeof IosRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -233,6 +241,7 @@ export interface FileRoutesById {
   '/auth-callback': typeof AuthCallbackRoute
   '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/ios': typeof IosRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -262,6 +271,7 @@ export interface FileRouteTypes {
     | '/auth-callback'
     | '/faq'
     | '/forgot-password'
+    | '/how-it-works'
     | '/ios'
     | '/mcp'
     | '/reset-password'
@@ -289,6 +299,7 @@ export interface FileRouteTypes {
     | '/auth-callback'
     | '/faq'
     | '/forgot-password'
+    | '/how-it-works'
     | '/ios'
     | '/mcp'
     | '/reset-password'
@@ -317,6 +328,7 @@ export interface FileRouteTypes {
     | '/auth-callback'
     | '/faq'
     | '/forgot-password'
+    | '/how-it-works'
     | '/ios'
     | '/mcp'
     | '/reset-password'
@@ -346,6 +358,7 @@ export interface RootRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
   FaqRoute: typeof FaqRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   IosRoute: typeof IosRoute
   McpRoute: typeof McpRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -411,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ios': {
@@ -576,6 +596,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
   FaqRoute: FaqRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  HowItWorksRoute: HowItWorksRoute,
   IosRoute: IosRoute,
   McpRoute: McpRoute,
   ResetPasswordRoute: ResetPasswordRoute,

@@ -7,6 +7,7 @@ export const OG_IMAGE =
 export const PUBLIC_ROUTES: { path: string; changefreq: string; priority: string }[] = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
   { path: "/try", changefreq: "weekly", priority: "0.9" },
+  { path: "/how-it-works", changefreq: "monthly", priority: "0.8" },
   { path: "/faq", changefreq: "monthly", priority: "0.8" },
   { path: "/guide/baby-layering", changefreq: "monthly", priority: "0.8" },
   { path: "/guide/stroller-walks", changefreq: "monthly", priority: "0.8" },
