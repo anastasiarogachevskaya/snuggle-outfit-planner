@@ -20,7 +20,7 @@ const FAQ = [
   },
   {
     q: "Can I use Layerly without creating an account?",
-    a: 'Yes. Tap "Try Layerly" on the home screen, pick your baby's age band, share a location or city, and you get a full recommendation with a realistic default wardrobe. Nothing is saved until you decide to create an account.',
+    a: "Yes. Tap \"Try Layerly\" on the home screen, pick your baby's age band, share a location or city, and you get a full recommendation with a realistic default wardrobe. Nothing is saved until you decide to create an account.",
   },
   {
     q: "Does Layerly work with my own wardrobe?",
