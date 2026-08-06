@@ -74,10 +74,18 @@ function FaqPage() {
   return (
     <div className="min-h-screen bg-canvas">
       <div className="mx-auto max-w-md px-6 py-10 font-sans">
-        <header className="mb-10">
+        <header className="mb-10 flex items-center justify-between">
           <Link to="/" className="font-serif text-lg font-semibold text-ink">
             Layerly
           </Link>
+          <nav aria-label="Top" className="flex items-center gap-4 text-sm">
+            <Link to="/how-it-works" className="font-medium text-ink/70">
+              How it works
+            </Link>
+            <Link to="/try" className="font-medium text-primary">
+              Try Layerly
+            </Link>
+          </nav>
         </header>
 
         <main>
@@ -114,6 +122,7 @@ function FaqPage() {
         <footer className="mt-16 border-t border-black/5 pt-6">
           <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink/70">
             <Link to="/">Home</Link>
+            <Link to="/how-it-works">How it works</Link>
             <Link to="/try">Try Layerly</Link>
             <Link to="/auth">Sign in</Link>
             <Link to="/guide/baby-layering">Layering guide</Link>

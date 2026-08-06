@@ -40,10 +40,20 @@ function Landing() {
     <div className="min-h-screen bg-canvas">
       <div className="mx-auto max-w-md px-6 py-10 font-sans">
         <header className="mb-14 flex items-center justify-between">
-          <span className="font-serif text-lg font-semibold">Layerly</span>
-          <Link to="/auth" className="text-sm font-medium text-primary">
-            Sign in
+          <Link to="/" className="font-serif text-lg font-semibold text-ink">
+            Layerly
           </Link>
+          <nav aria-label="Top" className="flex items-center gap-4 text-sm">
+            <Link to="/how-it-works" className="font-medium text-ink/70">
+              How it works
+            </Link>
+            <Link to="/faq" className="font-medium text-ink/70">
+              FAQ
+            </Link>
+            <Link to="/auth" className="font-medium text-primary">
+              Sign in
+            </Link>
+          </nav>
         </header>
 
         <main>
@@ -97,11 +107,12 @@ function Landing() {
 
         <footer className="mt-16 border-t border-black/5 pt-6">
           <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink/70">
+            <Link to="/how-it-works">How it works</Link>
+            <Link to="/faq">FAQ</Link>
             <Link to="/try">Try Layerly</Link>
             <Link to="/auth">Sign in</Link>
             <Link to="/guide/baby-layering">Layering guide</Link>
             <Link to="/guide/stroller-walks">Stroller guide</Link>
-            <Link to="/faq">FAQ</Link>
             <Link to="/ios">iOS</Link>
             <Link to="/android">Android</Link>
             <Link to="/web-app">Web app</Link>
