@@ -4,7 +4,6 @@ import { fetchWeather } from "@/lib/weather";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import {
-import { SiteFooter } from "@/components/site-footer";
   HomeIcon,
   WalkIcon,
   CarIcon,
@@ -12,6 +11,7 @@ import { SiteFooter } from "@/components/site-footer";
   SleepingIcon,
   ClothingIcon,
 } from "@/components/icons";
+import { SiteFooter } from "@/components/site-footer";
 
 export type TodayBaby = {
   id: string;
