@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import {
 } from "@/lib/location-service";
 import { CitySearch } from "@/components/city-search";
 import { SiteFooter } from "@/components/site-footer";
+import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
@@ -53,6 +54,12 @@ function BabyPage() {
   const [lon, setLon] = useState<number | null>(null);
   const [locating, setLocating] = useState(false);
   const [locError, setLocError] = useState<LocationFailureStatus | null>(null);
+
+  // If the user enables location in iPhone Settings and comes back, drop the denied state.
+  useLocationPermissionRecovery(
+    locError === "permission-denied" || locError === "location-disabled",
+    useCallback(() => setLocError(null), []),
+  );
 
   useEffect(() => {
     if (babyQ.data) {
