@@ -10,7 +10,8 @@ let cleanup: (() => void) | null = null;
 
 const KEYBOARD_CLASS = "keyboard-open";
 
-async function setupStatusBar() {
+/** Applies the expected iOS status-bar configuration. Safe to call again on resume. */
+export async function applyStatusBar() {
   if (!isIOSApp()) return;
   try {
     const { StatusBar, Style } = await import("@capacitor/status-bar");
@@ -45,6 +46,18 @@ async function setupKeyboard() {
   }
 }
 
+/**
+ * Clears a stale `keyboard-open` class (e.g. the app was backgrounded while the
+ * keyboard was open). Does not close a keyboard that is genuinely open.
+ */
+export function resyncKeyboardState(): void {
+  if (typeof document === "undefined") return;
+  const active = document.activeElement as HTMLElement | null;
+  const editing =
+    !!active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable);
+  if (!editing) document.documentElement.classList.remove(KEYBOARD_CLASS);
+}
+
 /** Idempotent: safe to call on every mount / during HMR. */
 export function initializeNativeUI(): void {
   if (initialized) return;
@@ -52,7 +65,7 @@ export function initializeNativeUI(): void {
   if (!isNativeApp()) return;
   initialized = true;
 
-  void setupStatusBar();
+  void applyStatusBar();
   void setupKeyboard();
 }
 
