@@ -12,6 +12,7 @@ import {
   type LocationFailureStatus,
 } from "@/lib/location-service";
 import { CitySearch } from "@/components/city-search";
+import { SiteFooter } from "@/components/site-footer";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
@@ -289,6 +290,8 @@ function BabyPage() {
         <p className="mt-6 text-center text-xs text-ink/40">
           Not sure? You can change this later.
         </p>
+
+        <SiteFooter className="mt-14" />
       </div>
 
       <style>{`.input { width:100%; min-width:0; max-width:100%; box-sizing:border-box; border:1px solid rgba(0,0,0,0.1); background: color-mix(in oklab, var(--canvas) 60%, transparent); padding: .75rem 1rem; border-radius: 1rem; font-size: .875rem; outline: none; }

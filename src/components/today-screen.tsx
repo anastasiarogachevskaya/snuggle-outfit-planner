@@ -4,6 +4,7 @@ import { fetchWeather } from "@/lib/weather";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import {
+import { SiteFooter } from "@/components/site-footer";
   HomeIcon,
   WalkIcon,
   CarIcon,
@@ -520,6 +521,8 @@ export function TodayScreen({
             {secondaryAction.label}
           </button>
         </footer>
+
+        <SiteFooter className="mt-10" />
       </div>
     </div>
   );
