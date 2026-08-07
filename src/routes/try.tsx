@@ -15,6 +15,7 @@ import { SavePromptSheet, type SavePromptKind } from "@/components/save-prompt-s
 import { CitySearch } from "@/components/city-search";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { SiteFooter } from "@/components/site-footer";
+import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
@@ -134,6 +135,8 @@ function LocationStep({
   const [busy, setBusy] = useState(false);
   const [manual, setManual] = useState("");
   const [gpsFailed, setGpsFailed] = useState(false);
+
+  useLocationPermissionRecovery(gpsFailed, useCallback(() => setGpsFailed(false), []));
 
   const useGps = async () => {
     setBusy(true);
