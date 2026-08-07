@@ -14,6 +14,7 @@ import { TodayScreen } from "@/components/today-screen";
 import { SavePromptSheet, type SavePromptKind } from "@/components/save-prompt-sheet";
 import { CitySearch } from "@/components/city-search";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { SiteFooter } from "@/components/site-footer";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
@@ -209,6 +210,8 @@ function Shell({
         <h1 className="mb-2 font-serif text-3xl font-semibold">{title}</h1>
         <p className="mb-8 leading-relaxed text-ink/60">{subtitle}</p>
         {children}
+
+        <SiteFooter className="mt-14" />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import {
   SleepingIcon,
   ClothingIcon,
 } from "@/components/icons";
+import { SiteFooter } from "@/components/site-footer";
 
 export type TodayBaby = {
   id: string;
@@ -520,6 +521,8 @@ export function TodayScreen({
             {secondaryAction.label}
           </button>
         </footer>
+
+        <SiteFooter className="mt-10" />
       </div>
     </div>
   );

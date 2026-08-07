@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { SiteFooter } from "@/components/site-footer";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -219,6 +220,8 @@ function AccountPage() {
             disabled={!babyQ.data}
           />
         </div>
+
+        <SiteFooter className="mt-14" />
       </div>
 
       <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>

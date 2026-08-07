@@ -9,6 +9,7 @@ import {
   takeAuthReturnUrl,
 } from "@/lib/auth-redirect";
 import { toast } from "sonner";
+import { SiteFooter } from "@/components/site-footer";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -194,6 +195,8 @@ function AuthPage() {
             </button>
           </p>
         </div>
+
+        <SiteFooter variant="compact" className="mt-14" />
       </div>
     </div>
   );

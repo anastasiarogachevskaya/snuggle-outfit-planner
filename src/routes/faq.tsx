@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { OG_IMAGE, SITE_URL, breadcrumbLd } from "@/lib/seo";
+import { SiteFooter } from "@/components/site-footer";
 
 const TITLE = "Frequently Asked Questions — Layerly";
 const DESCRIPTION =
@@ -119,20 +120,7 @@ function FaqPage() {
           </div>
         </main>
 
-        <footer className="mt-16 border-t border-black/5 pt-6">
-          <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink/70">
-            <Link to="/">Home</Link>
-            <Link to="/how-it-works">How it works</Link>
-            <Link to="/try">Try Layerly</Link>
-            <Link to="/auth">Sign in</Link>
-            <Link to="/guide/baby-layering">Layering guide</Link>
-            <Link to="/guide/stroller-walks">Stroller guide</Link>
-            <Link to="/ios">iOS</Link>
-            <Link to="/android">Android</Link>
-            <Link to="/web-app">Web app</Link>
-          </nav>
-          <p className="mt-6 text-xs text-ink/40">Weather from Open-Meteo. No ads, no tracking.</p>
-        </footer>
+        <SiteFooter className="mt-16" />
       </div>
     </div>
   );

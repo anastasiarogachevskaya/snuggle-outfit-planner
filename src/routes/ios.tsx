@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { pageMeta } from "@/lib/seo";
+import { SiteFooter } from "@/components/site-footer";
 
 const TITLE = "Layerly for iPhone — Baby Outfit App for iOS | Layerly";
 const DESCRIPTION =
@@ -68,13 +69,7 @@ function IosPage() {
           </section>
         </main>
 
-        <footer className="mt-14 border-t border-black/5 pt-6">
-          <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink/70">
-            <Link to="/">Home</Link>
-            <Link to="/android">Android</Link>
-            <Link to="/web-app">Web app</Link>
-          </nav>
-        </footer>
+        <SiteFooter className="mt-14" />
       </div>
     </div>
   );

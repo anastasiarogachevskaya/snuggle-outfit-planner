@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WARDROBE_CATALOG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import { ClothingIcon } from "@/components/icons";
+import { SiteFooter } from "@/components/site-footer";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
   head: () => ({
@@ -136,6 +137,8 @@ function WardrobePage() {
             </section>
           ))}
         </div>
+
+        <SiteFooter className="mt-14" />
       </div>
     </div>
   );
