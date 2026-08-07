@@ -23,6 +23,7 @@ import { Toaster } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { initPlatform } from "@/lib/platform";
 import { initializeNativeUI } from "@/lib/native-ui";
+import { initNativeLifecycle, setDeepLinkHandler } from "@/lib/native-lifecycle";
 import { PlatformDebugBadge } from "@/components/platform-debug-badge";
 
 function NotFoundComponent() {
@@ -159,7 +160,17 @@ function RootComponent() {
   useEffect(() => {
     initPlatform();
     initializeNativeUI();
-  }, []);
+    setDeepLinkHandler((url) => {
+      try {
+        const parsed = new URL(url);
+        router.navigate({ href: `${parsed.pathname}${parsed.search}${parsed.hash}` });
+      } catch {
+        /* ignore malformed deep links */
+      }
+    });
+    initNativeLifecycle();
+    return () => setDeepLinkHandler(null);
+  }, [router]);
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
