@@ -119,8 +119,14 @@ function TryPage() {
           setConfirmation(rating);
           setPrompt("feedback");
         }}
-        onOpenProfile={() => setPrompt("profile")}
-        onOpenWardrobe={() => setPrompt("wardrobe")}
+        onOpenProfile={() => {
+          lightHaptic();
+          setPrompt("profile");
+        }}
+        onOpenWardrobe={() => {
+          lightHaptic();
+          setPrompt("wardrobe");
+        }}
         secondaryAction={{ label: "Create account", onClick: () => navigate({ to: "/auth" }) }}
       />
       <SavePromptSheet kind={prompt} onClose={() => setPrompt(null)} />
