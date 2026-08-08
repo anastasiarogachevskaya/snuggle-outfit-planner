@@ -8,6 +8,7 @@
         "@capacitor/app": "^7.0.1",
         "@capacitor/core": "^7.4.3",
         "@capacitor/geolocation": "^7.1.4",
+        "@capacitor/haptics": "^7.0.0",
         "@capacitor/keyboard": "^7.0.3",
         "@capacitor/splash-screen": "^7.0.3",
         "@capacitor/status-bar": "^7.0.3",
@@ -144,6 +145,8 @@
     "@capacitor/core": ["@capacitor/core@7.6.8", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@capacitor/core/-/core-7.6.8.tgz", { "dependencies": { "tslib": "^2.1.0" } }, "sha512-x1xfxvNcTSnj6OoYaAB0n0a0HRvi5f2YjcVnMLxpMhbHDgGDAzzN9z8cnPCYV+SKTvqGF1hezHm82Op32XaAGg=="],
 
     "@capacitor/geolocation": ["@capacitor/geolocation@7.1.8", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@capacitor/geolocation/-/geolocation-7.1.8.tgz", { "dependencies": { "@capacitor/synapse": "^1.0.3" }, "peerDependencies": { "@capacitor/core": ">=7.0.0" } }, "sha512-x/rJieD2N2zlGvXFRD3ru4ArJWTwXAIYmyhfo5zg4F1DKGos7mCCOvIOSVMdfQmt14SCsmJeO9Qe8EtDGNGCrw=="],
+
+    "@capacitor/haptics": ["@capacitor/haptics@7.0.5", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@capacitor/haptics/-/haptics-7.0.5.tgz", { "peerDependencies": { "@capacitor/core": ">=7.0.0" } }, "sha512-ujXuUkL8UG1YLhuJo/q+jiHr0K5JmclGZHmV1RttmiUBRG1XpC4Fc4gXUJyEX+6IoyfwWhgtPvJFRUB31HYnRQ=="],
 
     "@capacitor/keyboard": ["@capacitor/keyboard@7.0.6", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@capacitor/keyboard/-/keyboard-7.0.6.tgz", { "peerDependencies": { "@capacitor/core": ">=7.0.0" } }, "sha512-mH9EHo4EnBA9zJAi6domGVB/PdEkcm0h27nJDHG4Y3fd2oKsheCxDRXlYrbgj8hcyQPe0cGWqAfzfwKzkWQoFQ=="],
 
