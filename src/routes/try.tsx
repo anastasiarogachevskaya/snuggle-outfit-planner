@@ -15,6 +15,7 @@ import { SavePromptSheet, type SavePromptKind } from "@/components/save-prompt-s
 import { CitySearch } from "@/components/city-search";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { SiteFooter } from "@/components/site-footer";
+import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 
 export const Route = createFileRoute("/try")({
@@ -139,11 +140,13 @@ function LocationStep({
   useLocationPermissionRecovery(gpsFailed, useCallback(() => setGpsFailed(false), []));
 
   const useGps = async () => {
+    lightHaptic();
     setBusy(true);
     const res = await getCurrentLocation();
     if (res.status !== "success") {
       setBusy(false);
       setGpsFailed(true);
+      warningHaptic();
       toast.error(locationErrorMessage(res.status));
       return;
     }
@@ -158,6 +161,7 @@ function LocationStep({
       label = null;
     }
     setBusy(false);
+    successHaptic();
     onDone(res.latitude, res.longitude, label);
   };
 

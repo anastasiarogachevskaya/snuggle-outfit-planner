@@ -13,6 +13,7 @@ import {
 } from "@/lib/location-service";
 import { CitySearch } from "@/components/city-search";
 import { SiteFooter } from "@/components/site-footer";
+import { lightHaptic, selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 
 export const Route = createFileRoute("/_authenticated/baby")({
@@ -74,12 +75,14 @@ function BabyPage() {
 
   const useGPS = async () => {
     if (locating) return;
+    lightHaptic();
     setLocating(true);
     setLocError(null);
     const result = await getCurrentLocation();
     setLocating(false);
 
     if (result.status !== "success") {
+      warningHaptic();
       setLocError(result.status);
       return;
     }
@@ -98,6 +101,7 @@ function BabyPage() {
     } catch {
       setLocLabel(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
     }
+    successHaptic();
     toast.success("Location saved");
   };
 
@@ -131,10 +135,14 @@ function BabyPage() {
     onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ["baby"] });
       qc.invalidateQueries({ queryKey: ["wardrobe"] });
+      successHaptic();
       toast.success("Saved");
       navigate({ to: result?.isNew ? "/onboarding/wardrobe" : "/today" });
     },
-    onError: (e: any) => toast.error(e.message ?? "Save failed"),
+    onError: (e: any) => {
+      warningHaptic();
+      toast.error(e.message ?? "Save failed");
+    },
   });
 
   return (
@@ -182,6 +190,8 @@ function BabyPage() {
               max={5}
               value={pref}
               onChange={(e) => setPref(Number(e.target.value))}
+              onPointerUp={() => selectionHaptic()}
+              onKeyUp={() => selectionHaptic()}
               className="w-full accent-primary"
             />
             <div className="flex justify-between text-[11px] text-ink/40 mt-1">
