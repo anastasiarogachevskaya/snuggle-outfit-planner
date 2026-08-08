@@ -12,6 +12,14 @@ import {
   ClothingIcon,
 } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
+import { lightHaptic, selectionHaptic } from "@/lib/haptics";
+
+/** Fires a selection haptic only when the value actually changes. */
+function change<T>(current: T, next: T, set: (v: T) => void) {
+  if (current === next) return;
+  selectionHaptic();
+  set(next);
+}
 
 export type TodayBaby = {
   id: string;
