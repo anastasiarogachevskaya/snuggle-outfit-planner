@@ -8,6 +8,7 @@ import {
   type WardrobeSlug,
 } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
+import { selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { ClothingIcon } from "@/components/icons";
 
 export const Route = createFileRoute("/_authenticated/onboarding/wardrobe")({
@@ -53,6 +54,7 @@ function OnboardingWardrobe() {
   }, [mode]);
 
   const toggle = (slug: WardrobeSlug) => {
+    selectionHaptic();
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(slug)) next.delete(slug);
@@ -76,9 +78,11 @@ function OnboardingWardrobe() {
         if (error) throw error;
       }
       qc.invalidateQueries({ queryKey: ["wardrobe"] });
+      successHaptic();
       toast.success("Wardrobe saved");
       navigate({ to: "/today" });
     } catch (e: any) {
+      warningHaptic();
       toast.error(e.message ?? "Save failed");
     } finally {
       setSaving(false);

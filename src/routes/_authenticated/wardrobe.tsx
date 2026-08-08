@@ -6,6 +6,7 @@ import { WARDROBE_CATALOG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import { ClothingIcon } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
+import { selectionHaptic, warningHaptic } from "@/lib/haptics";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
   head: () => ({
@@ -68,7 +69,10 @@ function WardrobePage() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["wardrobe"] }),
-    onError: (e: any) => toast.error(e.message ?? "Update failed"),
+    onError: (e: any) => {
+      warningHaptic();
+      toast.error(e.message ?? "Update failed");
+    },
   });
 
   if (!babyQ.data) {
@@ -106,9 +110,10 @@ function WardrobePage() {
                   return (
                     <button
                       key={item.slug}
-                      onClick={() =>
-                        toggle.mutate({ slug: item.slug as WardrobeSlug, owned: !owned })
-                      }
+                      onClick={() => {
+                        selectionHaptic();
+                        toggle.mutate({ slug: item.slug as WardrobeSlug, owned: !owned });
+                      }}
                       className={
                         "w-full min-w-0 flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left " +
                         (owned

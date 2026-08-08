@@ -12,6 +12,14 @@ import {
   ClothingIcon,
 } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
+import { lightHaptic, selectionHaptic } from "@/lib/haptics";
+
+/** Fires a selection haptic only when the value actually changes. */
+function change<T>(current: T, next: T, set: (v: T) => void) {
+  if (current === next) return;
+  selectionHaptic();
+  set(next);
+}
 
 export type TodayBaby = {
   id: string;
@@ -221,7 +229,7 @@ export function TodayScreen({
             {situationOptions.map((s) => (
               <button
                 key={s.id}
-                onClick={() => setSituation(s.id)}
+                onClick={() => change(situation, s.id, setSituation)}
                 className={
                   "flex flex-col items-center gap-1.5 py-5 px-2 rounded-2xl transition-all " +
                   (situation === s.id
@@ -258,7 +266,7 @@ export function TodayScreen({
                   {(["playing", "sleeping"] as HomeActivity[]).map((a) => (
                     <button
                       key={a}
-                      onClick={() => setHomeActivity(a)}
+                      onClick={() => change(homeActivity, a, setHomeActivity)}
                       className={
                         "py-2 rounded-xl text-sm capitalize inline-flex items-center justify-center gap-2 " +
                         (homeActivity === a
@@ -283,6 +291,8 @@ export function TodayScreen({
                   max={30}
                   value={roomTemp}
                   onChange={(e) => setRoomTemp(Number(e.target.value))}
+                  onPointerUp={() => selectionHaptic()}
+                  onKeyUp={() => selectionHaptic()}
                   className="w-full accent-primary"
                 />
               </label>
@@ -296,7 +306,7 @@ export function TodayScreen({
                   {transportOptions.map((m) => (
                     <button
                       key={m.id}
-                      onClick={() => setTransportMode(m.id)}
+                      onClick={() => change(transportMode, m.id, setTransportMode)}
                       className={
                         "py-2 rounded-xl text-sm " +
                         (transportMode === m.id
@@ -315,7 +325,7 @@ export function TodayScreen({
                   {[15, 30, 60].map((d) => (
                     <button
                       key={d}
-                      onClick={() => setDuration(d as 15 | 30 | 60)}
+                      onClick={() => change(duration, d as 15 | 30 | 60, setDuration)}
                       className={
                         "py-2 rounded-xl text-sm " +
                         (duration === d
@@ -338,7 +348,7 @@ export function TodayScreen({
                 {[15, 30, 60].map((d) => (
                   <button
                     key={d}
-                    onClick={() => setDuration(d as 15 | 30 | 60)}
+                    onClick={() => change(duration, d as 15 | 30 | 60, setDuration)}
                     className={
                       "py-2 rounded-xl text-sm " +
                       (duration === d
@@ -484,20 +494,20 @@ export function TodayScreen({
               emoji="🥶"
               label="Too cold"
               disabled={feedbackPending}
-              onClick={() => onFeedback("cold", feedbackCtx)}
+              onClick={() => { lightHaptic(); onFeedback("cold", feedbackCtx); }}
             />
             <FeedbackBtn
               emoji="😊"
               label="Just right"
               primary
               disabled={feedbackPending}
-              onClick={() => onFeedback("comfortable", feedbackCtx)}
+              onClick={() => { lightHaptic(); onFeedback("comfortable", feedbackCtx); }}
             />
             <FeedbackBtn
               emoji="🥵"
               label="Too warm"
               disabled={feedbackPending}
-              onClick={() => onFeedback("warm", feedbackCtx)}
+              onClick={() => { lightHaptic(); onFeedback("warm", feedbackCtx); }}
             />
           </div>
           {confirmation && (

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
+import { successHaptic, warningHaptic } from "@/lib/haptics";
 import { TodayScreen, type FeedbackContext } from "@/components/today-screen";
 import { clearGuestProfile, readGuestProfile, GUEST_DEFAULT_WARDROBE } from "@/lib/guest-profile";
 
@@ -145,10 +146,14 @@ function TodayPage() {
       if (error) throw error;
     },
     onSuccess: (_data, vars) => {
+      successHaptic();
       setConfirmation(vars.rating);
       setTimeout(() => setConfirmation((c) => (c === vars.rating ? null : c)), 4000);
     },
-    onError: (e: any) => toast.error(e.message ?? "Couldn't save"),
+    onError: (e: any) => {
+      warningHaptic();
+      toast.error(e.message ?? "Couldn't save");
+    },
   });
 
   const signOut = async () => {
