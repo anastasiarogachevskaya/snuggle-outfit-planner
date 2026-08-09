@@ -2,7 +2,9 @@
 import { describe, it, expect } from "bun:test";
 import { SITE_URL, OG_IMAGE, PUBLIC_ROUTES, pageMeta, breadcrumbLd } from "../seo";
 
-const find = (meta: Record<string, string>[], key: "name" | "property", value: string) =>
+type MetaTag = { title?: string; name?: string; property?: string; content?: string };
+
+const find = (meta: MetaTag[], key: "name" | "property", value: string) =>
   meta.find((m) => m[key] === value)?.content;
 
 describe("pageMeta", () => {
@@ -11,7 +13,7 @@ describe("pageMeta", () => {
     description: "Answers about dressing your baby for the weather.",
     path: "/faq",
   });
-  const meta = result.meta as Record<string, string>[];
+  const meta = result.meta as MetaTag[];
 
   it("emits a self-referencing canonical link", () => {
     expect(result.links).toEqual([{ rel: "canonical", href: `${SITE_URL}/faq` }]);
@@ -40,8 +42,12 @@ describe("pageMeta", () => {
 
   it("defaults og:type to website and honours an override", () => {
     expect(find(meta, "property", "og:type")).toBe("website");
-    const article = pageMeta({ title: "T", description: "D", path: "/guide/baby-layering", type: "article" })
-      .meta as Record<string, string>[];
+    const article = pageMeta({
+      title: "T",
+      description: "D",
+      path: "/guide/baby-layering",
+      type: "article",
+    }).meta as MetaTag[];
     expect(find(article, "property", "og:type")).toBe("article");
   });
 });
