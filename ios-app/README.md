@@ -7,7 +7,7 @@ Capacitor wrapper for Layerly. It wraps the **existing web app in the repository
 ```
 ios-app/
 ├── capacitor.config.ts             # Production: loads https://layerly.online
-├── capacitor.config.local.ts       # Local bundled mode: webDir ../dist/client
+├── capacitor.config.local.ts       # Local bundled mode: webDir ../.output/public
 ├── tsconfig.json                   # CommonJS/node settings so the Capacitor CLI can read the TS config
 ├── package.json
 ├── scripts/detect-web-output.mjs   # Reads the build manifest to find static assets
@@ -20,11 +20,26 @@ runtime imports, so the Capacitor CLI can transpile them without `exports is not
 defined` errors. Keep them free of `require()`, `module.exports` and computed values.
 
 The root `bun run build` uses TanStack Start + Nitro. The static client assets
-currently land in `../dist/client` (server bundle in `../dist/server`), which is
-what `webDir` points to. `bun run prepare:ios` reads the Nitro build manifest
-(`dist/nitro.json` → `publicDir`, fallbacks `.output/public`, `dist/client`,
-`dist`) and warns if the build output ever moves away from `webDir`.
+land in `../.output/public`, which is what `webDir` points to.
+`bun run prepare:ios` reads the Nitro build manifest (`publicDir`, fallbacks
+`.output/public`, `dist/client`, `dist`) and **fails** if the build output ever
+moves away from `webDir`, or if the synced `ios/App/App/capacitor.config.json`
+does not match the `server.url` declared here.
 No `ios/` folder is committed — you generate it on a Mac.
+
+## Which source does the app load?
+
+There is exactly one answer at any time, and the app reports it itself.
+In dev/native builds a small badge and a console line show it:
+
+```
+Layerly ios source: https://layerly.online (build f25075e)
+```
+
+or `... source: bundled ...` when running from bundled assets. If it says
+`bundled` while `capacitor.config.ts` declares a `server.url`, the native project
+is out of sync — re-run `bun run prepare:ios`, which now fails on that mismatch.
+
 
 
 
