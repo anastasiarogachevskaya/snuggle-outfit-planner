@@ -6,7 +6,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 // React/TanStack routes as the web (landing, auth, onboarding, today). There is
 // deliberately no separate native landing/login implementation.
 //
-// webDir points at the root build's static output (Nitro emits ../.output/public)
+// webDir points at the root build's static output (Nitro emits ../dist/client)
 // only so `cap sync` has a valid local directory; those assets are NOT what the
 // app renders in this mode. `bun run prepare:ios` verifies this path against the
 // build manifest and verifies that the synced native config kept `server.url`.
