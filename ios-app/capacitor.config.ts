@@ -1,15 +1,22 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
-// Production config: the app loads the live web app so web deploys
-// ship instantly without an App Store release.
-// webDir points at the root build's static output (TanStack Start + Nitro
-// currently emits ../dist/client) so `cap sync` has a valid local directory
-// even in server mode. `bun run prepare:ios` verifies this path against the
-// build manifest and warns if the build output ever moves.
+// PRODUCTION CONFIG — the single source of truth for the shipped iOS app.
+//
+// The WebView loads the live Layerly website, so iOS renders exactly the same
+// React/TanStack routes as the web (landing, auth, onboarding, today). There is
+// deliberately no separate native landing/login implementation.
+//
+// webDir points at the root build's static output (Nitro emits ../.output/public)
+// only so `cap sync` has a valid local directory; those assets are NOT what the
+// app renders in this mode. `bun run prepare:ios` verifies this path against the
+// build manifest and verifies that the synced native config kept `server.url`.
+//
+// To test fully offline/bundled instead, copy capacitor.config.local.ts over this
+// file explicitly — never switch silently.
 const config: CapacitorConfig = {
   appId: 'online.layerly.app',
   appName: 'Layerly',
-  webDir: '../dist/client',
+  webDir: '../.output/public',
   backgroundColor: '#A8B894',
   server: {
     url: 'https://layerly.online',
@@ -24,6 +31,7 @@ const config: CapacitorConfig = {
       'appleid.apple.com',
     ],
   },
+
   ios: {
     scheme: 'Layerly',
     contentInset: 'never',
