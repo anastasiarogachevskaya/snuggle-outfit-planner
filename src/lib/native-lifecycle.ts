@@ -1,5 +1,7 @@
 import { isNativeApp } from "@/lib/platform";
+import { logAppSource } from "@/lib/build-info";
 import { applyStatusBar, resyncKeyboardState } from "@/lib/native-ui";
+
 
 /**
  * Native app lifecycle (background / foreground / cold launch / deep links).
@@ -102,12 +104,17 @@ async function hideSplash() {
 export function initNativeLifecycle(): void {
   if (initialized) return;
   if (typeof document === "undefined") return;
+  logAppSource();
   if (!isNativeApp()) return;
   initialized = true;
+
+  // A cold launch must never start with a stale keyboard class.
+  document.documentElement.classList.remove("keyboard-open");
 
   void register();
   void hideSplash();
 }
+
 
 /** Removes native listeners (HMR disposal / tests). */
 export function teardownNativeLifecycle(): void {

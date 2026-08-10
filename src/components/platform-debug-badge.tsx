@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
-import { getPlatformLabel, isPlatformDebugEnabled } from "@/lib/platform";
+import { getBuildLabel } from "@/lib/build-info";
+import { isNativeApp, isPlatformDebugEnabled } from "@/lib/platform";
 
 /**
- * Optional debug indicator. Hidden unless VITE_SHOW_PLATFORM_DEBUG=true.
- * Non-interactive so it can never block navigation or buttons.
+ * Development-only build indicator, e.g. "iOS • production web • f25075e".
+ * Shown in dev builds inside the native app, or whenever
+ * VITE_SHOW_PLATFORM_DEBUG=true. Never rendered in production web/App Store
+ * builds. Non-interactive so it can never block navigation or buttons.
  */
 export function PlatformDebugBadge() {
   const [label, setLabel] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isPlatformDebugEnabled()) return;
-    setLabel(getPlatformLabel());
+    const enabled = isPlatformDebugEnabled() || (import.meta.env.DEV && isNativeApp());
+    if (!enabled) return;
+    setLabel(getBuildLabel());
   }, []);
 
   if (!label) return null;
