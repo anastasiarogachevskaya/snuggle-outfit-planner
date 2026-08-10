@@ -66,3 +66,4 @@ export function initPlatform(): void {
     console.info(`Layerly platform: ${platform}`);
   }
 }
+
