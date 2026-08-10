@@ -1,5 +1,7 @@
 import { isNativeApp } from "@/lib/platform";
+import { logAppSource } from "@/lib/build-info";
 import { applyStatusBar, resyncKeyboardState } from "@/lib/native-ui";
+
 
 /**
  * Native app lifecycle (background / foreground / cold launch / deep links).
