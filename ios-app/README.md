@@ -73,7 +73,7 @@ In Xcode: select the **App** target → Signing & Capabilities → set your Appl
 | Script | What it does |
 | --- | --- |
 | `bun run check:capacitor` | Validates that root + ios-app Capacitor packages share one major version |
-| `bun run build:web` | Builds the root Layerly web app (static assets in `../.output/public`) |
+| `bun run build:web` | Builds the root Layerly web app (static output detected from the build manifest) |
 | `bun run sync:ios` | `cap sync ios` (requires `ios/` to exist) |
 | `bun run open:ios` | Opens the Xcode workspace |
 | `bun run prepare:ios` | Runs the Capacitor version check, installs root deps if needed, builds the web app, detects the static output from the build manifest, then runs `cap sync ios` only if `ios/` exists — otherwise prints the `npx cap add ios` instruction |
@@ -114,7 +114,7 @@ This never requires deleting the native `ios/` directory.
 ## Two config modes
 
 - **Default (`capacitor.config.ts`)** — loads the live site from `https://layerly.online`. Web deploys ship instantly; no App Store release needed for content changes. iOS renders the exact same TanStack routes/components as the website — there is **no separate native landing, login or onboarding screen**.
-- **Local (`capacitor.config.local.ts`)** — bundles the detected static output (`../.output/public`) into the app. Because Layerly is server-rendered, this mode requires a prerendered/static build to have an `index.html`; without one the WebView shows stale, non-hydrating markup (buttons appear but nothing is clickable). Use it only for deliberate offline experiments.
+- **Local (`capacitor.config.local.ts`)** — bundles the staged static output (`ios-app/www`) into the app. Because Layerly is server-rendered, this mode requires a prerendered/static build to have an `index.html`; without one the WebView shows stale, non-hydrating markup (buttons appear but nothing is clickable). Use it only for deliberate offline experiments.
 
 Switch by copying whichever config over `capacitor.config.ts` before `bun run sync:ios`. Never switch implicitly — `prepare:ios` verifies the synced native config matches.
 
