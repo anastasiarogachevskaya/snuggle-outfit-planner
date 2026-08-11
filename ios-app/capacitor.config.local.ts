@@ -12,7 +12,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'online.layerly.app',
   appName: 'Layerly',
-  webDir: '../dist/client',
+  webDir: '../.output/public',
 
   backgroundColor: '#A8B894',
   ios: {
