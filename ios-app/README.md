@@ -7,7 +7,7 @@ Capacitor wrapper for Layerly. It wraps the **existing web app in the repository
 ```
 ios-app/
 ├── capacitor.config.ts             # Production: loads https://layerly.online
-├── capacitor.config.local.ts       # Local bundled mode: webDir ../.output/public
+├── capacitor.config.local.ts       # Local bundled mode: bundles ios-app/www
 ├── tsconfig.json                   # CommonJS/node settings so the Capacitor CLI can read the TS config
 ├── package.json
 ├── scripts/detect-web-output.mjs   # Reads the build manifest to find static assets
