@@ -64,11 +64,40 @@ rmSync(stagingDir, { recursive: true, force: true });
 cpSync(clientDist, stagingDir, { recursive: true });
 console.log(`✔ Staged web assets into ${path.relative(iosApp, stagingDir)}/ (webDir)`);
 
+// Layerly is server-rendered, so the static output contains no index.html.
+// Without one, any fallback to bundled assets renders a blank background-colour
+// screen. Write a tiny bootstrap page that sends the WebView to the live site,
+// so bundled mode can never be a dead end.
+const indexPath = path.join(stagingDir, "index.html");
+if (!existsSync(indexPath)) {
+  if (!configuredServerUrl) {
+    console.error(
+      "\n✖ No index.html in the build output and no server.url configured." +
+        "\n  The app would launch to a blank screen. Layerly is server-rendered:" +
+        "\n  either keep server.url in capacitor.config.ts, or produce a prerendered build.",
+    );
+    process.exit(1);
+  }
+  writeFileSync(
+    indexPath,
+    `<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Layerly</title>
+<style>html,body{margin:0;height:100%;background:#A8B894}</style>
+<script>location.replace(${JSON.stringify(configuredServerUrl)});</script>
+</head><body></body></html>
+`,
+    "utf8",
+  );
+  console.log(`✔ Wrote bundled fallback index.html → redirects to ${configuredServerUrl}`);
+}
+
 console.log(
   configuredServerUrl
     ? `\n✔ Layerly iOS source: ${configuredServerUrl} (live web app)`
     : "\n✔ Layerly iOS source: bundled (local static assets)",
 );
+
 
 
 // The synced native config is what the simulator/device actually obeys. If the
