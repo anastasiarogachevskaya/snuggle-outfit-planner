@@ -24,9 +24,13 @@ currently land in `dist/client` (older Nitro versions emitted `.output/public`).
 `bun run prepare:ios` reads the Nitro build manifest (`publicDir`, fallbacks
 `.output/public`, `dist/client`, `dist`) and mirrors whatever it finds into
 `ios-app/www`, the stable staging folder `webDir` points to. That way the config
-never breaks when the build tool moves its output. It **fails** if the output
-cannot be found, or if the synced `ios/App/App/capacitor.config.json`
-does not match the `server.url` declared here.
+never breaks when the build tool moves its output. Because Layerly is
+server-rendered the output has **no `index.html`**, so the script also writes a
+tiny bootstrap `www/index.html` that redirects the WebView to `server.url` — a
+blank green launch screen (bundled fallback with nothing to render) is therefore
+impossible. It **fails** if the output cannot be found, or if the synced
+`ios/App/App/capacitor.config.json` does not match the `server.url` declared here.
+
 
 No `ios/` folder is committed — you generate it on a Mac.
 
