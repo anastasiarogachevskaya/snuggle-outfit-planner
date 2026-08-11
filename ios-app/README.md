@@ -20,11 +20,14 @@ runtime imports, so the Capacitor CLI can transpile them without `exports is not
 defined` errors. Keep them free of `require()`, `module.exports` and computed values.
 
 The root `bun run build` uses TanStack Start + Nitro. The static client assets
-land in `../.output/public`, which is what `webDir` points to.
+currently land in `dist/client` (older Nitro versions emitted `.output/public`).
 `bun run prepare:ios` reads the Nitro build manifest (`publicDir`, fallbacks
-`.output/public`, `dist/client`, `dist`) and **fails** if the build output ever
-moves away from `webDir`, or if the synced `ios/App/App/capacitor.config.json`
+`.output/public`, `dist/client`, `dist`) and mirrors whatever it finds into
+`ios-app/www`, the stable staging folder `webDir` points to. That way the config
+never breaks when the build tool moves its output. It **fails** if the output
+cannot be found, or if the synced `ios/App/App/capacitor.config.json`
 does not match the `server.url` declared here.
+
 No `ios/` folder is committed — you generate it on a Mac.
 
 ## Which source does the app load?
