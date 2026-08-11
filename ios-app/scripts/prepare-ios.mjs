@@ -6,7 +6,7 @@
 //   4. runs `cap sync ios` only when ios/ already exists
 //   5. installs the Layerly AppIcon asset catalog into the native project
 //   6. verifies the synced native config still points at the intended source
-import { existsSync, mkdirSync, readdirSync, rmSync, copyFileSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, copyFileSync, cpSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -49,20 +49,27 @@ const rootConfigPath = path.join(iosApp, "capacitor.config.ts");
 const rootConfigSource = readFileSync(rootConfigPath, "utf8");
 const configuredWebDir = rootConfigSource.match(/webDir:\s*'([^']+)'/)?.[1] ?? "";
 const configuredServerUrl = rootConfigSource.match(/url:\s*'([^']+)'/)?.[1] ?? null;
-const expectedWebDir = path.relative(iosApp, clientDist).split(path.sep).join("/");
-if (configuredWebDir !== expectedWebDir) {
+
+// webDir is a stable staging folder inside ios-app/, so the config never breaks
+// when the build tool moves its output (dist/client vs .output/public). Mirror
+// the detected build output into it.
+const stagingDir = path.resolve(iosApp, configuredWebDir);
+if (!stagingDir.startsWith(iosApp + path.sep)) {
   console.error(
-    `\n✖ capacitor.config.ts webDir is "${configuredWebDir}" but the build output is "${expectedWebDir}".` +
-      `\n  Update webDir in capacitor.config.ts and capacitor.config.local.ts and re-run.`,
+    `\n✖ capacitor.config.ts webDir must be a folder inside ios-app/ (got "${configuredWebDir}").`,
   );
   process.exit(1);
 }
+rmSync(stagingDir, { recursive: true, force: true });
+cpSync(clientDist, stagingDir, { recursive: true });
+console.log(`✔ Staged web assets into ${path.relative(iosApp, stagingDir)}/ (webDir)`);
 
 console.log(
   configuredServerUrl
     ? `\n✔ Layerly iOS source: ${configuredServerUrl} (live web app)`
     : "\n✔ Layerly iOS source: bundled (local static assets)",
 );
+
 
 // The synced native config is what the simulator/device actually obeys. If the
 // server block is missing there, the WebView silently falls back to bundled

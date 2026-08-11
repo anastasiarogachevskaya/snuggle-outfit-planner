@@ -7,7 +7,7 @@ Capacitor wrapper for Layerly. It wraps the **existing web app in the repository
 ```
 ios-app/
 ├── capacitor.config.ts             # Production: loads https://layerly.online
-├── capacitor.config.local.ts       # Local bundled mode: webDir ../dist/client
+├── capacitor.config.local.ts       # Local bundled mode: bundles ios-app/www
 ├── tsconfig.json                   # CommonJS/node settings so the Capacitor CLI can read the TS config
 ├── package.json
 ├── scripts/detect-web-output.mjs   # Reads the build manifest to find static assets
@@ -20,11 +20,14 @@ runtime imports, so the Capacitor CLI can transpile them without `exports is not
 defined` errors. Keep them free of `require()`, `module.exports` and computed values.
 
 The root `bun run build` uses TanStack Start + Nitro. The static client assets
-land in `../dist/client`, which is what `webDir` points to.
+currently land in `dist/client` (older Nitro versions emitted `.output/public`).
 `bun run prepare:ios` reads the Nitro build manifest (`publicDir`, fallbacks
-`.output/public`, `dist/client`, `dist`) and **fails** if the build output ever
-moves away from `webDir`, or if the synced `ios/App/App/capacitor.config.json`
+`.output/public`, `dist/client`, `dist`) and mirrors whatever it finds into
+`ios-app/www`, the stable staging folder `webDir` points to. That way the config
+never breaks when the build tool moves its output. It **fails** if the output
+cannot be found, or if the synced `ios/App/App/capacitor.config.json`
 does not match the `server.url` declared here.
+
 No `ios/` folder is committed — you generate it on a Mac.
 
 ## Which source does the app load?
@@ -70,7 +73,7 @@ In Xcode: select the **App** target → Signing & Capabilities → set your Appl
 | Script | What it does |
 | --- | --- |
 | `bun run check:capacitor` | Validates that root + ios-app Capacitor packages share one major version |
-| `bun run build:web` | Builds the root Layerly web app (static assets in `../dist/client`) |
+| `bun run build:web` | Builds the root Layerly web app (static output detected from the build manifest) |
 | `bun run sync:ios` | `cap sync ios` (requires `ios/` to exist) |
 | `bun run open:ios` | Opens the Xcode workspace |
 | `bun run prepare:ios` | Runs the Capacitor version check, installs root deps if needed, builds the web app, detects the static output from the build manifest, then runs `cap sync ios` only if `ios/` exists — otherwise prints the `npx cap add ios` instruction |
@@ -111,7 +114,7 @@ This never requires deleting the native `ios/` directory.
 ## Two config modes
 
 - **Default (`capacitor.config.ts`)** — loads the live site from `https://layerly.online`. Web deploys ship instantly; no App Store release needed for content changes. iOS renders the exact same TanStack routes/components as the website — there is **no separate native landing, login or onboarding screen**.
-- **Local (`capacitor.config.local.ts`)** — bundles the detected static output (`../dist/client`) into the app. Because Layerly is server-rendered, this mode requires a prerendered/static build to have an `index.html`; without one the WebView shows stale, non-hydrating markup (buttons appear but nothing is clickable). Use it only for deliberate offline experiments.
+- **Local (`capacitor.config.local.ts`)** — bundles the staged static output (`ios-app/www`) into the app. Because Layerly is server-rendered, this mode requires a prerendered/static build to have an `index.html`; without one the WebView shows stale, non-hydrating markup (buttons appear but nothing is clickable). Use it only for deliberate offline experiments.
 
 Switch by copying whichever config over `capacitor.config.ts` before `bun run sync:ios`. Never switch implicitly — `prepare:ios` verifies the synced native config matches.
 

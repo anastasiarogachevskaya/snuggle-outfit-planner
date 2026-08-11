@@ -1,7 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 // Local / bundled config: ships the built static web assets from the root
-// build inside the .ipa (Nitro currently emits ../.output/public).
+// build inside the .ipa. `bun run prepare:ios` stages them into ios-app/www.
+
 // Use for offline testing or App Review builds where you don't want the app
 // to depend on the live URL. Copy this file over capacitor.config.ts before
 // running `bun run sync:ios` — this is an explicit opt-in, never automatic.
@@ -12,7 +13,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'online.layerly.app',
   appName: 'Layerly',
-  webDir: '../dist/client',
+  webDir: 'www',
 
   backgroundColor: '#A8B894',
   ios: {

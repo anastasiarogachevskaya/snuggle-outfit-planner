@@ -6,17 +6,19 @@ import type { CapacitorConfig } from '@capacitor/cli';
 // React/TanStack routes as the web (landing, auth, onboarding, today). There is
 // deliberately no separate native landing/login implementation.
 //
-// webDir points at the root build's static output (Nitro emits ../dist/client)
-// only so `cap sync` has a valid local directory; those assets are NOT what the
-// app renders in this mode. `bun run prepare:ios` verifies this path against the
-// build manifest and verifies that the synced native config kept `server.url`.
+// webDir points at ios-app/www, a stable staging folder that `bun run
+// prepare:ios` fills with the detected root build output (Nitro currently emits
+// dist/client, older versions .output/public). Using a fixed folder means the
+// config never breaks when the build tool changes its output path. Those assets
+// are NOT what the app renders in this mode — the live URL above is.
+
 //
 // To test fully offline/bundled instead, copy capacitor.config.local.ts over this
 // file explicitly — never switch silently.
 const config: CapacitorConfig = {
   appId: 'online.layerly.app',
   appName: 'Layerly',
-  webDir: '../dist/client',
+  webDir: 'www',
   backgroundColor: '#A8B894',
   server: {
     url: 'https://layerly.online',
