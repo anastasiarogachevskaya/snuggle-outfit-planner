@@ -6,7 +6,7 @@
 //   4. runs `cap sync ios` only when ios/ already exists
 //   5. installs the Layerly AppIcon asset catalog into the native project
 //   6. verifies the synced native config still points at the intended source
-import { existsSync, mkdirSync, readdirSync, rmSync, copyFileSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, copyFileSync, cpSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
