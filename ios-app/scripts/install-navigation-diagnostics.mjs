@@ -19,6 +19,10 @@ let source = readFileSync(appDelegatePath, "utf8");
 // AppDelegate itself intact.
 const oldBlock = new RegExp(`${beginMarker}[\\s\\S]*?${endMarker}\\n?`, "g");
 source = source.replace(oldBlock, "");
+source = source.replace(
+  /#if DEBUG\s*LayerlyNavigationDiagnostics\.install\(windowProvider: \{ \[weak self\] in self\?\.window \}\)\s*#endif\s*/g,
+  "",
+);
 
 const launchSignature = /func application\(\s*_ application: UIApplication,\s*didFinishLaunchingWithOptions launchOptions: \[UIApplication\.LaunchOptionsKey: Any\]\?\s*\) -> Bool \{/m;
 if (!launchSignature.test(source)) {
@@ -77,10 +81,17 @@ private enum LayerlyNavigationDiagnostics {
 
         // Report document health without reading or logging page content.
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            let probe = "({readyState:document.readyState,childCount:document.body?.children.length??-1,hasRoot:!!document.getElementById('root')})"
+            let probe = "({readyState:document.readyState,elementCount:document.body?.children.length??-1,textLength:document.body?.innerText?.trim().length??0})"
             webView.evaluateJavaScript(probe) { result, error in
                 if let error = error as NSError? {
                     print("[Layerly Navigation] JavaScript probe failed domain=\\(error.domain) code=\\(error.code) description=\\(error.localizedDescription)")
+                    showFallback(reason: "Navigation finished, but JavaScript failed: \\(error.domain) (\\(error.code))")
+                } else if let state = result as? [String: Any],
+                          let textLength = state["textLength"] as? NSNumber,
+                          textLength.intValue == 0 {
+                    let reason = "Navigation finished, but the page rendered no text (possible JavaScript/app startup failure)"
+                    print("[Layerly Navigation] JavaScript probe found empty page")
+                    showFallback(reason: reason)
                 } else {
                     print("[Layerly Navigation] JavaScript probe succeeded state=\\(String(describing: result))")
                 }
