@@ -145,6 +145,7 @@ function installAppIcons() {
 
 if (existsSync(path.join(iosApp, "ios"))) {
   run("npx", ["cap", "sync", "ios"], iosApp);
+  run("node", ["scripts/install-navigation-diagnostics.mjs"], iosApp);
   verifySyncedConfig();
   installAppIcons();
   console.log("\n✔ Native iOS project synced. Next: bun run open:ios");

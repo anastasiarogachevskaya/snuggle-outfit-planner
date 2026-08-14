@@ -31,6 +31,13 @@ blank green launch screen (bundled fallback with nothing to render) is therefore
 impossible. It **fails** if the output cannot be found, or if the synced
 `ios/App/App/capacitor.config.json` does not match the `server.url` declared here.
 
+For development builds, `prepare:ios` also injects native WKWebView diagnostics
+into the generated `AppDelegate.swift`. Xcode logs navigation start/finish and
+failures with the sanitized failing URL plus the exact NSError domain/code. It
+keeps Capacitor's own navigation delegate in place. If no navigation finishes
+within five seconds, a DEBUG-only fallback shows the failure reason; this code
+is excluded from Release/App Store builds by `#if DEBUG`.
+
 
 No `ios/` folder is committed — you generate it on a Mac.
 
@@ -81,6 +88,11 @@ In Xcode: select the **App** target → Signing & Capabilities → set your Appl
 | `bun run sync:ios` | `cap sync ios` (requires `ios/` to exist) |
 | `bun run open:ios` | Opens the Xcode workspace |
 | `bun run prepare:ios` | Runs the Capacitor version check, installs root deps if needed, builds the web app, detects the static output from the build manifest, then runs `cap sync ios` only if `ios/` exists — otherwise prints the `npx cap add ios` instruction |
+
+During the current navigation diagnostic, production `allowNavigation` is
+intentionally limited to `layerly.online` and `*.layerly.online`. OAuth and
+other external hosts therefore open outside the WebView instead of being
+allowlisted as in-app navigation.
 
 
 ## Dependency rules & troubleshooting

@@ -25,12 +25,7 @@ const config: CapacitorConfig = {
     cleartext: false,
     allowNavigation: [
       'layerly.online',
-      'www.layerly.online',
       '*.layerly.online',
-      '*.lovable.app',
-      '*.supabase.co',
-      'accounts.google.com',
-      'appleid.apple.com',
     ],
   },
 
