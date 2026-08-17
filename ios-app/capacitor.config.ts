@@ -30,7 +30,7 @@ const config: CapacitorConfig = {
   },
 
   ios: {
-    scheme: 'Layerly',
+    scheme: 'layerly',
     contentInset: 'never',
     backgroundColor: '#A8B894',
   },

@@ -31,15 +31,37 @@ blank green launch screen (bundled fallback with nothing to render) is therefore
 impossible. It **fails** if the output cannot be found, or if the synced
 `ios/App/App/capacitor.config.json` does not match the `server.url` declared here.
 
-For development builds, `prepare:ios` also injects native WKWebView diagnostics
-into the generated `AppDelegate.swift`. Xcode logs navigation start/finish and
-failures with the sanitized failing URL plus the exact NSError domain/code. It
-keeps Capacitor's own navigation delegate in place. If no navigation finishes
-within five seconds, a DEBUG-only fallback shows the failure reason; this code
-is excluded from Release/App Store builds by `#if DEBUG`.
+For development builds, `prepare:ios` injects DEBUG-only WKWebView load
+diagnostics into the generated `AppDelegate.swift`
+(`scripts/install-navigation-diagnostics.mjs`). They are **observation only** —
+public API (`CAPBridgeViewController` / `bridge.webView`), KVO on
+`url` / `isLoading` / `estimatedProgress`, and one read-only
+`evaluateJavaScript` probe. Capacitor's own `WKNavigationDelegate` is never
+replaced, and no Capacitor-internal type is touched.
 
+Xcode prints, all prefixed `[Layerly Diagnostics]`:
+
+- `Layerly native start URL: …` (from `bridge.config.serverURL`)
+- navigation started / loading began / navigation completed, with the actual
+  WebView URL (query strings and fragments stripped, so no tokens are logged)
+- `webView isHidden / alpha / frame / window` plus any visible native view
+  stacked above the WebView
+- `page state {readyState, href, textLength, childCount, bodyBackground,
+  bodyVisibility, bodyOpacity, rootChildren}`
+
+Read it like this:
+
+| Console shows | Root cause |
+| --- | --- |
+| no `navigation completed`, JS/NSError reported | the URL never loaded (DNS/TLS/navigation policy) |
+| completed but `textLength: 0` | HTML loaded, React never hydrated |
+| completed, text present, but a view is stacked above / `isHidden` / `alpha 0` | a native or web layer is covering the page |
+
+If nothing completes within five seconds, a DEBUG-only fallback screen shows the
+reason. All of this is excluded from Release/App Store builds by `#if DEBUG`.
 
 No `ios/` folder is committed — you generate it on a Mac.
+
 
 ## Which source does the app load?
 
