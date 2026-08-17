@@ -86,7 +86,7 @@ private final class LayerlyDiagnostics: NSObject {
             }
             return
         }
-        guard let webView = controller.webView else {
+        guard let webView = controller.bridge?.webView ?? Self.findWebView(controller.view) else {
             if attempt < 20 {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
                     self?.attach(attempt: attempt + 1)
