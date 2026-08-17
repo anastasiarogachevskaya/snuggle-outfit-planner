@@ -193,6 +193,15 @@ private final class LayerlyDiagnostics: NSObject {
         }
     }
 
+    private static func findWebView(_ view: UIView?) -> WKWebView? {
+        guard let view else { return nil }
+        if let webView = view as? WKWebView { return webView }
+        for subview in view.subviews {
+            if let found = findWebView(subview) { return found }
+        }
+        return nil
+    }
+
     private static func findBridgeController(_ root: UIViewController?) -> CAPBridgeViewController? {
         guard let root else { return nil }
         if let bridge = root as? CAPBridgeViewController { return bridge }
