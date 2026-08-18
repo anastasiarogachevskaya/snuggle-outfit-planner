@@ -24,6 +24,7 @@ function AuthCallbackPage() {
 
 
   useEffect(() => {
+    if (linkError) return;
     let cancelled = false;
     let retryTimer: number | undefined;
 
@@ -47,7 +48,7 @@ function AuthCallbackPage() {
         return;
       }
       if (error) {
-        setMessage(error.message);
+        setMessage("We couldn't finish sign-in. Please try again.");
         return;
       }
       retryTimer = window.setTimeout(async () => {
@@ -69,18 +70,31 @@ function AuthCallbackPage() {
       if (retryTimer) window.clearTimeout(retryTimer);
       data.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, linkError]);
+
+  const failed = Boolean(linkError) || message.includes("couldn't");
 
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
       <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 text-center">
-        <p className="text-xs font-medium uppercase tracking-widest text-primary/70">Layer</p>
-        <h1 className="mt-3 text-3xl font-serif font-semibold">Signing you in</h1>
-        <p className="mt-3 text-sm text-ink/60">{message}</p>
-        {message.includes("couldn't") && (
-          <Link to="/auth" className="mt-6 rounded-2xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">
-            Back to sign in
-          </Link>
+        <p className="text-xs font-medium uppercase tracking-widest text-primary/70">Layerly</p>
+        <h1 className="mt-3 text-3xl font-serif font-semibold">
+          {failed ? "Link no longer valid" : "Signing you in"}
+        </h1>
+        <p className="mt-3 text-sm text-ink/60">
+          {linkError
+            ? AUTH_LINK_EXPIRED_MESSAGE
+            : message}
+        </p>
+        {failed && (
+          <div className="mt-6 flex flex-col gap-2">
+            <Link to="/auth" className="rounded-2xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">
+              Back to sign in
+            </Link>
+            <Link to="/forgot-password" className="text-sm font-medium text-primary">
+              Send another link
+            </Link>
+          </div>
         )}
       </div>
     </div>
