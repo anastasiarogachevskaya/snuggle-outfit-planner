@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { clearStoredAuthNext, getStoredAuthNext, takeAuthReturnUrl } from "@/lib/auth-redirect";
+import { AUTH_LINK_EXPIRED_MESSAGE } from "@/lib/native-auth-link";
 
 export const Route = createFileRoute("/auth-callback")({
   validateSearch: (search: Record<string, unknown>) => ({
