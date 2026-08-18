@@ -10,6 +10,7 @@ import {
 } from "@/lib/auth-redirect";
 import { toast } from "sonner";
 import { SiteFooter } from "@/components/site-footer";
+import { authCallbackUrl } from "@/lib/auth-urls";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -60,7 +61,7 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin + "/auth-callback" },
+          options: { emailRedirectTo: authCallbackUrl() },
         });
         if (error) throw error;
         if (!data.session) {
@@ -90,7 +91,7 @@ function AuthPage() {
     setBusy(true);
     storeAuthNext("/today");
     const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin + "/auth-callback",
+      redirect_uri: authCallbackUrl(),
     });
     if (result.error) {
       toast.error(

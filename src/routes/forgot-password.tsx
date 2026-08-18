@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { passwordResetUrl } from "@/lib/auth-urls";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
@@ -33,7 +34,7 @@ function ForgotPasswordPage() {
     setBusy(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + "/reset-password",
+        redirectTo: passwordResetUrl(),
       });
       if (error) throw error;
       setSent(true);

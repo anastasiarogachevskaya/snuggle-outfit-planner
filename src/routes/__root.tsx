@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { initPlatform } from "@/lib/platform";
 import { initializeNativeUI } from "@/lib/native-ui";
 import { initNativeLifecycle, setDeepLinkHandler } from "@/lib/native-lifecycle";
+import { parseAuthDeepLink, processAuthDeepLink } from "@/lib/native-auth-link";
 import { PlatformDebugBadge } from "@/components/platform-debug-badge";
 
 function NotFoundComponent() {
@@ -161,6 +162,20 @@ function RootComponent() {
     initPlatform();
     initializeNativeUI();
     setDeepLinkHandler((url) => {
+      const authLink = parseAuthDeepLink(url);
+      if (authLink) {
+        void processAuthDeepLink(url).then((result) => {
+          if (result.status === "success") {
+            router.navigate({
+              to: authLink.kind === "reset" ? "/reset-password" : "/auth-callback",
+              replace: true,
+            });
+          } else if (result.status === "error") {
+            router.navigate({ to: "/auth-callback", search: { error: "invalid" }, replace: true });
+          }
+        });
+        return;
+      }
       try {
         const parsed = new URL(url);
         router.navigate({ href: `${parsed.pathname}${parsed.search}${parsed.hash}` });
@@ -168,6 +183,7 @@ function RootComponent() {
         /* ignore malformed deep links */
       }
     });
+
     initNativeLifecycle();
     return () => setDeepLinkHandler(null);
   }, [router]);
