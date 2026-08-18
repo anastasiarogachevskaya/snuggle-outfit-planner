@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { clearStoredAuthNext, getStoredAuthNext, takeAuthReturnUrl } from "@/lib/auth-redirect";
 
 export const Route = createFileRoute("/auth-callback")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    error: typeof search.error === "string" ? search.error : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Signing in — Layerly" },
@@ -16,7 +19,9 @@ export const Route = createFileRoute("/auth-callback")({
 
 function AuthCallbackPage() {
   const navigate = useNavigate();
+  const { error: linkError } = Route.useSearch();
   const [message, setMessage] = useState("Finishing sign-in…");
+
 
   useEffect(() => {
     let cancelled = false;
