@@ -98,7 +98,7 @@ private final class LayerlyDiagnostics: NSObject {
         }
 
         self.webView = webView
-        let configuredURL = controller.bridge?.config.serverURL?.absoluteString
+        let configuredURL = controller.bridge?.config.serverURL.absoluteString
         log("Layerly native start URL: \\(configuredURL ?? "(bundled assets — no server.url configured)")")
         log("initial webView.url=\\(safe(webView.url)) isLoading=\\(webView.isLoading)")
 
