@@ -161,6 +161,20 @@ function RootComponent() {
     initPlatform();
     initializeNativeUI();
     setDeepLinkHandler((url) => {
+      const authLink = parseAuthDeepLink(url);
+      if (authLink) {
+        void processAuthDeepLink(url).then((result) => {
+          if (result.status === "success") {
+            router.navigate({
+              to: authLink.kind === "reset" ? "/reset-password" : "/auth-callback",
+              replace: true,
+            });
+          } else if (result.status === "error") {
+            router.navigate({ to: "/auth-callback", search: { error: "invalid" }, replace: true });
+          }
+        });
+        return;
+      }
       try {
         const parsed = new URL(url);
         router.navigate({ href: `${parsed.pathname}${parsed.search}${parsed.hash}` });
@@ -168,6 +182,7 @@ function RootComponent() {
         /* ignore malformed deep links */
       }
     });
+
     initNativeLifecycle();
     return () => setDeepLinkHandler(null);
   }, [router]);
