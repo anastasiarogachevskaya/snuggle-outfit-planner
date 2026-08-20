@@ -1,4 +1,4 @@
-import { isNativeApp, isIOSApp } from "@/lib/platform";
+import { isNativeApp, isIOSApp, getPlatform } from "@/lib/platform";
 
 export type LocationFailureStatus =
   | "permission-denied"
@@ -14,7 +14,15 @@ export type LocationResult =
 
 export type LocationPermission = "granted" | "denied" | "prompt" | "unknown";
 
-const TIMEOUT_MS = 15000;
+/** Plugin-level timeout handed to Geolocation/navigator. */
+const TIMEOUT_MS = 10000;
+/**
+ * Hard watchdog. The iOS Capacitor plugin can leave its promise pending forever
+ * when CoreLocation never calls back (Location Services off at the OS level,
+ * or a permission dialog dismissed by the system), so we never trust its own
+ * timeout alone.
+ */
+const WATCHDOG_MS = 12000;
 /** Weather only needs coarse coordinates; allow a few minutes of cache. */
 const MAX_AGE_MS = 5 * 60 * 1000;
 
@@ -26,6 +34,40 @@ function devLog(scope: string, err: unknown) {
     console.warn(`[location] ${scope}: ${message}`);
   }
 }
+
+/** Development-only, never includes coordinates. */
+function devInfo(message: string) {
+  if (import.meta.env.DEV) console.info(`[location] ${message}`);
+}
+
+/** Resolves to `fallback` if `promise` hasn't settled in `ms`. */
+function withWatchdog(promise: Promise<LocationResult>, ms: number): Promise<LocationResult> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      devInfo("Location request failed: watchdog-timeout");
+      resolve({ status: "timeout" });
+    }, ms);
+    promise.then(
+      (res) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(res);
+      },
+      (err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        devLog("watchdog rejected", err);
+        resolve({ status: "error" });
+      },
+    );
+  });
+}
+
 
 /** Friendly copy for a failed location attempt. */
 export function locationErrorMessage(status: LocationFailureStatus): string {
