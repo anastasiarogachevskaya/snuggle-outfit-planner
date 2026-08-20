@@ -1,4 +1,4 @@
-import { isNativeApp, isIOSApp } from "@/lib/platform";
+import { isNativeApp, isIOSApp, getPlatform } from "@/lib/platform";
 
 export type LocationFailureStatus =
   | "permission-denied"
@@ -14,7 +14,15 @@ export type LocationResult =
 
 export type LocationPermission = "granted" | "denied" | "prompt" | "unknown";
 
-const TIMEOUT_MS = 15000;
+/** Plugin-level timeout handed to Geolocation/navigator. */
+const TIMEOUT_MS = 10000;
+/**
+ * Hard watchdog. The iOS Capacitor plugin can leave its promise pending forever
+ * when CoreLocation never calls back (Location Services off at the OS level,
+ * or a permission dialog dismissed by the system), so we never trust its own
+ * timeout alone.
+ */
+const WATCHDOG_MS = 12000;
 /** Weather only needs coarse coordinates; allow a few minutes of cache. */
 const MAX_AGE_MS = 5 * 60 * 1000;
 
@@ -26,6 +34,40 @@ function devLog(scope: string, err: unknown) {
     console.warn(`[location] ${scope}: ${message}`);
   }
 }
+
+/** Development-only, never includes coordinates. */
+function devInfo(message: string) {
+  if (import.meta.env.DEV) console.info(`[location] ${message}`);
+}
+
+/** Resolves to `fallback` if `promise` hasn't settled in `ms`. */
+function withWatchdog(promise: Promise<LocationResult>, ms: number): Promise<LocationResult> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      devInfo("Location request failed: watchdog-timeout");
+      resolve({ status: "timeout" });
+    }, ms);
+    promise.then(
+      (res) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(res);
+      },
+      (err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        devLog("watchdog rejected", err);
+        resolve({ status: "error" });
+      },
+    );
+  });
+}
+
 
 /** Friendly copy for a failed location attempt. */
 export function locationErrorMessage(status: LocationFailureStatus): string {
@@ -108,21 +150,38 @@ function mapNativeError(err: unknown): LocationResult {
 
 async function getNativeLocation(): Promise<LocationResult> {
   try {
+    devInfo(`Location platform: ${getPlatform()} (native: ${isNativeApp()})`);
     const Geolocation = await nativeGeolocation();
-    const perm = await Geolocation.checkPermissions();
-    let state = perm.location ?? perm.coarseLocation;
-    if (state === "prompt" || state === "prompt-with-rationale") {
+
+    const before = await Geolocation.checkPermissions();
+    devInfo(`Permission before request: ${JSON.stringify(before)}`);
+
+    let state = before.location ?? before.coarseLocation;
+    if (
+      before.location === "prompt" ||
+      before.location === "prompt-with-rationale" ||
+      before.coarseLocation === "prompt" ||
+      before.coarseLocation === "prompt-with-rationale"
+    ) {
       const asked = await Geolocation.requestPermissions({ permissions: ["location"] });
+      devInfo(`Permission after request: ${JSON.stringify(asked)}`);
       state = asked.location ?? asked.coarseLocation;
+    } else {
+      devInfo("Permission after request: (no prompt needed)");
     }
+
     if (state !== "granted") {
+      devInfo(`Location request failed: permission-${state}`);
       return { status: state === "denied" ? "permission-denied" : "permission-not-determined" };
     }
+
+    devInfo("Location request started");
     const pos = await Geolocation.getCurrentPosition({
       enableHighAccuracy: false,
       timeout: TIMEOUT_MS,
       maximumAge: MAX_AGE_MS,
     });
+    devInfo("Location request succeeded");
     return {
       status: "success",
       latitude: pos.coords.latitude,
@@ -131,7 +190,9 @@ async function getNativeLocation(): Promise<LocationResult> {
     };
   } catch (err) {
     devLog("native getCurrentPosition", err);
-    return mapNativeError(err);
+    const mapped = mapNativeError(err);
+    devInfo(`Location request failed: ${mapped.status}`);
+    return mapped;
   }
 }
 
@@ -160,16 +221,23 @@ function getBrowserLocation(): Promise<LocationResult> {
 
 /**
  * Single, user-initiated current-position request. No watching, no history.
- * Concurrent calls share one in-flight request.
+ * Concurrent calls share one in-flight request, and every call is guaranteed
+ * to settle: a watchdog resolves to a timeout state if the platform never
+ * calls back.
  */
 export function getCurrentLocation(): Promise<LocationResult> {
   if (inFlight) return inFlight;
-  const run = (isNativeApp() ? getNativeLocation() : getBrowserLocation()).finally(() => {
+  const native = isNativeApp();
+  const run = withWatchdog(
+    native ? getNativeLocation() : getBrowserLocation(),
+    native ? WATCHDOG_MS : TIMEOUT_MS + 2000,
+  ).finally(() => {
     inFlight = null;
   });
   inFlight = run;
   return run;
 }
+
 
 /** True when a "Open Settings" affordance makes sense (native app, already denied). */
 export function canOpenAppSettings(): boolean {
