@@ -15,14 +15,16 @@ let getCurrentPosition: (opts?: unknown) => Promise<{
   coords: { latitude: number; longitude: number; accuracy: number };
 }>;
 
-// Mock the Capacitor core rather than @/lib/platform: other test files mock
-// that module with a partial shape, and mock.module is process-wide in bun.
-mock.module("@capacitor/core", () => ({
-  Capacitor: {
-    isNativePlatform: () => nativePlatform,
-    getPlatform: () => (nativePlatform ? "ios" : "web"),
-  },
-}));
+const platformMock = {
+  isNativeApp: () => nativePlatform,
+  isWebApp: () => !nativePlatform,
+  isIOSApp: () => nativePlatform,
+  getPlatform: () => (nativePlatform ? "ios" : "web"),
+  getPlatformLabel: () => (nativePlatform ? "iOS app" : "Web"),
+};
+// mock.module is process-wide in bun and other suites mock this module too, so
+// re-register ours in beforeEach to stay independent of test file order.
+mock.module("@/lib/platform", () => platformMock);
 
 mock.module("@capacitor/geolocation", () => ({
   Geolocation: {
@@ -37,6 +39,7 @@ const { getCurrentLocation, locationErrorMessage } = await import("../location-s
 const never = () => new Promise<never>(() => {});
 
 beforeEach(() => {
+  mock.module("@/lib/platform", () => platformMock);
   nativePlatform = true;
   checkPermissions = async () => ({ location: "granted" });
   requestPermissions = async () => ({ location: "granted" });
