@@ -160,6 +160,7 @@ function LocationStep({
     try {
       const r = await fetch(
         `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${res.latitude}&longitude=${res.longitude}&count=1&language=en`,
+        { signal: AbortSignal.timeout(6000) },
       );
       const j = await r.json();
       label = j?.results?.[0]?.name ?? null;
