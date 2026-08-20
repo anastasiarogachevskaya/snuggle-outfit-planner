@@ -15,12 +15,13 @@ let getCurrentPosition: (opts?: unknown) => Promise<{
   coords: { latitude: number; longitude: number; accuracy: number };
 }>;
 
-mock.module("@/lib/platform", () => ({
-  isNativeApp: () => nativePlatform,
-  isIOSApp: () => nativePlatform,
-  isWebApp: () => !nativePlatform,
-  getPlatform: () => (nativePlatform ? "ios" : "web"),
-  getPlatformLabel: () => (nativePlatform ? "iOS app" : "Web"),
+// Mock the Capacitor core rather than @/lib/platform: other test files mock
+// that module with a partial shape, and mock.module is process-wide in bun.
+mock.module("@capacitor/core", () => ({
+  Capacitor: {
+    isNativePlatform: () => nativePlatform,
+    getPlatform: () => (nativePlatform ? "ios" : "web"),
+  },
 }));
 
 mock.module("@capacitor/geolocation", () => ({
