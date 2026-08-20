@@ -38,6 +38,15 @@ const { getCurrentLocation, locationErrorMessage } = await import("../location-s
 
 const never = () => new Promise<never>(() => {});
 
+/** Replace navigator with a minimal geolocation stub. */
+function stubNavigator(geolocation?: Partial<Geolocation>) {
+  Object.defineProperty(globalThis, "navigator", {
+    value: geolocation ? { geolocation } : {},
+    configurable: true,
+    writable: true,
+  });
+}
+
 beforeEach(() => {
   mock.module("@/lib/platform", () => platformMock);
   nativePlatform = true;
@@ -146,8 +155,7 @@ describe("getCurrentLocation — watchdog", () => {
 
   it("resolves with timeout when the browser never calls back", async () => {
     nativePlatform = false;
-    // @ts-expect-error minimal navigator stub
-    globalThis.navigator = { geolocation: { getCurrentPosition: () => {} } };
+    stubNavigator({ getCurrentPosition: () => {} });
     fastTimers();
 
     const res = await getCurrentLocation();
@@ -173,34 +181,27 @@ describe("getCurrentLocation — browser", () => {
   });
 
   it("settles with permission-denied when the browser rejects", async () => {
-    // @ts-expect-error minimal navigator stub
-    globalThis.navigator = {
-      geolocation: {
-        getCurrentPosition: (_ok: unknown, fail: (e: unknown) => void) =>
-          fail({ code: 1, PERMISSION_DENIED: 1, TIMEOUT: 3 }),
-      },
-    };
+    stubNavigator({
+      getCurrentPosition: (_ok, fail) =>
+        fail?.({ code: 1, PERMISSION_DENIED: 1, TIMEOUT: 3 } as GeolocationPositionError),
+    });
 
     const res = await getCurrentLocation();
     expect(res.status).toBe("permission-denied");
   });
 
   it("settles with timeout when the browser reports a timeout", async () => {
-    // @ts-expect-error minimal navigator stub
-    globalThis.navigator = {
-      geolocation: {
-        getCurrentPosition: (_ok: unknown, fail: (e: unknown) => void) =>
-          fail({ code: 3, PERMISSION_DENIED: 1, TIMEOUT: 3 }),
-      },
-    };
+    stubNavigator({
+      getCurrentPosition: (_ok, fail) =>
+        fail?.({ code: 3, PERMISSION_DENIED: 1, TIMEOUT: 3 } as GeolocationPositionError),
+    });
 
     const res = await getCurrentLocation();
     expect(res.status).toBe("timeout");
   });
 
   it("settles with unavailable when geolocation is missing", async () => {
-    // @ts-expect-error minimal navigator stub
-    globalThis.navigator = {};
+    stubNavigator();
 
     const res = await getCurrentLocation();
     expect(res.status).toBe("unavailable");
