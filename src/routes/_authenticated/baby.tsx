@@ -93,6 +93,7 @@ function BabyPage() {
     try {
       const r = await fetch(
         `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&count=1&language=en`,
+        { signal: AbortSignal.timeout(6000) },
       );
       const j = await r.json();
       const place = j.results?.[0];
