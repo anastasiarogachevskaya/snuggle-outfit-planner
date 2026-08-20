@@ -4,8 +4,14 @@ import { describe, it, expect, beforeEach, afterAll, mock } from "bun:test";
 let native = false;
 const calls: string[] = [];
 
+// Keep the full module shape: mock.module is process-wide in bun, so a partial
+// mock would break other suites that import @/lib/platform.
 mock.module("@/lib/platform", () => ({
   isNativeApp: () => native,
+  isWebApp: () => !native,
+  isIOSApp: () => native,
+  getPlatform: () => (native ? "ios" : "web"),
+  getPlatformLabel: () => (native ? "iOS app" : "Web"),
 }));
 
 mock.module("@capacitor/haptics", () => ({
