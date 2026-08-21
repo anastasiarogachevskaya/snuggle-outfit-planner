@@ -204,3 +204,46 @@ only, uses the built-in `sips`):
 ```bash
 cd ios-app && bun run icons:ios
 ```
+
+## Real-device location permission test (clean install)
+
+Run this on a physical iPhone after every change to the location flow.
+
+1. Delete Layerly from the iPhone (removes the stored permission decision).
+2. Build and install again from Xcode (`bun run prepare:ios`, then `bun run open:ios`).
+3. Open Layerly.
+4. **Confirm there is NO location prompt at launch.** Layerly never asks on launch.
+5. Tap **Use my current location** (guest flow at `/try`, or Baby profile).
+6. Confirm iOS shows the native "Allow Layerly to use your location?" dialog.
+7. Tap **Allow While Using App**.
+8. Confirm the real location resolves and today's weather loads.
+
+Then test denial:
+
+1. Delete and reinstall again.
+2. Tap **Use my current location**, then **Don't Allow**.
+3. Confirm the message "Location access is off. Enable it in iPhone Settings or
+   choose a location manually." appears with **Open Settings** and manual city
+   search, and that tapping the button again does not re-prompt (iOS will not
+   show the dialog a second time).
+4. Enable location in iPhone Settings, return to the app, and confirm the denied
+   state clears on resume.
+
+### Diagnostics
+
+In a debug build, or in any build after running
+`localStorage.setItem("layerly:location-debug", "1")` from Safari Web Inspector,
+tapping the button logs:
+
+```
+[location] Capacitor native: true
+[location] Platform: ios
+[location] Geolocation plugin registered: yes
+[location] Permission before: {"location":"prompt","coarseLocation":"prompt"}
+[location] requestPermissions called: yes
+[location] Permission after: {"location":"granted","coarseLocation":"granted"}
+[location] getCurrentPosition called: yes
+[location] Location request succeeded
+```
+
+Coordinates are never logged.

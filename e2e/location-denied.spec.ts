@@ -8,7 +8,7 @@ import { denyGeolocation, stubOpenMeteo } from "./fixtures";
 async function startGuestFlow(page: import("@playwright/test").Page) {
   await page.goto("/try");
   await page.getByRole("button", { name: /0\s*[–-]|month|year/i }).first().click();
-  await expect(page.getByRole("button", { name: "Use my location" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Use my current location" })).toBeVisible();
 }
 
 test.describe("location permission denied", () => {
@@ -17,11 +17,11 @@ test.describe("location permission denied", () => {
     await stubOpenMeteo(page);
     await startGuestFlow(page);
 
-    const gps = page.getByRole("button", { name: /Use my location|Locating/ });
+    const gps = page.getByRole("button", { name: /Use my current location|Locating/ });
     await gps.click();
 
     // The busy label must clear on its own, well inside the 12s watchdog.
-    await expect(page.getByRole("button", { name: "Use my location" })).toBeVisible({
+    await expect(page.getByRole("button", { name: "Use my current location" })).toBeVisible({
       timeout: 14_000,
     });
     await expect(page.getByText("Locating…")).toHaveCount(0);
@@ -53,7 +53,7 @@ test.describe("location permission denied", () => {
     await stubOpenMeteo(page, { stallReverseGeocode: true });
     await startGuestFlow(page);
 
-    await page.getByRole("button", { name: "Use my location" }).click();
+    await page.getByRole("button", { name: "Use my current location" }).click();
 
     // Falls back to no city label but still advances to the recommendation.
     await expect(page.getByText("Today's activity")).toBeVisible({ timeout: 20_000 });
@@ -69,8 +69,8 @@ test.describe("location permission denied", () => {
     await stubOpenMeteo(page, { tempC: 18 });
     await startGuestFlow(page);
 
-    await page.getByRole("button", { name: "Use my location" }).click();
-    await expect(page.getByRole("button", { name: "Use my location" })).toBeVisible({
+    await page.getByRole("button", { name: "Use my current location" }).click();
+    await expect(page.getByRole("button", { name: "Use my current location" })).toBeVisible({
       timeout: 16_000,
     });
 

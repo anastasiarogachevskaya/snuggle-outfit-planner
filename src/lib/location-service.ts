@@ -1,11 +1,18 @@
-import { isNativeApp, isIOSApp, getPlatform } from "@/lib/platform";
+import {
+  isNativeApp,
+  isIOSApp,
+  getPlatform,
+  isGeolocationPluginAvailable,
+} from "@/lib/platform";
 
 export type LocationFailureStatus =
   | "permission-denied"
+  | "permission-restricted"
   | "permission-not-determined"
   | "location-disabled"
   | "timeout"
   | "unavailable"
+  | "plugin-unavailable"
   | "error";
 
 export type LocationResult =
@@ -28,16 +35,31 @@ const MAX_AGE_MS = 5 * 60 * 1000;
 
 let inFlight: Promise<LocationResult> | null = null;
 
+/**
+ * Diagnostics are on in dev, and can be switched on for a TestFlight/App Store
+ * build by running `localStorage.setItem("layerly:location-debug", "1")` in a
+ * Safari Web Inspector session attached to the device. Coordinates are never
+ * logged, in any mode.
+ */
+function debugEnabled(): boolean {
+  if (import.meta.env.DEV) return true;
+  try {
+    return globalThis.localStorage?.getItem("layerly:location-debug") === "1";
+  } catch {
+    return false;
+  }
+}
+
 function devLog(scope: string, err: unknown) {
-  if (import.meta.env.DEV) {
+  if (debugEnabled()) {
     const message = err instanceof Error ? err.message : String(err);
     console.warn(`[location] ${scope}: ${message}`);
   }
 }
 
-/** Development-only, never includes coordinates. */
+/** Diagnostic line. Never includes coordinates. */
 function devInfo(message: string) {
-  if (import.meta.env.DEV) console.info(`[location] ${message}`);
+  if (debugEnabled()) console.info(`[location] ${message}`);
 }
 
 /** Resolves to `fallback` if `promise` hasn't settled in `ms`. */
@@ -68,25 +90,37 @@ function withWatchdog(promise: Promise<LocationResult>, ms: number): Promise<Loc
   });
 }
 
-
 /** Friendly copy for a failed location attempt. */
 export function locationErrorMessage(status: LocationFailureStatus): string {
   switch (status) {
     case "permission-denied":
       return isIOSApp()
-        ? "Location access is off. Choose a location manually, or enable location access in iPhone Settings."
+        ? "Location access is off. Enable it in iPhone Settings or choose a location manually."
         : "Location access is off. Choose a location manually, or enable location access in your browser.";
+    case "permission-restricted":
+      return "Location access is restricted on this device (for example by Screen Time or a device policy). Choose a location manually.";
     case "permission-not-determined":
       return "Location permission hasn't been granted yet. Try again, or choose a location manually.";
     case "location-disabled":
-      return "Location services are turned off. Choose a location manually.";
+      return "Location Services are turned off for this device. Turn them on in Settings, or choose a location manually.";
     case "timeout":
       return "Finding your location took too long. Try again, or choose a location manually.";
     case "unavailable":
       return "Your location isn't available right now. Choose a location manually.";
+    case "plugin-unavailable":
+      return "Location isn't available in this build of the app. Choose a location manually.";
     default:
       return "Couldn't get your location. Choose a location manually.";
   }
+}
+
+/** True when iOS will not show the system prompt again — offer Settings instead. */
+export function shouldOfferAppSettings(status: LocationFailureStatus): boolean {
+  return (
+    status === "permission-denied" ||
+    status === "permission-restricted" ||
+    status === "location-disabled"
+  );
 }
 
 async function nativeGeolocation() {
@@ -138,11 +172,27 @@ function mapBrowserError(err: GeolocationPositionError): LocationResult {
   return { status: "unavailable" };
 }
 
+/**
+ * The iOS plugin reports precise, stable error codes
+ * (`OS-PLUG-GLOC-000X`) — prefer them over string matching so we never collapse
+ * "restricted" or "services disabled" into a generic failure.
+ */
 function mapNativeError(err: unknown): LocationResult {
+  const code = String((err as { code?: unknown } | null)?.code ?? "");
+  if (code.includes("GLOC-0003")) return { status: "permission-denied" };
+  if (code.includes("GLOC-0008")) return { status: "permission-restricted" };
+  if (code.includes("GLOC-0007")) return { status: "location-disabled" };
+  if (code.includes("GLOC-0002")) return { status: "unavailable" };
+
   const message = err instanceof Error ? err.message : String(err ?? "");
   const lower = message.toLowerCase();
-  if (lower.includes("denied") || lower.includes("not authorized")) return { status: "permission-denied" };
-  if (lower.includes("disabled") || lower.includes("location services")) return { status: "location-disabled" };
+  if (lower.includes("restricted")) return { status: "permission-restricted" };
+  if (lower.includes("denied") || lower.includes("not authorized")) {
+    return { status: "permission-denied" };
+  }
+  if (lower.includes("disabled") || lower.includes("location services")) {
+    return { status: "location-disabled" };
+  }
   if (lower.includes("timeout") || lower.includes("timed out")) return { status: "timeout" };
   if (lower.includes("unavailable") || lower.includes("unable")) return { status: "unavailable" };
   return { status: "error" };
@@ -150,32 +200,47 @@ function mapNativeError(err: unknown): LocationResult {
 
 async function getNativeLocation(): Promise<LocationResult> {
   try {
-    devInfo(`Location platform: ${getPlatform()} (native: ${isNativeApp()})`);
+    devInfo(`Capacitor native: ${isNativeApp()}`);
+    devInfo(`Platform: ${getPlatform()}`);
+
+    if (!isGeolocationPluginAvailable()) {
+      // Never silently fall back to navigator.geolocation here: inside
+      // WKWebView it does not raise the iOS permission dialog.
+      devInfo("Geolocation plugin registered: no — aborting (no browser fallback on native)");
+      return { status: "plugin-unavailable" };
+    }
+    devInfo("Geolocation plugin registered: yes");
+
     const Geolocation = await nativeGeolocation();
 
     const before = await Geolocation.checkPermissions();
-    devInfo(`Permission before request: ${JSON.stringify(before)}`);
+    devInfo(`Permission before: ${JSON.stringify(before)}`);
 
-    let state = before.location ?? before.coarseLocation;
-    if (
+    let state: string | undefined = before.location ?? before.coarseLocation;
+    const undetermined =
       before.location === "prompt" ||
       before.location === "prompt-with-rationale" ||
       before.coarseLocation === "prompt" ||
-      before.coarseLocation === "prompt-with-rationale"
-    ) {
+      before.coarseLocation === "prompt-with-rationale";
+
+    devInfo(`requestPermissions called: ${undetermined ? "yes" : "no"}`);
+    if (undetermined) {
+      // Only path that can raise the native iOS dialog. Never called at launch.
       const asked = await Geolocation.requestPermissions({ permissions: ["location"] });
-      devInfo(`Permission after request: ${JSON.stringify(asked)}`);
+      devInfo(`Permission after: ${JSON.stringify(asked)}`);
       state = asked.location ?? asked.coarseLocation;
     } else {
-      devInfo("Permission after request: (no prompt needed)");
+      devInfo(`Permission after: ${state} (unchanged, no prompt possible)`);
     }
 
     if (state !== "granted") {
-      devInfo(`Location request failed: permission-${state}`);
+      // iOS reports both "denied" and "restricted" as denied here; the precise
+      // reason, when it matters, comes back on the getCurrentPosition error.
+      devInfo(`getCurrentPosition called: no (permission ${state})`);
       return { status: state === "denied" ? "permission-denied" : "permission-not-determined" };
     }
 
-    devInfo("Location request started");
+    devInfo("getCurrentPosition called: yes");
     const pos = await Geolocation.getCurrentPosition({
       enableHighAccuracy: false,
       timeout: TIMEOUT_MS,
@@ -237,7 +302,6 @@ export function getCurrentLocation(): Promise<LocationResult> {
   inFlight = run;
   return run;
 }
-
 
 /** True when a "Open Settings" affordance makes sense (native app, already denied). */
 export function canOpenAppSettings(): boolean {

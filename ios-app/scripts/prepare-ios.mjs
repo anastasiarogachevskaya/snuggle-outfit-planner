@@ -127,6 +127,42 @@ function verifySyncedConfig() {
   );
 }
 
+// The native Geolocation plugin must be registered in the iOS build. If it is
+// missing, Capacitor silently falls back to the *web* implementation
+// (navigator.geolocation) inside WKWebView, which never raises the iOS
+// permission dialog — the app just spins on "Locating…".
+function verifyGeolocationPlugin() {
+  const pkgPath = path.join(iosApp, "ios", "App", "Podfile");
+  const podfile = existsSync(pkgPath) ? readFileSync(pkgPath, "utf8") : "";
+  if (!podfile.includes("CapacitorGeolocation")) {
+    console.error(
+      "\n\u2716 CapacitorGeolocation is not in ios/App/Podfile after sync." +
+        "\n  The iOS app would fall back to WKWebView geolocation and never show" +
+        "\n  the native permission prompt. Run `npx cap sync ios` from ios-app/.",
+    );
+    process.exit(1);
+  }
+
+  const plistPath = path.join(iosApp, "ios", "App", "App", "Info.plist");
+  const plist = existsSync(plistPath) ? readFileSync(plistPath, "utf8") : "";
+  if (!plist.includes("NSLocationWhenInUseUsageDescription")) {
+    console.error("\n\u2716 Info.plist is missing NSLocationWhenInUseUsageDescription.");
+    process.exit(1);
+  }
+  if (
+    plist.includes("NSLocationAlwaysUsageDescription") ||
+    plist.includes("NSLocationAlwaysAndWhenInUseUsageDescription")
+  ) {
+    console.error(
+      "\n\u2716 Info.plist declares an Always-location usage key." +
+        "\n  Layerly is foreground-only; remove it so iOS requests" +
+        "\n  \"While Using the App\" and App Review does not flag background location.",
+    );
+    process.exit(1);
+  }
+  console.log("\u2714 Geolocation plugin registered and foreground-only usage description present");
+}
+
 function installAppIcons() {
   const source = path.join(iosApp, "resources", "AppIcon.appiconset");
   const target = path.join(iosApp, "ios", "App", "App", "Assets.xcassets", "AppIcon.appiconset");
@@ -147,6 +183,7 @@ if (existsSync(path.join(iosApp, "ios"))) {
   run("npx", ["cap", "sync", "ios"], iosApp);
   run("node", ["scripts/install-navigation-diagnostics.mjs"], iosApp);
   verifySyncedConfig();
+  verifyGeolocationPlugin();
   installAppIcons();
   console.log("\n✔ Native iOS project synced. Next: bun run open:ios");
 
