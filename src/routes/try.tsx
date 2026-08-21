@@ -9,7 +9,15 @@ import {
   writeGuestProfile,
   type GuestAgeBand,
 } from "@/lib/guest-profile";
-import { getCurrentLocation, locationErrorMessage } from "@/lib/location-service";
+import {
+  getCurrentLocation,
+  locationErrorMessage,
+  canOpenAppSettings,
+  openAppSettings,
+  shouldOfferAppSettings,
+  type LocationFailureStatus,
+} from "@/lib/location-service";
+
 import { TodayScreen } from "@/components/today-screen";
 import { SavePromptSheet, type SavePromptKind } from "@/components/save-prompt-sheet";
 import { CitySearch } from "@/components/city-search";
