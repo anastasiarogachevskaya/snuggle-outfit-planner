@@ -12,6 +12,8 @@ mock.module("@/lib/platform", () => ({
   isIOSApp: () => native,
   getPlatform: () => (native ? "ios" : "web"),
   getPlatformLabel: () => (native ? "iOS app" : "Web"),
+  isGeolocationPluginAvailable: () => native,
+
 }));
 
 mock.module("@capacitor/haptics", () => ({
