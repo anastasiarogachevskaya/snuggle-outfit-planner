@@ -32,6 +32,22 @@ export function isWebApp(): boolean {
   return !isNativeApp();
 }
 
+/**
+ * True when the native Geolocation plugin is actually registered in the
+ * running native shell.
+ *
+ * This matters because Capacitor silently falls back to its *web*
+ * implementation (`navigator.geolocation`) when a plugin is missing from the
+ * native build. Inside WKWebView that fallback never shows the iOS permission
+ * dialog and can hang forever, so we check availability and fail loudly
+ * instead.
+ */
+export function isGeolocationPluginAvailable(): boolean {
+  if (!isNativeApp()) return false;
+  return safeCapacitor(() => Capacitor.isPluginAvailable("Geolocation") === true, false);
+}
+
+
 /** Human label used by the optional debug indicator. */
 export function getPlatformLabel(): string {
   if (isIOSApp()) return "iOS app";
