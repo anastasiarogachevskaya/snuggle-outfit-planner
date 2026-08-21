@@ -13,6 +13,7 @@ import { getCurrentLocation, locationErrorMessage } from "@/lib/location-service
 import { TodayScreen } from "@/components/today-screen";
 import { SavePromptSheet, type SavePromptKind } from "@/components/save-prompt-sheet";
 import { CitySearch } from "@/components/city-search";
+import { reverseGeocodeLabel } from "@/lib/reverse-geocode";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { SiteFooter } from "@/components/site-footer";
 import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
@@ -156,17 +157,7 @@ function LocationStep({
       toast.error(locationErrorMessage(res.status));
       return;
     }
-    let label: string | null = null;
-    try {
-      const r = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${res.latitude}&longitude=${res.longitude}&count=1&language=en`,
-        { signal: AbortSignal.timeout(6000) },
-      );
-      const j = await r.json();
-      label = j?.results?.[0]?.name ?? null;
-    } catch {
-      label = null;
-    }
+    const label = await reverseGeocodeLabel(res.latitude, res.longitude);
     setBusy(false);
     successHaptic();
     onDone(res.latitude, res.longitude, label);
