@@ -142,17 +142,19 @@ function LocationStep({
 }) {
   const [busy, setBusy] = useState(false);
   const [manual, setManual] = useState("");
-  const [gpsFailed, setGpsFailed] = useState(false);
+  const [failure, setFailure] = useState<LocationFailureStatus | null>(null);
+  const gpsFailed = failure !== null;
 
-  useLocationPermissionRecovery(gpsFailed, useCallback(() => setGpsFailed(false), []));
+  useLocationPermissionRecovery(gpsFailed, useCallback(() => setFailure(null), []));
 
   const useGps = async () => {
     lightHaptic();
     setBusy(true);
+    setFailure(null);
     const res = await getCurrentLocation();
     if (res.status !== "success") {
       setBusy(false);
-      setGpsFailed(true);
+      setFailure(res.status);
       warningHaptic();
       toast.error(locationErrorMessage(res.status));
       return;
@@ -170,13 +172,22 @@ function LocationStep({
         disabled={busy}
         className="w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20 disabled:opacity-60"
       >
-        {busy ? "Locating…" : "Use my location"}
+        {busy ? "Locating…" : "Use my current location"}
       </button>
       <div className="my-6 text-center text-xs uppercase tracking-widest text-ink/30">or</div>
-      {gpsFailed && (
-        <p className="mb-3 text-sm text-ink/60">
-          No problem — search for your city instead.
-        </p>
+      {failure && (
+        <div className="mb-3 rounded-2xl border border-black/10 bg-surface p-3">
+          <p className="text-sm text-ink/70">{locationErrorMessage(failure)}</p>
+          {canOpenAppSettings() && shouldOfferAppSettings(failure) && (
+            <button
+              type="button"
+              onClick={() => void openAppSettings()}
+              className="mt-2 text-xs font-medium text-primary"
+            >
+              Open Settings
+            </button>
+          )}
+        </div>
       )}
       <CitySearch
         value={manual}
@@ -191,6 +202,7 @@ function LocationStep({
     </Shell>
   );
 }
+
 
 function Shell({
   title,
