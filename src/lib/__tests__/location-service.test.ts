@@ -207,3 +207,68 @@ describe("getCurrentLocation — browser", () => {
     expect(res.status).toBe("unavailable");
   });
 });
+
+/**
+ * The hard budget: no call may take longer than the native watchdog (12s).
+ * Failure paths must settle far sooner than that.
+ */
+const WATCHDOG_BUDGET_MS = 12000;
+
+async function timed(): Promise<{ status: string; elapsed: number }> {
+  const started = Date.now();
+  const res = await getCurrentLocation();
+  return { status: res.status, elapsed: Date.now() - started };
+}
+
+describe("getCurrentLocation — watchdog budget", () => {
+  it("settles permission-denied well within the watchdog budget", async () => {
+    checkPermissions = async () => ({ location: "denied" });
+    getCurrentPosition = never;
+
+    const { status, elapsed } = await timed();
+    expect(status).toBe("permission-denied");
+    expect(elapsed).toBeLessThanOrEqual(WATCHDOG_BUDGET_MS);
+    expect(elapsed).toBeLessThan(1000);
+  });
+
+  it("settles location-disabled (OS location services off) within the budget", async () => {
+    checkPermissions = async () => ({ location: "granted" });
+    getCurrentPosition = async () => {
+      throw new Error("Location services are not enabled");
+    };
+
+    const { status, elapsed } = await timed();
+    expect(status).toBe("location-disabled");
+    expect(elapsed).toBeLessThanOrEqual(WATCHDOG_BUDGET_MS);
+    expect(elapsed).toBeLessThan(1000);
+  });
+
+  it("settles a plugin timeout within the budget", async () => {
+    getCurrentPosition = async () => {
+      throw new Error("Position request timed out");
+    };
+
+    const { status, elapsed } = await timed();
+    expect(status).toBe("timeout");
+    expect(elapsed).toBeLessThanOrEqual(WATCHDOG_BUDGET_MS);
+    expect(elapsed).toBeLessThan(1000);
+  });
+
+  it("caps a hung native plugin at the watchdog budget", async () => {
+    getCurrentPosition = never;
+    checkPermissions = async () => ({ location: "granted" });
+
+    const { status, elapsed } = await timed();
+    expect(status).toBe("timeout");
+    expect(elapsed).toBeLessThanOrEqual(WATCHDOG_BUDGET_MS + 1500);
+  }, 20000);
+
+  it("caps a hung browser request at the watchdog budget", async () => {
+    nativePlatform = false;
+    stubNavigator({ getCurrentPosition: () => {} });
+
+    const { status, elapsed } = await timed();
+    expect(status).toBe("timeout");
+    expect(elapsed).toBeLessThanOrEqual(WATCHDOG_BUDGET_MS + 1500);
+  }, 20000);
+});

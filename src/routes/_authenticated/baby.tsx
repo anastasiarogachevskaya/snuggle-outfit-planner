@@ -12,6 +12,7 @@ import {
   type LocationFailureStatus,
 } from "@/lib/location-service";
 import { CitySearch } from "@/components/city-search";
+import { reverseGeocodeLabel, coordinateLabel } from "@/lib/reverse-geocode";
 import { SiteFooter } from "@/components/site-footer";
 import { lightHaptic, selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
@@ -90,18 +91,8 @@ function BabyPage() {
     const { latitude, longitude } = result;
     setLat(latitude);
     setLon(longitude);
-    try {
-      const r = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&count=1&language=en`,
-        { signal: AbortSignal.timeout(6000) },
-      );
-      const j = await r.json();
-      const place = j.results?.[0];
-      if (place) setLocLabel(`${place.name}${place.country ? ", " + place.country : ""}`);
-      else setLocLabel(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
-    } catch {
-      setLocLabel(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
-    }
+    const label = await reverseGeocodeLabel(latitude, longitude);
+    setLocLabel(label ?? coordinateLabel(latitude, longitude));
     successHaptic();
     toast.success("Location saved");
   };
