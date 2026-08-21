@@ -299,8 +299,13 @@ function getBrowserLocation(): Promise<LocationResult> {
  * calls back.
  */
 export function getCurrentLocation(): Promise<LocationResult> {
-  if (inFlight) return inFlight;
+  if (inFlight) {
+    devInfo("request already in flight — reusing it");
+    return inFlight;
+  }
   const native = isNativeApp();
+  devInfo(`getCurrentLocation entered — isNativeApp=${native}`);
+  devInfo(native ? "calling native location service" : "calling browser geolocation");
   const run = withWatchdog(
     native ? getNativeLocation() : getBrowserLocation(),
     native ? WATCHDOG_MS : TIMEOUT_MS + 2000,
