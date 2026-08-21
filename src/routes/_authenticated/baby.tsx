@@ -9,6 +9,8 @@ import {
   locationErrorMessage,
   canOpenAppSettings,
   openAppSettings,
+  shouldOfferAppSettings,
+
   type LocationFailureStatus,
 } from "@/lib/location-service";
 import { CitySearch } from "@/components/city-search";
