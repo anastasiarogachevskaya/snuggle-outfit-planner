@@ -42,7 +42,9 @@ let inFlight: Promise<LocationResult> | null = null;
  * logged, in any mode.
  */
 function debugEnabled(): boolean {
-  if (import.meta.env.DEV) return true;
+  // Native builds load the production web bundle, so keep diagnostics on there
+  // too — they are the only way to see the plugin path in the Xcode console.
+  if (import.meta.env.DEV || isNativeApp()) return true;
   try {
     return globalThis.localStorage?.getItem("layerly:location-debug") === "1";
   } catch {
