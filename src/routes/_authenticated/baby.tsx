@@ -235,12 +235,12 @@ function BabyPage() {
                       Retry
                     </button>
                   )}
-                  {canOpenAppSettings() &&
-                    (locError === "permission-denied" || locError === "location-disabled") && (
-                      <button type="button" onClick={() => void openAppSettings()}>
-                        Open Settings
-                      </button>
-                    )}
+                  {canOpenAppSettings() && shouldOfferAppSettings(locError) && (
+                    <button type="button" onClick={() => void openAppSettings()}>
+                      Open Settings
+                    </button>
+                  )}
+
                 </div>
               </div>
             )}
