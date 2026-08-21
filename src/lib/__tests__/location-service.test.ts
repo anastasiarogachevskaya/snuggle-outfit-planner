@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 type PermState = "granted" | "denied" | "prompt" | "prompt-with-rationale";
 
 let nativePlatform = true;
+let pluginAvailable = true;
 let checkPermissions: () => Promise<{ location: PermState }>;
 let requestPermissions: () => Promise<{ location: PermState }>;
 let getCurrentPosition: (opts?: unknown) => Promise<{
@@ -21,7 +22,9 @@ const platformMock = {
   isIOSApp: () => nativePlatform,
   getPlatform: () => (nativePlatform ? "ios" : "web"),
   getPlatformLabel: () => (nativePlatform ? "iOS app" : "Web"),
+  isGeolocationPluginAvailable: () => nativePlatform && pluginAvailable,
 };
+
 // mock.module is process-wide in bun and other suites mock this module too, so
 // re-register ours in beforeEach to stay independent of test file order.
 mock.module("@/lib/platform", () => platformMock);
