@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "check:capacitor": "bun run scripts/check-capacitor-versions.ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test src",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@capacitor/app": "^7.0.1",
