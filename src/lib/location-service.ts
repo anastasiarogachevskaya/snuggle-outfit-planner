@@ -203,6 +203,13 @@ async function getNativeLocation(): Promise<LocationResult> {
     devInfo(`Capacitor native: ${isNativeApp()}`);
     devInfo(`Platform: ${getPlatform()}`);
 
+    // IMPORTANT: the plugin only registers itself with the Capacitor bridge
+    // when its JS module is evaluated, so the availability check MUST happen
+    // after this dynamic import — checking first always reported "false" and
+    // aborted before any native call was made.
+    devInfo("Importing @capacitor/geolocation");
+    const Geolocation = await nativeGeolocation();
+
     if (!isGeolocationPluginAvailable()) {
       // Never silently fall back to navigator.geolocation here: inside
       // WKWebView it does not raise the iOS permission dialog.
@@ -211,8 +218,7 @@ async function getNativeLocation(): Promise<LocationResult> {
     }
     devInfo("Geolocation plugin registered: yes");
 
-    const Geolocation = await nativeGeolocation();
-
+    devInfo("calling Geolocation.checkPermissions");
     const before = await Geolocation.checkPermissions();
     devInfo(`Permission before: ${JSON.stringify(before)}`);
 
