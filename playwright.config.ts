@@ -20,9 +20,17 @@ export default defineConfig({
   projects: [
     {
       // Mirrors the Capacitor iOS build: the same web app inside an iPhone-sized
-      // WKWebView with iOS Safari's user agent.
+      // mobile webview with iOS Safari's user agent. Rendered by Chromium so CI
+      // only needs one browser download.
       name: "ios-webview",
-      use: { ...devices["iPhone 13"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: devices["iPhone 13"].viewport,
+        userAgent: devices["iPhone 13"].userAgent,
+        deviceScaleFactor: devices["iPhone 13"].deviceScaleFactor,
+        isMobile: true,
+        hasTouch: true,
+      },
     },
     {
       name: "desktop-chromium",
