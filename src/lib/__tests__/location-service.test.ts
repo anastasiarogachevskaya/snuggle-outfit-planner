@@ -53,12 +53,52 @@ function stubNavigator(geolocation?: Partial<Geolocation>) {
 beforeEach(() => {
   mock.module("@/lib/platform", () => platformMock);
   nativePlatform = true;
+  pluginAvailable = true;
   checkPermissions = async () => ({ location: "granted" });
   requestPermissions = async () => ({ location: "granted" });
   getCurrentPosition = async () => ({
     coords: { latitude: 60.17, longitude: 24.94, accuracy: 50 },
   });
 });
+
+describe("getCurrentLocation — native plugin registration", () => {
+  it("reports plugin-unavailable instead of falling back to the browser API", async () => {
+    pluginAvailable = false;
+    let browserCalled = false;
+    stubNavigator({
+      getCurrentPosition: () => {
+        browserCalled = true;
+      },
+    });
+
+    const res = await getCurrentLocation();
+    expect(res.status).toBe("plugin-unavailable");
+    expect(browserCalled).toBe(false);
+  });
+});
+
+describe("mapNativeError — distinct plugin failures", () => {
+  const cases: Array<[string, string]> = [
+    ["OS-PLUG-GLOC-0003", "permission-denied"],
+    ["OS-PLUG-GLOC-0008", "permission-restricted"],
+    ["OS-PLUG-GLOC-0007", "location-disabled"],
+    ["OS-PLUG-GLOC-0002", "unavailable"],
+  ];
+
+  for (const [code, expected] of cases) {
+    it(`maps ${code} to ${expected}`, async () => {
+      getCurrentPosition = async () => {
+        const err = new Error("plugin failure") as Error & { code: string };
+        err.code = code;
+        throw err;
+      };
+      const res = await getCurrentLocation();
+      expect(res.status).toBe(expected);
+    });
+  }
+});
+
+
 
 describe("getCurrentLocation — native", () => {
   it("resolves with coordinates when permission is granted", async () => {
