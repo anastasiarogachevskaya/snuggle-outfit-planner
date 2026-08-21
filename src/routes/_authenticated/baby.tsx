@@ -12,6 +12,7 @@ import {
   type LocationFailureStatus,
 } from "@/lib/location-service";
 import { CitySearch } from "@/components/city-search";
+import { reverseGeocodeLabel, coordinateLabel } from "@/lib/reverse-geocode";
 import { SiteFooter } from "@/components/site-footer";
 import { lightHaptic, selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
