@@ -15,6 +15,11 @@ export default defineConfig({
     // Geolocation permission is never granted: every project simulates a
     // device where location access is denied.
     permissions: [],
+    // Allows pointing at a preinstalled Chromium (E2E_CHROME_PATH) instead of
+    // Playwright's own download.
+    launchOptions: process.env["E2E_CHROME_PATH"]
+      ? { executablePath: process.env["E2E_CHROME_PATH"] }
+      : {},
     trace: "on-first-retry",
   },
   projects: [
