@@ -35,10 +35,13 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Foreground ("While Using the App") location only.
+	     Deliberately NO NSLocationAlwaysUsageDescription /
+	     NSLocationAlwaysAndWhenInUseUsageDescription and no background
+	     location mode: Layerly only reads the weather when asked. -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Layerly uses your location to check local weather and recommend suitable clothing for your baby.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Layerly uses your location to check local weather and recommend suitable clothing for your baby.</string>
+	<string>Layerly uses your location to check the local weather and recommend suitable clothing for your baby.</string>
+
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
