@@ -195,8 +195,12 @@ function LocationStep({
               Open Settings
             </button>
           )}
+          <p className="mt-2 text-xs text-ink/50">
+            No problem — search for your city instead.
+          </p>
         </div>
       )}
+
       <CitySearch
         value={manual}
         onChange={setManual}
