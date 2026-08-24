@@ -10,6 +10,9 @@ export type AppSource =
   | { kind: "remote"; origin: string }
   | { kind: "bundled"; origin: string };
 
+/** Bump when native diagnostics or release-critical bridge behavior changes. */
+export const NATIVE_INSTRUMENTATION_VERSION = "location-v2";
+
 /** Bundled Capacitor assets are served from capacitor://, ionic:// or file://. */
 const BUNDLED_PROTOCOLS = ["capacitor:", "ionic:", "file:"];
 
@@ -24,7 +27,7 @@ export function getAppSource(): AppSource {
 export function getBuildId(): string {
   const raw = import.meta.env.VITE_BUILD_ID as string | undefined;
   if (raw && raw.trim()) return raw.trim().slice(0, 7);
-  return import.meta.env.DEV ? "dev" : "unknown";
+  return import.meta.env.DEV ? "dev" : `web-${NATIVE_INSTRUMENTATION_VERSION}`;
 }
 
 /** e.g. "iOS • production web • f25075e" or "Web • dev". */
