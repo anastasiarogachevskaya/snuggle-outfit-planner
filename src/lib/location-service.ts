@@ -4,6 +4,8 @@ import {
   getPlatform,
   isGeolocationPluginAvailable,
 } from "@/lib/platform";
+import { recordLocationEvent, timeStep, type LocationDiagStep } from "@/lib/location-diagnostics";
+
 
 export type LocationFailureStatus =
   | "permission-denied"
