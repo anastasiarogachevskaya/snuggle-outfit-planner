@@ -81,7 +81,9 @@ function BabyPage() {
     lightHaptic();
     setLocating(true);
     setLocError(null);
-    const result = await getCurrentLocation();
+    // Explicit tap: always force a fresh GPS read, even if a location is saved.
+    const result = await getCurrentLocation({ force: true });
+
     setLocating(false);
 
     if (result.status !== "success") {
