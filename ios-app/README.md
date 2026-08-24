@@ -247,3 +247,49 @@ tapping the button logs:
 ```
 
 Coordinates are never logged.
+
+### In-app Diagnostics screen
+
+Open **`/diagnostics`** in the app (web or native). It shows, without any
+console attached:
+
+- runtime / Capacitor platform / native shell
+- which geolocation path was used (native Capacitor plugin vs browser)
+- whether the plugin registered with the bridge
+- last `checkPermissions` result, whether `requestPermissions` was called, and
+  the resulting permission state
+- last `getCurrentPosition` outcome, final outcome and total duration
+- a timestamped event log with per-step timings, plus **Copy log**
+
+Every entry is also mirrored to the console, so Xcode shows the same trace.
+Coordinates are never recorded or displayed.
+
+### iOS location smoke test (Simulator)
+
+```bash
+node ios-app/scripts/ios-location-smoke-test.mjs --seconds 120
+```
+
+It streams the booted Simulator log and passes only when all of these appear
+after you tap **Use my current location**: `getCurrentLocation entered`,
+`force override applied`, `import @capacitor/geolocation`,
+`Geolocation plugin registered: yes`, a native `checkPermissions` call, a native
+`getCurrentPosition` call, and a final `outcome:` line.
+
+### Manual smoke-test checklist (physical iPhone)
+
+1. Delete the app, reinstall from Xcode, open Xcode's console (filter: `location`).
+2. Launch the app — confirm **no** location prompt and no Geolocation logs at launch.
+3. Open `/diagnostics`, tap **Run location test** (or tap **Use my current location**).
+4. Xcode shows `To Native -> Geolocation checkPermissions` and, when undetermined,
+   `To Native -> Geolocation requestPermissions`.
+5. The iOS permission dialog appears; tap **Allow While Using App**.
+6. Xcode shows `To Native -> Geolocation getCurrentPosition` and `outcome: success`.
+7. `/diagnostics` shows path = native Capacitor plugin, plugin registered = true,
+   and a non-empty duration.
+8. Tap the button again with a location already saved — confirm a
+   `force override applied` line and a fresh `getCurrentPosition` call
+   (the saved location must never short-circuit the request).
+9. Deny the permission on a clean install and confirm the outcome is
+   `permission-denied` and the spinner clears.
+

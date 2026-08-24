@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AndroidRouteImport } from './routes/android'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthCallbackRouteImport } from './routes/auth-callback'
+import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
@@ -59,6 +60,11 @@ const AuthRoute = AuthRouteImport.update({
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth-callback',
   path: '/auth-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiagnosticsRoute = DiagnosticsRouteImport.update({
+  id: '/diagnostics',
+  path: '/diagnostics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqRoute = FaqRouteImport.update({
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/android': typeof AndroidRoute
   '/auth': typeof AuthRoute
   '/auth-callback': typeof AuthCallbackRoute
+  '/diagnostics': typeof DiagnosticsRoute
   '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/android': typeof AndroidRoute
   '/auth': typeof AuthRoute
   '/auth-callback': typeof AuthCallbackRoute
+  '/diagnostics': typeof DiagnosticsRoute
   '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/android': typeof AndroidRoute
   '/auth': typeof AuthRoute
   '/auth-callback': typeof AuthCallbackRoute
+  '/diagnostics': typeof DiagnosticsRoute
   '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/android'
     | '/auth'
     | '/auth-callback'
+    | '/diagnostics'
     | '/faq'
     | '/forgot-password'
     | '/how-it-works'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/android'
     | '/auth'
     | '/auth-callback'
+    | '/diagnostics'
     | '/faq'
     | '/forgot-password'
     | '/how-it-works'
@@ -326,6 +337,7 @@ export interface FileRouteTypes {
     | '/android'
     | '/auth'
     | '/auth-callback'
+    | '/diagnostics'
     | '/faq'
     | '/forgot-password'
     | '/how-it-works'
@@ -356,6 +368,7 @@ export interface RootRouteChildren {
   AndroidRoute: typeof AndroidRoute
   AuthRoute: typeof AuthRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  DiagnosticsRoute: typeof DiagnosticsRoute
   FaqRoute: typeof FaqRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
@@ -410,6 +423,13 @@ declare module '@tanstack/react-router' {
       path: '/auth-callback'
       fullPath: '/auth-callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diagnostics': {
+      id: '/diagnostics'
+      path: '/diagnostics'
+      fullPath: '/diagnostics'
+      preLoaderRoute: typeof DiagnosticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faq': {
@@ -594,6 +614,7 @@ const rootRouteChildren: RootRouteChildren = {
   AndroidRoute: AndroidRoute,
   AuthRoute: AuthRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  DiagnosticsRoute: DiagnosticsRoute,
   FaqRoute: FaqRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,

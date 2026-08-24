@@ -159,7 +159,9 @@ function LocationStep({
     lightHaptic();
     setBusy(true);
     setFailure(null);
-    const res = await getCurrentLocation();
+    // Explicit tap: always force a fresh GPS read, never a cached position.
+    const res = await getCurrentLocation({ force: true });
+
     if (res.status !== "success") {
       setBusy(false);
       setFailure(res.status);
