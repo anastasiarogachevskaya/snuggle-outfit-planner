@@ -55,16 +55,19 @@ function debugEnabled(): boolean {
 }
 
 function devLog(scope: string, err: unknown) {
+  const message = err instanceof Error ? err.message : String(err);
+  recordLocationEvent("note", `${scope}: ${message}`, { ok: false });
   if (debugEnabled()) {
-    const message = err instanceof Error ? err.message : String(err);
     console.warn(`[location] ${scope}: ${message}`);
   }
 }
 
 /** Diagnostic line. Never includes coordinates. */
-function devInfo(message: string) {
+function devInfo(message: string, step: LocationDiagStep = "note") {
+  recordLocationEvent(step, message);
   if (debugEnabled()) console.info(`[location] ${message}`);
 }
+
 
 /** Resolves to `fallback` if `promise` hasn't settled in `ms`. */
 function withWatchdog(promise: Promise<LocationResult>, ms: number): Promise<LocationResult> {
