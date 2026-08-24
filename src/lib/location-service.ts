@@ -205,29 +205,43 @@ function mapNativeError(err: unknown): LocationResult {
   return { status: "error" };
 }
 
-async function getNativeLocation(): Promise<LocationResult> {
+async function getNativeLocation(force: boolean): Promise<LocationResult> {
   try {
-    devInfo(`Capacitor native: ${isNativeApp()}`);
-    devInfo(`Platform: ${getPlatform()}`);
+    devInfo(`Capacitor native: ${isNativeApp()}`, "entry");
+    devInfo(`Platform: ${getPlatform()}`, "entry");
 
     // IMPORTANT: the plugin only registers itself with the Capacitor bridge
     // when its JS module is evaluated, so the availability check MUST happen
     // after this dynamic import — checking first always reported "false" and
     // aborted before any native call was made.
-    devInfo("Importing @capacitor/geolocation");
-    const Geolocation = await nativeGeolocation();
+    const Geolocation = await timeStep(
+      "import",
+      "import @capacitor/geolocation",
+      () => nativeGeolocation(),
+      () => "module loaded",
+    );
 
-    if (!isGeolocationPluginAvailable()) {
+    const registered = isGeolocationPluginAvailable();
+    recordLocationEvent("plugin", `Geolocation plugin registered: ${registered ? "yes" : "no"}`, {
+      ok: registered,
+      patch: { pluginRegistered: registered },
+    });
+    if (!registered) {
       // Never silently fall back to navigator.geolocation here: inside
       // WKWebView it does not raise the iOS permission dialog.
       devInfo("Geolocation plugin registered: no — aborting (no browser fallback on native)");
       return { status: "plugin-unavailable" };
     }
-    devInfo("Geolocation plugin registered: yes");
 
-    devInfo("calling Geolocation.checkPermissions");
-    const before = await Geolocation.checkPermissions();
-    devInfo(`Permission before: ${JSON.stringify(before)}`);
+    const before = await timeStep(
+      "checkPermissions",
+      "Geolocation.checkPermissions()",
+      () => Geolocation.checkPermissions(),
+      (res) => JSON.stringify(res),
+    );
+    recordLocationEvent("checkPermissions", `Permission before: ${JSON.stringify(before)}`, {
+      patch: { lastPermissionBefore: JSON.stringify(before) },
+    });
 
     let state: string | undefined = before.location ?? before.coarseLocation;
     const undetermined =
@@ -236,30 +250,56 @@ async function getNativeLocation(): Promise<LocationResult> {
       before.coarseLocation === "prompt" ||
       before.coarseLocation === "prompt-with-rationale";
 
-    devInfo(`requestPermissions called: ${undetermined ? "yes" : "no"}`);
+    recordLocationEvent(
+      "requestPermissions",
+      `requestPermissions called: ${undetermined ? "yes" : "no"}`,
+      { patch: { lastRequestPermissionsCalled: undetermined } },
+    );
     if (undetermined) {
       // Only path that can raise the native iOS dialog. Never called at launch.
-      const asked = await Geolocation.requestPermissions({ permissions: ["location"] });
-      devInfo(`Permission after: ${JSON.stringify(asked)}`);
+      const asked = await timeStep(
+        "requestPermissions",
+        "Geolocation.requestPermissions()",
+        () => Geolocation.requestPermissions({ permissions: ["location"] }),
+        (res) => JSON.stringify(res),
+      );
+      recordLocationEvent("requestPermissions", `Permission after: ${JSON.stringify(asked)}`, {
+        patch: { lastPermissionAfter: JSON.stringify(asked) },
+      });
       state = asked.location ?? asked.coarseLocation;
     } else {
-      devInfo(`Permission after: ${state} (unchanged, no prompt possible)`);
+      recordLocationEvent(
+        "requestPermissions",
+        `Permission after: ${state} (unchanged, no prompt possible)`,
+        { patch: { lastPermissionAfter: String(state) } },
+      );
     }
 
     if (state !== "granted") {
       // iOS reports both "denied" and "restricted" as denied here; the precise
       // reason, when it matters, comes back on the getCurrentPosition error.
-      devInfo(`getCurrentPosition called: no (permission ${state})`);
+      recordLocationEvent("getCurrentPosition", `getCurrentPosition called: no (permission ${state})`, {
+        patch: { lastGetCurrentPositionOutcome: `not called (permission ${state})` },
+      });
       return { status: state === "denied" ? "permission-denied" : "permission-not-determined" };
     }
 
-    devInfo("getCurrentPosition called: yes");
-    const pos = await Geolocation.getCurrentPosition({
-      enableHighAccuracy: false,
-      timeout: TIMEOUT_MS,
-      maximumAge: MAX_AGE_MS,
+    const pos = await timeStep(
+      "getCurrentPosition",
+      `Geolocation.getCurrentPosition({ maximumAge: ${force ? 0 : MAX_AGE_MS} })`,
+      () =>
+        Geolocation.getCurrentPosition({
+          enableHighAccuracy: false,
+          timeout: TIMEOUT_MS,
+          // A forced request must never be answered from the plugin cache.
+          maximumAge: force ? 0 : MAX_AGE_MS,
+        }),
+      () => "position received",
+    );
+    recordLocationEvent("getCurrentPosition", "Location request succeeded", {
+      ok: true,
+      patch: { lastGetCurrentPositionOutcome: "success" },
     });
-    devInfo("Location request succeeded");
     return {
       status: "success",
       latitude: pos.coords.latitude,
@@ -269,57 +309,124 @@ async function getNativeLocation(): Promise<LocationResult> {
   } catch (err) {
     devLog("native getCurrentPosition", err);
     const mapped = mapNativeError(err);
-    devInfo(`Location request failed: ${mapped.status}`);
+    recordLocationEvent("getCurrentPosition", `Location request failed: ${mapped.status}`, {
+      ok: false,
+      patch: { lastGetCurrentPositionOutcome: mapped.status },
+    });
     return mapped;
   }
 }
 
-function getBrowserLocation(): Promise<LocationResult> {
+function getBrowserLocation(force: boolean): Promise<LocationResult> {
   return new Promise((resolve) => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
+      recordLocationEvent("plugin", "navigator.geolocation unavailable", {
+        ok: false,
+        patch: { pluginRegistered: false },
+      });
       resolve({ status: "unavailable" });
       return;
     }
+    const started = Date.now();
     navigator.geolocation.getCurrentPosition(
-      (pos) =>
+      (pos) => {
+        recordLocationEvent("getCurrentPosition", "browser getCurrentPosition → success", {
+          ok: true,
+          durationMs: Date.now() - started,
+          patch: { lastGetCurrentPositionOutcome: "success" },
+        });
         resolve({
           status: "success",
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
           accuracy: pos.coords.accuracy,
-        }),
+        });
+      },
       (err) => {
         devLog("browser getCurrentPosition", err);
-        resolve(mapBrowserError(err));
+        const mapped = mapBrowserError(err);
+        recordLocationEvent("getCurrentPosition", `browser getCurrentPosition → ${mapped.status}`, {
+          ok: false,
+          durationMs: Date.now() - started,
+          patch: { lastGetCurrentPositionOutcome: mapped.status },
+        });
+        resolve(mapped);
       },
-      { enableHighAccuracy: false, timeout: TIMEOUT_MS, maximumAge: MAX_AGE_MS },
+      {
+        enableHighAccuracy: false,
+        timeout: TIMEOUT_MS,
+        maximumAge: force ? 0 : MAX_AGE_MS,
+      },
     );
   });
 }
 
+export type GetCurrentLocationOptions = {
+  /**
+   * Forces a live GPS read: never reuses an in-flight request and never accepts
+   * a cached position. Use for explicit "Use my current location" taps.
+   */
+  force?: boolean;
+};
+
 /**
  * Single, user-initiated current-position request. No watching, no history.
- * Concurrent calls share one in-flight request, and every call is guaranteed
- * to settle: a watchdog resolves to a timeout state if the platform never
- * calls back.
+ * Concurrent calls share one in-flight request (unless forced), and every call
+ * is guaranteed to settle: a watchdog resolves to a timeout state if the
+ * platform never calls back.
  */
-export function getCurrentLocation(): Promise<LocationResult> {
-  if (inFlight) {
+export function getCurrentLocation(options: GetCurrentLocationOptions = {}): Promise<LocationResult> {
+  const force = options.force === true;
+  if (inFlight && !force) {
     devInfo("request already in flight — reusing it");
     return inFlight;
   }
+  if (inFlight && force) {
+    recordLocationEvent(
+      "override",
+      "force override applied: ignoring in-flight/cached location, starting a fresh GPS request",
+    );
+    if (debugEnabled()) {
+      console.info("[location] force override applied — starting a fresh GPS request");
+    }
+  } else if (force) {
+    recordLocationEvent(
+      "override",
+      "force override applied: live GPS request (cached position not used)",
+    );
+  }
+
   const native = isNativeApp();
-  devInfo(`getCurrentLocation entered — isNativeApp=${native}`);
-  devInfo(native ? "calling native location service" : "calling browser geolocation");
-  const run = withWatchdog(
-    native ? getNativeLocation() : getBrowserLocation(),
-    native ? WATCHDOG_MS : TIMEOUT_MS + 2000,
-  ).finally(() => {
-    inFlight = null;
+  const started = Date.now();
+  recordLocationEvent("entry", `getCurrentLocation entered — isNativeApp=${native}, force=${force}`, {
+    patch: {
+      nativePathUsed: native,
+      lastRunAt: started,
+      lastOutcome: null,
+      lastDurationMs: null,
+    },
   });
+  devInfo(native ? "calling native location service" : "calling browser geolocation");
+
+  const run = withWatchdog(
+    native ? getNativeLocation(force) : getBrowserLocation(force),
+    native ? WATCHDOG_MS : TIMEOUT_MS + 2000,
+  )
+    .then((res) => {
+      recordLocationEvent("outcome", `outcome: ${res.status}`, {
+        ok: res.status === "success",
+        durationMs: Date.now() - started,
+        patch: { lastOutcome: res.status, lastDurationMs: Date.now() - started },
+      });
+      return res;
+    })
+    .finally(() => {
+      inFlight = null;
+    });
   inFlight = run;
   return run;
 }
+
 
 /** True when a "Open Settings" affordance makes sense (native app, already denied). */
 export function canOpenAppSettings(): boolean {
