@@ -15,6 +15,11 @@ import {
   isGeolocationPluginAvailable,
 } from "@/lib/platform";
 import { SiteFooter } from "@/components/site-footer";
+import {
+  getBuildId,
+  getBuildLabel,
+  NATIVE_INSTRUMENTATION_VERSION,
+} from "@/lib/build-info";
 
 export const Route = createFileRoute("/diagnostics")({
   head: () => ({
@@ -80,6 +85,9 @@ function DiagnosticsPage() {
         </p>
 
         <section className="mt-8 space-y-2 rounded-2xl border border-black/5 bg-surface p-4">
+          <Row label="Release" value={getBuildLabel()} />
+          <Row label="Build ID" value={getBuildId()} />
+          <Row label="Instrumentation" value={NATIVE_INSTRUMENTATION_VERSION} />
           <Row label="Runtime" value={getPlatformLabel()} />
           <Row label="Capacitor platform" value={getPlatform()} />
           <Row label="Native shell" value={String(isNativeApp())} />

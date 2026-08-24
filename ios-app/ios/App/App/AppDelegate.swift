@@ -7,11 +7,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-#if DEBUG
-        LayerlyDiagnostics.install(windowProvider: { [weak self] in self?.window })
-#endif
 // Override point for customization after application launch.
         return true
+    }
+
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -61,7 +66,7 @@ import WebKit
 /// loadRequest, and never mutates the DOM. It reads public state through KVO
 /// and a read-only JavaScript probe, so Capacitor's own bridge and delegate are
 /// left completely untouched.
-private final class LayerlyDiagnostics: NSObject {
+final class LayerlyDiagnostics: NSObject {
     private static let shared = LayerlyDiagnostics()
 
     private var windowProvider: (() -> UIWindow?)?
