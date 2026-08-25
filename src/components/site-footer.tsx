@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { isNativeApp } from "@/lib/platform";
 
 const LINKS = [
   { to: "/", label: "Home" },
@@ -30,6 +31,13 @@ export function SiteFooter({
             {l.label}
           </Link>
         ))}
+        {/* TEMPORARY: native-only entry point for the /diagnostics page while
+            debugging the missing location-permission dialog. Remove once resolved. */}
+        {isNativeApp() && (
+          <Link to="/diagnostics" className="text-primary">
+            Diagnostics
+          </Link>
+        )}
       </nav>
       <p className="mt-6 text-xs text-ink/40">Weather from Open-Meteo. No ads, no tracking.</p>
     </footer>
