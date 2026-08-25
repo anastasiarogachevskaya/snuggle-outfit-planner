@@ -36,7 +36,12 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchAutoHide: false,
+      // Safety net: the web app hides the splash as soon as it boots, but if the
+      // remote site stalls or fails, iOS must still drop the splash so the user
+      // sees the WebView (and its error state) instead of a blank green screen.
+      launchAutoHide: true,
+      launchShowDuration: 8000,
+      launchFadeOutDuration: 200,
       backgroundColor: '#A8B894',
       showSpinner: false,
     },

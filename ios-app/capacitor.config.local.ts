@@ -23,7 +23,10 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchAutoHide: false,
+      // Safety net: hide automatically if the bundled app never boots.
+      launchAutoHide: true,
+      launchShowDuration: 8000,
+      launchFadeOutDuration: 200,
       backgroundColor: '#A8B894',
       showSpinner: false,
     },
