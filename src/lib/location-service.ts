@@ -5,7 +5,13 @@ import {
   isGeolocationPluginAvailable,
 } from "@/lib/platform";
 import { recordLocationEvent, timeStep, type LocationDiagStep } from "@/lib/location-diagnostics";
-
+// Static import: this used to be a runtime `import("@capacitor/geolocation")`,
+// but that chunk isn't in any page's modulepreload list, and inside the iOS
+// WKWebView (loaded via server.url) that lazy dynamic import never resolved —
+// not even a rejection, just a permanent hang until the watchdog fired. A
+// static import ships the plugin in the page's own bundle instead of relying
+// on a runtime fetch+evaluate that WKWebView wasn't completing.
+import { Geolocation } from "@capacitor/geolocation";
 
 export type LocationFailureStatus =
   | "permission-denied"
@@ -130,16 +136,10 @@ export function shouldOfferAppSettings(status: LocationFailureStatus): boolean {
   );
 }
 
-async function nativeGeolocation() {
-  const mod = await import("@capacitor/geolocation");
-  return mod.Geolocation;
-}
-
 /** Current permission state, without ever showing a prompt. */
 export async function checkLocationPermission(): Promise<LocationPermission> {
   try {
     if (isNativeApp()) {
-      const Geolocation = await nativeGeolocation();
       const res = await Geolocation.checkPermissions();
       const state = res.location ?? res.coarseLocation;
       if (state === "granted") return "granted";
@@ -163,7 +163,6 @@ export async function requestLocationPermission(): Promise<LocationPermission> {
     return checkLocationPermission();
   }
   try {
-    const Geolocation = await nativeGeolocation();
     const res = await Geolocation.requestPermissions({ permissions: ["location"] });
     const state = res.location ?? res.coarseLocation;
     return state === "granted" ? "granted" : state === "denied" ? "denied" : "prompt";
@@ -210,17 +209,10 @@ async function getNativeLocation(force: boolean): Promise<LocationResult> {
     devInfo(`Capacitor native: ${isNativeApp()}`, "entry");
     devInfo(`Platform: ${getPlatform()}`, "entry");
 
-    // IMPORTANT: the plugin only registers itself with the Capacitor bridge
-    // when its JS module is evaluated, so the availability check MUST happen
-    // after this dynamic import — checking first always reported "false" and
-    // aborted before any native call was made.
-    const Geolocation = await timeStep(
-      "import",
-      "import @capacitor/geolocation",
-      () => nativeGeolocation(),
-      () => "module loaded",
-    );
-
+    // Geolocation is imported statically (see top of file) specifically so
+    // the plugin is registered with the bridge well before this check runs —
+    // a runtime dynamic import of this module never resolved inside the iOS
+    // WKWebView and hung until the watchdog fired.
     const registered = isGeolocationPluginAvailable();
     recordLocationEvent("plugin", `Geolocation plugin registered: ${registered ? "yes" : "no"}`, {
       ok: registered,
