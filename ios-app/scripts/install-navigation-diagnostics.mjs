@@ -58,7 +58,11 @@ import WebKit
 /// loadRequest, and never mutates the DOM. It reads public state through KVO
 /// and a read-only JavaScript probe, so Capacitor's own bridge and delegate are
 /// left completely untouched.
-private final class LayerlyDiagnostics: NSObject {
+///
+/// Not \`private\`: SceneDelegate.swift also calls \`LayerlyDiagnostics.install\`
+/// (it owns the real window under the scene-based lifecycle), so the class
+/// must be visible outside this file.
+final class LayerlyDiagnostics: NSObject {
     private static let shared = LayerlyDiagnostics()
 
     private var windowProvider: (() -> UIWindow?)?

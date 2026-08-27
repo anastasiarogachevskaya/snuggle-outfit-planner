@@ -12,7 +12,6 @@
     "icons:ios": "node scripts/generate-app-icons.mjs"
   },
   "dependencies": {
-    "@capacitor-community/apple-sign-in": "^7.0.0",
     "@capacitor/app": "^7.0.1",
     "@capacitor/core": "^7.4.3",
     "@capacitor/geolocation": "^7.1.4",

@@ -7,6 +7,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+#if DEBUG
+        LayerlyDiagnostics.install(windowProvider: { [weak self] in self?.window })
+#endif
 // Override point for customization after application launch.
         return true
     }
@@ -66,6 +69,10 @@ import WebKit
 /// loadRequest, and never mutates the DOM. It reads public state through KVO
 /// and a read-only JavaScript probe, so Capacitor's own bridge and delegate are
 /// left completely untouched.
+///
+/// Not `private`: SceneDelegate.swift also calls `LayerlyDiagnostics.install`
+/// (it owns the real window under the scene-based lifecycle), so the class
+/// must be visible outside this file.
 final class LayerlyDiagnostics: NSObject {
     private static let shared = LayerlyDiagnostics()
 

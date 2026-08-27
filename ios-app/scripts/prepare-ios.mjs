@@ -149,9 +149,12 @@ function verifyGeolocationPlugin() {
     console.error("\n\u2716 Info.plist is missing NSLocationWhenInUseUsageDescription.");
     process.exit(1);
   }
+  // Match the actual <key> element, not just the substring: a comment
+  // documenting that these keys are deliberately absent also contains the
+  // bare names and must not trip this check.
   if (
-    plist.includes("NSLocationAlwaysUsageDescription") ||
-    plist.includes("NSLocationAlwaysAndWhenInUseUsageDescription")
+    plist.includes("<key>NSLocationAlwaysUsageDescription</key>") ||
+    plist.includes("<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>")
   ) {
     console.error(
       "\n\u2716 Info.plist declares an Always-location usage key." +
