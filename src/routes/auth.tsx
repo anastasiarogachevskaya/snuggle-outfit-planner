@@ -90,6 +90,31 @@ function AuthPage() {
   const oauth = async (provider: "google" | "apple") => {
     setBusy(true);
     storeAuthNext("/today");
+
+    const native = isNativeApp();
+    logAuthAttempt(provider, native);
+
+    if (native) {
+      const result =
+        provider === "apple" ? await signInWithAppleNative() : await signInWithGoogleNative();
+
+      if (result.status === "cancelled") {
+        setBusy(false);
+        return;
+      }
+      if (result.status === "error") {
+        toast.error(result.message);
+        setBusy(false);
+        return;
+      }
+      // "pending": the system browser is open; the layerly:// deep link finishes it.
+      if (result.status === "pending") return;
+
+      clearStoredAuthNext();
+      navigate({ to: "/today", replace: true });
+      return;
+    }
+
     const result = await lovable.auth.signInWithOAuth(provider, {
       redirect_uri: authCallbackUrl(),
     });
@@ -106,6 +131,7 @@ function AuthPage() {
     clearStoredAuthNext();
     navigate({ to: "/today", replace: true });
   };
+
 
   return (
     <div className="min-h-screen bg-canvas font-sans">
