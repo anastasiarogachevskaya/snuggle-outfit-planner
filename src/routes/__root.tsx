@@ -25,6 +25,8 @@ import { initPlatform } from "@/lib/platform";
 import { initializeNativeUI } from "@/lib/native-ui";
 import { initNativeLifecycle, setDeepLinkHandler } from "@/lib/native-lifecycle";
 import { parseAuthDeepLink, processAuthDeepLink } from "@/lib/native-auth-link";
+import { closeAuthBrowser } from "@/lib/native-social-auth";
+
 import { PlatformDebugBadge } from "@/components/platform-debug-badge";
 
 function NotFoundComponent() {
@@ -164,7 +166,11 @@ function RootComponent() {
     setDeepLinkHandler((url) => {
       const authLink = parseAuthDeepLink(url);
       if (authLink) {
+        if (import.meta.env.DEV) console.info("[Auth] deep link received");
         void processAuthDeepLink(url).then((result) => {
+          void closeAuthBrowser();
+          if (import.meta.env.DEV)
+            console.info(`[Auth] session established: ${result.status === "success" ? "yes" : "no"}`);
           if (result.status === "success") {
             router.navigate({
               to: authLink.kind === "reset" ? "/reset-password" : "/auth-callback",
@@ -176,6 +182,7 @@ function RootComponent() {
         });
         return;
       }
+
       try {
         const parsed = new URL(url);
         router.navigate({ href: `${parsed.pathname}${parsed.search}${parsed.hash}` });
