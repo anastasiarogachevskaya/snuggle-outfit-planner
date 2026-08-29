@@ -11,6 +11,13 @@ import {
 import { toast } from "sonner";
 import { SiteFooter } from "@/components/site-footer";
 import { authCallbackUrl } from "@/lib/auth-urls";
+import { isNativeApp } from "@/lib/platform";
+import {
+  logAuthAttempt,
+  signInWithAppleNative,
+  signInWithGoogleNative,
+} from "@/lib/native-social-auth";
+
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
