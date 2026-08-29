@@ -25,6 +25,8 @@ import { initPlatform } from "@/lib/platform";
 import { initializeNativeUI } from "@/lib/native-ui";
 import { initNativeLifecycle, setDeepLinkHandler } from "@/lib/native-lifecycle";
 import { parseAuthDeepLink, processAuthDeepLink } from "@/lib/native-auth-link";
+import { closeAuthBrowser } from "@/lib/native-social-auth";
+
 import { PlatformDebugBadge } from "@/components/platform-debug-badge";
 
 function NotFoundComponent() {
