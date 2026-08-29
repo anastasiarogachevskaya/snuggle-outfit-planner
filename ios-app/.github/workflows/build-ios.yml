@@ -26,6 +26,10 @@ jobs:
         working-directory: ios-app
         run: bun install
 
+      - name: Check launch screen assets
+        working-directory: ios-app
+        run: node scripts/check-launch-assets.mjs
+
       - name: Add and sync iOS platform
         working-directory: ios-app
         run: |
