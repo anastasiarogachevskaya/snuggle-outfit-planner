@@ -1,6 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isNativeApp, getPlatform } from "@/lib/platform";
 import { NATIVE_AUTH_CALLBACK_URL } from "@/lib/auth-urls";
+// Static imports: a runtime `import(...)` of a Capacitor plugin never
+// resolves inside the iOS WKWebView (loaded via server.url) unless the chunk
+// was already preloaded — see the identical geolocation bug fixed in
+// location-service.ts. Bundling these plugins into the page's own chunk
+// avoids that hang entirely.
+import { SignInWithApple } from "@capacitor-community/apple-sign-in";
+import { Browser } from "@capacitor/browser";
 
 /**
  * Native (Capacitor/iOS) social sign-in.
@@ -56,8 +63,6 @@ export async function signInWithAppleNative(): Promise<NativeSocialResult> {
   if (!isNativeApp()) return { status: "error", message: "Native Apple sign-in is iOS only." };
 
   try {
-    const { SignInWithApple } = await import("@capacitor-community/apple-sign-in");
-
     const rawNonce = createRawNonce();
     const hashedNonce = await sha256Hex(rawNonce);
 
@@ -133,7 +138,6 @@ export async function signInWithGoogleNative(): Promise<NativeSocialResult> {
     if (error) return { status: "error", message: error.message };
     if (!data?.url) return { status: "error", message: "Could not start Google sign-in." };
 
-    const { Browser } = await import("@capacitor/browser");
     await Browser.open({ url: data.url, presentationStyle: "popover" });
     return { status: "pending" };
   } catch (error) {
@@ -149,7 +153,6 @@ export async function signInWithGoogleNative(): Promise<NativeSocialResult> {
 export async function closeAuthBrowser(): Promise<void> {
   if (!isNativeApp()) return;
   try {
-    const { Browser } = await import("@capacitor/browser");
     await Browser.close();
   } catch {
     /* closing is best-effort; the session is already established */
