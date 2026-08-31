@@ -1,6 +1,7 @@
 import { isNativeApp } from "@/lib/platform";
 import { logAppSource } from "@/lib/build-info";
 import { applyStatusBar, resyncKeyboardState } from "@/lib/native-ui";
+import { preloadNativeSocialAuth } from "@/lib/native-social-auth";
 
 
 /**
@@ -113,6 +114,7 @@ export function initNativeLifecycle(): void {
 
   void register();
   void hideSplash();
+  preloadNativeSocialAuth();
 }
 
 

@@ -1,13 +1,42 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isNativeApp, getPlatform } from "@/lib/platform";
 import { NATIVE_AUTH_CALLBACK_URL } from "@/lib/auth-urls";
-// Static imports: a runtime `import(...)` of a Capacitor plugin never
-// resolves inside the iOS WKWebView (loaded via server.url) unless the chunk
-// was already preloaded — see the identical geolocation bug fixed in
-// location-service.ts. Bundling these plugins into the page's own chunk
-// avoids that hang entirely.
-import { SignInWithApple } from "@capacitor-community/apple-sign-in";
-import { Browser } from "@capacitor/browser";
+
+/**
+ * These two Capacitor packages must stay dynamically imported, not static:
+ * their ESM builds re-export `./definitions` without a `.js` extension,
+ * which Node's strict ESM resolver rejects outright — a static top-level
+ * import breaks server-side rendering for every page (this module is
+ * imported by __root.tsx), not just the native app.
+ *
+ * That reintroduces the risk fixed for geolocation in location-service.ts:
+ * a runtime import() of a Capacitor plugin never resolves inside the iOS
+ * WKWebView (server.url mode) unless the chunk was already preloaded. So
+ * instead of importing lazily right when the user taps a button, we warm
+ * these two chunks eagerly during native startup (see
+ * preloadNativeSocialAuth, called from native-lifecycle.ts in the same
+ * early burst that already works for the App/SplashScreen plugins) and
+ * just await the same cached promise here.
+ */
+let appleSignInModule: Promise<typeof import("@capacitor-community/apple-sign-in")> | null = null;
+let browserModule: Promise<typeof import("@capacitor/browser")> | null = null;
+
+function loadAppleSignIn() {
+  appleSignInModule ??= import("@capacitor-community/apple-sign-in");
+  return appleSignInModule;
+}
+
+function loadBrowser() {
+  browserModule ??= import("@capacitor/browser");
+  return browserModule;
+}
+
+/** Warms both plugin chunks early so the later real call resolves instantly. */
+export function preloadNativeSocialAuth(): void {
+  if (!isNativeApp()) return;
+  void loadAppleSignIn();
+  void loadBrowser();
+}
 
 /**
  * Native (Capacitor/iOS) social sign-in.
@@ -63,6 +92,8 @@ export async function signInWithAppleNative(): Promise<NativeSocialResult> {
   if (!isNativeApp()) return { status: "error", message: "Native Apple sign-in is iOS only." };
 
   try {
+    const { SignInWithApple } = await loadAppleSignIn();
+
     const rawNonce = createRawNonce();
     const hashedNonce = await sha256Hex(rawNonce);
 
@@ -138,6 +169,7 @@ export async function signInWithGoogleNative(): Promise<NativeSocialResult> {
     if (error) return { status: "error", message: error.message };
     if (!data?.url) return { status: "error", message: "Could not start Google sign-in." };
 
+    const { Browser } = await loadBrowser();
     await Browser.open({ url: data.url, presentationStyle: "popover" });
     return { status: "pending" };
   } catch (error) {
@@ -153,6 +185,7 @@ export async function signInWithGoogleNative(): Promise<NativeSocialResult> {
 export async function closeAuthBrowser(): Promise<void> {
   if (!isNativeApp()) return;
   try {
+    const { Browser } = await loadBrowser();
     await Browser.close();
   } catch {
     /* closing is best-effort; the session is already established */
