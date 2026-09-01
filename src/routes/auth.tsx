@@ -43,6 +43,17 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const browserWatchRef = useRef<(() => void) | null>(null);
+
+  const stopBrowserWatch = () => {
+    browserWatchRef.current?.();
+    browserWatchRef.current = null;
+  };
+
+  // Dismissing the system browser fires no deep link, so without this the
+  // sign-in screen would stay disabled until the app restarts.
+  useEffect(() => stopBrowserWatch, []);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
