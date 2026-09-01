@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { registerPlugin } from "@capacitor/core";
 import { isNativeApp, getPlatform } from "@/lib/platform";
 import { NATIVE_AUTH_CALLBACK_URL } from "@/lib/auth-urls";
 
@@ -113,8 +114,6 @@ export async function signInWithAppleNative(): Promise<NativeSocialResult> {
   if (!isNativeApp()) return { status: "error", message: "Native Apple sign-in is iOS only." };
 
   try {
-    const { SignInWithApple } = await loadAppleSignIn();
-
     const rawNonce = createRawNonce();
     const hashedNonce = await sha256Hex(rawNonce);
 
