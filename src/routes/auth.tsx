@@ -14,6 +14,7 @@ import { authCallbackUrl } from "@/lib/auth-urls";
 import { isNativeApp } from "@/lib/platform";
 import {
   logAuthAttempt,
+  onAuthBrowserFinished,
   signInWithAppleNative,
   signInWithGoogleNative,
 } from "@/lib/native-social-auth";
