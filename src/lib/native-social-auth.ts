@@ -170,34 +170,79 @@ export async function signInWithAppleNative(): Promise<NativeSocialResult> {
 }
 
 /**
- * Native Google sign-in: Supabase mints the OAuth URL, the system browser
- * handles it, and `layerly://auth/callback` comes back to
- * `src/lib/native-auth-link.ts`.
+ * Registered through the plugin registry for the same reason as Apple above:
+ * the package's *web* implementation loads Google's browser SDK at module
+ * scope, which would crash SSR. On iOS the pod registers the native side.
+ */
+const GoogleAuth = registerPlugin<{
+  signIn(): Promise<{
+    authentication?: { idToken?: string; accessToken?: string };
+  }>;
+  signOut?(): Promise<void>;
+}>("GoogleAuth");
+
+/**
+ * Fallback: the old system-browser flow. Only used when the native Google
+ * sheet is unavailable (plugin missing, client ID not configured yet), so a
+ * misconfigured build degrades instead of blocking sign-in entirely.
+ */
+async function signInWithGoogleBrowser(): Promise<NativeSocialResult> {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: NATIVE_AUTH_CALLBACK_URL,
+      skipBrowserRedirect: true,
+    },
+  });
+
+  if (error) return { status: "error", message: error.message };
+  if (!data?.url) return { status: "error", message: "Could not start Google sign-in." };
+
+  const { Browser } = await loadBrowser();
+  await Browser.open({ url: data.url, presentationStyle: "popover" });
+  return { status: "pending" };
+}
+
+/**
+ * Native Google sign-in: Google's own system sheet returns an ID token, which
+ * we exchange for a session directly — exactly like Apple above. Nothing about
+ * the backend hostname is ever shown to the user, and no external browser is
+ * involved, so there is no "stuck after backing out" state.
  */
 export async function signInWithGoogleNative(): Promise<NativeSocialResult> {
   if (!isNativeApp()) return { status: "error", message: "Native Google sign-in is iOS only." };
 
   try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const result = await GoogleAuth.signIn();
+    const idToken = result?.authentication?.idToken;
+    log(`Google credential received: ${idToken ? "yes" : "no"}`);
+    if (!idToken) {
+      return { status: "error", message: "Google did not return a credential. Please try again." };
+    }
+
+    const { error } = await supabase.auth.signInWithIdToken({
       provider: "google",
-      options: {
-        redirectTo: NATIVE_AUTH_CALLBACK_URL,
-        skipBrowserRedirect: true,
-      },
+      token: idToken,
+      access_token: result.authentication?.accessToken,
     });
-
-    if (error) return { status: "error", message: error.message };
-    if (!data?.url) return { status: "error", message: "Could not start Google sign-in." };
-
-    const { Browser } = await loadBrowser();
-    await Browser.open({ url: data.url, presentationStyle: "popover" });
-    return { status: "pending" };
+    if (error) {
+      log("session established: no");
+      return { status: "error", message: error.message };
+    }
+    log("session established: yes");
+    return { status: "success" };
   } catch (error) {
     if (isCancellation(error)) return { status: "cancelled" };
-    return {
-      status: "error",
-      message: error instanceof Error ? error.message : "Google sign-in failed.",
-    };
+    log(`native Google unavailable, falling back to browser: ${String(error)}`);
+    try {
+      return await signInWithGoogleBrowser();
+    } catch (fallbackError) {
+      if (isCancellation(fallbackError)) return { status: "cancelled" };
+      return {
+        status: "error",
+        message: fallbackError instanceof Error ? fallbackError.message : "Google sign-in failed.",
+      };
+    }
   }
 }
 
