@@ -18,25 +18,46 @@ import { NATIVE_AUTH_CALLBACK_URL } from "@/lib/auth-urls";
  * early burst that already works for the App/SplashScreen plugins) and
  * just await the same cached promise here.
  */
-let appleSignInModule: Promise<typeof import("@capacitor-community/apple-sign-in")> | null = null;
-let browserModule: Promise<typeof import("@capacitor/browser")> | null = null;
+type AppleAuthorizeOptions = {
+  clientId: string;
+  redirectURI: string;
+  scopes: string;
+  state?: string;
+  nonce?: string;
+};
 
-function loadAppleSignIn() {
-  appleSignInModule ??= import("@capacitor-community/apple-sign-in");
-  return appleSignInModule;
-}
+type AppleAuthorizeResult = {
+  response: {
+    identityToken?: string;
+    givenName?: string | null;
+    familyName?: string | null;
+  };
+};
+
+/**
+ * Registered through Capacitor's plugin registry instead of importing
+ * `@capacitor-community/apple-sign-in` directly: that package's *web*
+ * implementation touches `document` at module scope, and the bundler merges
+ * it into the shared Capacitor chunk, which crashed SSR on every page.
+ * On iOS the native plugin is registered by the pod, so this proxy is enough.
+ */
+const SignInWithApple = registerPlugin<{
+  authorize(options: AppleAuthorizeOptions): Promise<AppleAuthorizeResult>;
+}>("SignInWithApple");
+
+let browserModule: Promise<typeof import("@capacitor/browser")> | null = null;
 
 function loadBrowser() {
   browserModule ??= import("@capacitor/browser");
   return browserModule;
 }
 
-/** Warms both plugin chunks early so the later real call resolves instantly. */
+/** Warms the browser plugin chunk early so the later real call resolves instantly. */
 export function preloadNativeSocialAuth(): void {
   if (!isNativeApp()) return;
-  void loadAppleSignIn();
   void loadBrowser();
 }
+
 
 /**
  * Native (Capacitor/iOS) social sign-in.
