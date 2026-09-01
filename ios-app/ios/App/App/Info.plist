@@ -30,6 +30,19 @@
 				<string>layerly</string>
 			</array>
 		</dict>
+		<!-- Reversed iOS OAuth client ID — required for native Google Sign-In.
+		     Must match GOOGLE_IOS_CLIENT_ID in capacitor.config.ts, reversed:
+		     123-abc.apps.googleusercontent.com → com.googleusercontent.apps.123-abc -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>google-signin</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.REPLACE_WITH_IOS_OAUTH_CLIENT_ID</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>

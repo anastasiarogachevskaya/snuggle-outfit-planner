@@ -15,6 +15,13 @@ import type { CapacitorConfig } from '@capacitor/cli';
 //
 // To test fully offline/bundled instead, copy capacitor.config.local.ts over this
 // file explicitly — never switch silently.
+// Google OAuth client IDs (public identifiers, not secrets).
+// GOOGLE_IOS_CLIENT_ID  → Google Cloud Console → Credentials → OAuth client, type "iOS"
+// GOOGLE_WEB_CLIENT_ID  → the existing Web client (used as audience so the
+//                          backend accepts the id_token).
+const GOOGLE_IOS_CLIENT_ID = 'REPLACE_WITH_IOS_OAUTH_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_WEB_CLIENT_ID = 'REPLACE_WITH_WEB_OAUTH_CLIENT_ID.apps.googleusercontent.com';
+
 const config: CapacitorConfig = {
   appId: 'online.layerly.app',
   appName: 'Layerly',
@@ -35,6 +42,16 @@ const config: CapacitorConfig = {
     backgroundColor: '#A8B894',
   },
   plugins: {
+    // Native Google Sign-In (no web page, no backend hostname shown).
+    // iosClientId is the *iOS* OAuth client ID from Google Cloud Console.
+    // The matching reversed client ID must also be a CFBundleURLScheme in
+    // ios/App/App/Info.plist, otherwise the sheet never returns.
+    GoogleAuth: {
+      iosClientId: GOOGLE_IOS_CLIENT_ID,
+      scopes: ['profile', 'email'],
+      serverClientId: GOOGLE_WEB_CLIENT_ID,
+      forceCodeForRefreshToken: false,
+    },
     SplashScreen: {
       // Safety net: the web app hides the splash as soon as it boots, but if the
       // remote site stalls or fails, iOS must still drop the splash so the user
