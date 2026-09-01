@@ -47,6 +47,17 @@ export function isGeolocationPluginAvailable(): boolean {
   return safeCapacitor(() => Capacitor.isPluginAvailable("Geolocation") === true, false);
 }
 
+/**
+ * True when the given native plugin is actually registered in the running
+ * native shell. Used to diagnose the native Apple/Google sign-in plugins
+ * ("SignInWithApple", "Browser") directly from an installed build, since a
+ * missing registration throws "plugin is not implemented" only once tapped.
+ */
+export function isNativePluginAvailable(pluginName: string): boolean {
+  if (!isNativeApp()) return false;
+  return safeCapacitor(() => Capacitor.isPluginAvailable(pluginName) === true, false);
+}
+
 
 /** Human label used by the optional debug indicator. */
 export function getPlatformLabel(): string {

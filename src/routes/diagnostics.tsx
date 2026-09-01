@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSyncExternalStore, useState } from "react";
+import { useSyncExternalStore, useState, useEffect } from "react";
 import {
   clearLocationDiagnostics,
   formatLocationDiagnostics,
@@ -13,6 +13,7 @@ import {
   getPlatformLabel,
   isNativeApp,
   isGeolocationPluginAvailable,
+  isNativePluginAvailable,
 } from "@/lib/platform";
 import { SiteFooter } from "@/components/site-footer";
 import {
@@ -59,6 +60,17 @@ function DiagnosticsPage() {
   const [running, setRunning] = useState(false);
   const [permission, setPermission] = useState<string>("—");
   const [copied, setCopied] = useState(false);
+  const [nativeBuild, setNativeBuild] = useState<string>("—");
+
+  useEffect(() => {
+    if (!isNativeApp()) return;
+    void import("@capacitor/app").then(({ App }) =>
+      App.getInfo().then(
+        (info) => setNativeBuild(`${info.version} (${info.build})`),
+        () => setNativeBuild("unavailable"),
+      ),
+    );
+  }, []);
 
   const runTest = async () => {
     setRunning(true);
@@ -91,6 +103,9 @@ function DiagnosticsPage() {
           <Row label="Runtime" value={getPlatformLabel()} />
           <Row label="Capacitor platform" value={getPlatform()} />
           <Row label="Native shell" value={String(isNativeApp())} />
+          <Row label="Native build" value={nativeBuild} />
+          <Row label="SignInWithApple registered" value={String(isNativePluginAvailable("SignInWithApple"))} />
+          <Row label="Browser registered" value={String(isNativePluginAvailable("Browser"))} />
           <Row
             label="Geolocation path"
             value={
