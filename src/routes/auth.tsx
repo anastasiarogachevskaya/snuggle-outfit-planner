@@ -127,8 +127,17 @@ function AuthPage() {
         return;
       }
       // "pending": the system browser is open; the layerly:// deep link finishes it.
-      if (result.status === "pending") return;
+      // If the user backs out instead, browserFinished re-enables the screen.
+      if (result.status === "pending") {
+        stopBrowserWatch();
+        browserWatchRef.current = onAuthBrowserFinished(() => {
+          stopBrowserWatch();
+          setBusy(false);
+        });
+        return;
+      }
 
+      stopBrowserWatch();
       clearStoredAuthNext();
       navigate({ to: "/today", replace: true });
       return;
