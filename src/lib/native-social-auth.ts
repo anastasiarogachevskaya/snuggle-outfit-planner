@@ -181,6 +181,34 @@ export async function signInWithGoogleNative(): Promise<NativeSocialResult> {
   }
 }
 
+/**
+ * Fires once when the user dismisses the system browser (Done / swipe) so the
+ * caller can re-enable its UI. Returns a cleanup function; safe to call on web.
+ */
+export function onAuthBrowserFinished(callback: () => void): () => void {
+  if (!isNativeApp()) return () => {};
+  let cancelled = false;
+  let remove: (() => void) | null = null;
+
+  void (async () => {
+    try {
+      const { Browser } = await loadBrowser();
+      const handle = await Browser.addListener("browserFinished", () => {
+        if (!cancelled) callback();
+      });
+      if (cancelled) void handle.remove();
+      else remove = () => void handle.remove();
+    } catch {
+      /* listener is a best-effort safety net */
+    }
+  })();
+
+  return () => {
+    cancelled = true;
+    remove?.();
+  };
+}
+
 /** Dismisses the in-app browser after the deep link returns. Never throws. */
 export async function closeAuthBrowser(): Promise<void> {
   if (!isNativeApp()) return;

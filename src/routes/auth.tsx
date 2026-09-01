@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import {
@@ -14,6 +14,7 @@ import { authCallbackUrl } from "@/lib/auth-urls";
 import { isNativeApp } from "@/lib/platform";
 import {
   logAuthAttempt,
+  onAuthBrowserFinished,
   signInWithAppleNative,
   signInWithGoogleNative,
 } from "@/lib/native-social-auth";
@@ -42,6 +43,17 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const browserWatchRef = useRef<(() => void) | null>(null);
+
+  const stopBrowserWatch = () => {
+    browserWatchRef.current?.();
+    browserWatchRef.current = null;
+  };
+
+  // Dismissing the system browser fires no deep link, so without this the
+  // sign-in screen would stay disabled until the app restarts.
+  useEffect(() => stopBrowserWatch, []);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -115,8 +127,17 @@ function AuthPage() {
         return;
       }
       // "pending": the system browser is open; the layerly:// deep link finishes it.
-      if (result.status === "pending") return;
+      // If the user backs out instead, browserFinished re-enables the screen.
+      if (result.status === "pending") {
+        stopBrowserWatch();
+        browserWatchRef.current = onAuthBrowserFinished(() => {
+          stopBrowserWatch();
+          setBusy(false);
+        });
+        return;
+      }
 
+      stopBrowserWatch();
       clearStoredAuthNext();
       navigate({ to: "/today", replace: true });
       return;
