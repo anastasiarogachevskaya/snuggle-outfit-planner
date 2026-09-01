@@ -37,11 +37,14 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<!-- Foreground ("While Using the App") location only.
-	     Deliberately NO NSLocationAlwaysUsageDescription /
-	     NSLocationAlwaysAndWhenInUseUsageDescription and no background
-	     location mode: Layerly only reads the weather when asked. -->
+	<!-- Foreground ("While Using the App") location only; no background
+	     location mode. NSLocationAlwaysAndWhenInUseUsageDescription is
+	     still required (ITMS-90683) because the linked geolocation
+	     library's binary references the always-authorization API even
+	     though Layerly's own code never calls it. -->
 	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Layerly uses your location to check the local weather and recommend suitable clothing for your baby.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Layerly uses your location to check the local weather and recommend suitable clothing for your baby.</string>
 
 	<key>UILaunchStoryboardName</key>
