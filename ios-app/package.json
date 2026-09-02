@@ -9,7 +9,8 @@
     "open:ios": "cap open ios",
     "check:capacitor": "cd .. && bun run check:capacitor",
     "check:launch-assets": "node scripts/check-launch-assets.mjs",
-    "prepare:ios": "bun run check:capacitor && bun run check:launch-assets && node scripts/prepare-ios.mjs",
+    "check:google-auth": "node scripts/check-google-auth-config.mjs",
+    "prepare:ios": "bun run check:capacitor && bun run check:launch-assets && bun run check:google-auth && node scripts/prepare-ios.mjs",
     "icons:ios": "node scripts/generate-app-icons.mjs"
   },
   "dependencies": {
