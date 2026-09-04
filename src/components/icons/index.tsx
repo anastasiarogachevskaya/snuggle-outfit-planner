@@ -136,6 +136,14 @@ export const ShortSleeveBodysuitIcon = (p: IconProps) => (
   </Svg>
 );
 
+/** Short-sleeve one-piece with short legs — base and bottom in one garment. */
+export const RomperIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M8 4 5 6 3.5 9.5 6 11v4.5L5.5 21h4l.5-4h4l.5 4h4L18 15.5V11l2.5-1.5L19 6l-3-2-2 1.5a3 3 0 0 1-4 0Z" />
+    <path d="M10.5 13h3" />
+  </Svg>
+);
+
 export const LongSleeveBodysuitIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M8 4 4.5 6 3 11l3 1v5.5l1.5 3h9l1.5-3V12l3-1-1.5-5L16 4l-2 1.5a3 3 0 0 1-4 0Z" />
@@ -439,6 +447,7 @@ export const CarSeatBlanketIcon = (p: IconProps) => (
 export const iconMap: Record<WardrobeSlug, (p: IconProps) => ReactElement> = {
   sleeveless_bodysuit: SleevelessBodysuitIcon,
   short_sleeve_bodysuit: ShortSleeveBodysuitIcon,
+  romper: RomperIcon,
   long_sleeve_bodysuit: LongSleeveBodysuitIcon,
   pajamas: PajamasIcon,
   pants: PantsIcon,

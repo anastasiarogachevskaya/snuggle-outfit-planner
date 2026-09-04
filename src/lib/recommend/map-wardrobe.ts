@@ -43,6 +43,18 @@ const OUTER_MAP: Record<OuterKind, { slugs: WardrobeSlug[]; label: string } | nu
 };
 
 /**
+ * Garments that fill the base and bottom slots at once, so the engine stops
+ * asking for "sleeveless bodysuit + shorts" when the parent owns the single
+ * item that is exactly that. A romper doubles as warm-room sleepwear, which
+ * is why `bottom: "none"` counts as satisfied too.
+ */
+const ONE_PIECE: {
+  slug: WardrobeSlug;
+  base: BaseKind[];
+  bottom: BottomKind[];
+}[] = [{ slug: "romper", base: ["sleeveless", "short_sleeve"], bottom: ["shorts", "none"] }];
+
+/**
  * A jacket worn with snow pants covers the same ground as a one-piece winter
  * overall, so a parent who owns the two-piece version shouldn't be told their
  * outer layer is missing. Deliberately requires *both*: a jacket on its own
@@ -123,16 +135,33 @@ export function mapWardrobe(
     if (!p.owned) missing.push(p.slug);
   };
 
+  // A one-piece that covers base and bottom together wins over the separates
+  // it replaces — one garment to fetch instead of two.
+  const onePiece = ONE_PIECE.find(
+    (c) =>
+      owned.has(c.slug) &&
+      c.base.includes(layers.base) &&
+      c.bottom.includes(layers.bottom),
+  );
+
   // Base
   if (layers.base === "diaper_only") {
     baby.push({ slot: "base", slug: "diaper_only", label: "Diaper only" });
+  } else if (onePiece) {
+    baby.push({
+      slot: "base",
+      slug: onePiece.slug,
+      label: LABEL_BY_SLUG[onePiece.slug] ?? onePiece.slug,
+    });
   } else {
     const b = pickSlug(BASE_MAP[layers.base], owned);
     if (b) addLayer("base", b);
   }
 
-  const bottom = pickSlug(BOTTOM_MAP[layers.bottom], owned);
-  if (bottom) addLayer("bottom", bottom);
+  if (!onePiece) {
+    const bottom = pickSlug(BOTTOM_MAP[layers.bottom], owned);
+    if (bottom) addLayer("bottom", bottom);
+  }
 
   const mid = pickSlug(MID_MAP[layers.mid], owned);
   if (mid) addLayer("mid", mid);

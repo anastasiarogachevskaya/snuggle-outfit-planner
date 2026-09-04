@@ -273,6 +273,53 @@ describe("recommendation engine", () => {
     expect(r.missingHelpfulItems.map((i) => i.slug)).toContain("footmuff");
   });
 
+  it("a romper replaces bodysuit + shorts on a hot walk", () => {
+    const set = new Set<WardrobeSlug>(["romper", "short_sleeve_bodysuit", "shorts", "sun_hat"]);
+    const r = recommend({
+      feelsLikeC: 27,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: set,
+    });
+    const clothing = slugs(r.babyClothing);
+    expect(clothing).toContain("romper");
+    expect(clothing).not.toContain("shorts");
+    expect(clothing).not.toContain("short_sleeve_bodysuit");
+    expect(r.missing).toEqual([]);
+  });
+
+  it("a romper doubles as sleepwear in a warm room", () => {
+    const set = new Set<WardrobeSlug>(["romper", "pajamas"]);
+    const r = recommend({
+      feelsLikeC: 25,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 25,
+      ageMonths: 8,
+      owned: set,
+    });
+    expect(slugs(r.babyClothing)).toContain("romper");
+  });
+
+  it("separates are still used when no romper is owned", () => {
+    const r = recommend({
+      feelsLikeC: 27,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    const clothing = slugs(r.babyClothing);
+    expect(clothing).not.toContain("romper");
+    expect(clothing).toContain("shorts");
+  });
+
   it("jacket + snow pants stand in for a winter overall", () => {
     const set = new Set<WardrobeSlug>([
       "long_sleeve_bodysuit",

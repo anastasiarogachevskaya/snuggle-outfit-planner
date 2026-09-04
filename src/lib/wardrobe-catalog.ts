@@ -3,6 +3,7 @@ export type WardrobeSlug =
   | "sleeveless_bodysuit"
   | "short_sleeve_bodysuit"
   | "long_sleeve_bodysuit"
+  | "romper"
   | "pajamas"
   // Bottoms
   | "pants"
@@ -67,6 +68,7 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
       { slug: "sleeveless_bodysuit", label: "Sleeveless bodysuit", hint: "Base layer", emoji: "🎽" },
       { slug: "short_sleeve_bodysuit", label: "Short-sleeve bodysuit", hint: "Base layer", emoji: "👕" },
       { slug: "long_sleeve_bodysuit", label: "Long-sleeve bodysuit", hint: "Base layer", emoji: "👶" },
+      { slug: "romper", label: "Romper", hint: "One piece, covers legs", emoji: "🧸" },
       { slug: "pajamas", label: "Pajamas / sleepsuit", hint: "Base layer", emoji: "🌙" },
     ],
   },
