@@ -41,10 +41,13 @@ export function computeEffectiveTemp(ctx: OutdoorContext): number {
     }
   }
 
-  // Duration influence
-  if (ctx.situation === "walk" && ctx.durationMin && ctx.durationMin >= 60) {
-    if (eff < TEMP.COOL) eff -= 1; // long cold walk → dress warmer
-    if (eff >= TEMP.HOT) eff += 1; // long hot walk → dress lighter
+  // Duration influence — graduated, not a single 60-minute cutoff, so 15 vs
+  // 30 vs 60+ minutes can actually differ. Only near already-borderline
+  // temperatures: on a mild day, walk length doesn't change what to wear.
+  if (ctx.situation === "walk" && ctx.durationMin) {
+    const shift = ctx.durationMin >= 60 ? 1.5 : ctx.durationMin >= 30 ? 0.75 : 0;
+    if (eff < TEMP.COOL) eff -= shift; // longer cold walk → dress warmer
+    if (eff >= TEMP.HOT) eff += shift; // longer hot walk → dress lighter
   }
 
   // Age
@@ -155,11 +158,18 @@ function buildNotes(ctx: OutdoorContext, effectiveC: number): string[] {
         "Carrier keeps baby warmer because of adult body heat. Check baby's neck or chest during the walk.",
       );
   }
-  if (ctx.situation === "walk" && ctx.durationMin && ctx.durationMin >= 60) {
+  if (ctx.situation === "walk" && ctx.durationMin && ctx.durationMin >= 30) {
+    const long = ctx.durationMin >= 60;
     if (effectiveC >= TEMP.HOT)
-      notes.push("Long walk in warm weather — take shade breaks and offer water often.");
+      notes.push(
+        long
+          ? "Long walk in warm weather — take shade breaks and offer water often."
+          : "Warm weather — bring water and watch for overheating.",
+      );
     else if (effectiveC < TEMP.COOL)
-      notes.push("Long cold walk — outfit adjusted a bit warmer.");
+      notes.push(
+        long ? "Long cold walk — outfit adjusted a bit warmer." : "Cool weather — outfit adjusted slightly warmer.",
+      );
   }
   return notes;
 }

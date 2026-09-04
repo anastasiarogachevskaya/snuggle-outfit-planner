@@ -16,6 +16,7 @@
         "@capacitor/preferences": "^7.0.1",
         "@capacitor/splash-screen": "^7.0.3",
         "@capacitor/status-bar": "^7.0.3",
+        "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
       },
       "devDependencies": {
         "@capacitor/cli": "^7.4.3",
@@ -49,6 +50,8 @@
     "@capacitor/status-bar": ["@capacitor/status-bar@7.0.6", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@capacitor/status-bar/-/status-bar-7.0.6.tgz", { "peerDependencies": { "@capacitor/core": ">=7.0.0" } }, "sha512-7AVqj46b26QikImQzWfsJmzG8NUJZBGkrVSuoeTo+SX/YH3hXH0MqwwFgMqMGHfa/BICDgSvTjM9miVFlq0+RQ=="],
 
     "@capacitor/synapse": ["@capacitor/synapse@1.0.4", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@capacitor/synapse/-/synapse-1.0.4.tgz", {}, "sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw=="],
+
+    "@codetrix-studio/capacitor-google-auth": ["@codetrix-studio/capacitor-google-auth@3.4.0-rc.4", "", { "peerDependencies": { "@capacitor/core": "^6.0.0" } }, "sha512-d548/xKrbMHHbzMYSWnlgZCLZYo2zzY7Onrh3x8ujojrb7atkNK68I6su5WgmaBt4E+R4gxBsWams4554aOFjA=="],
 
     "@ionic/cli-framework-output": ["@ionic/cli-framework-output@2.2.8", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@ionic/cli-framework-output/-/cli-framework-output-2.2.8.tgz", { "dependencies": { "@ionic/utils-terminal": "2.3.5", "debug": "^4.0.0", "tslib": "^2.0.1" } }, "sha512-TshtaFQsovB4NWRBydbNFawql6yul7d5bMiW1WYYf17hd99V6xdDdk3vtF51bw6sLkxON3bDQpWsnUc9/hVo3g=="],
 

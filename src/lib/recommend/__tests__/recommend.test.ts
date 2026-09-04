@@ -272,4 +272,19 @@ describe("recommendation engine", () => {
     expect(r.missing.length).toBeGreaterThan(0);
     expect(r.missingHelpfulItems.map((i) => i.slug)).toContain("footmuff");
   });
+
+  it("cold walk: a longer duration dresses baby warmer than a short one", () => {
+    const base = {
+      feelsLikeC: 4,
+      tempPref: 3 as const,
+      situation: "walk" as const,
+      transportMode: "pram" as const,
+      ageMonths: 8,
+      owned: owned(),
+    };
+    const short = recommend({ ...base, durationMin: 15 });
+    const long = recommend({ ...base, durationMin: 60 });
+    expect(slugs(short.babyClothing)).not.toContain("winter_overall");
+    expect(slugs(long.babyClothing)).toContain("winter_overall");
+  });
 });
