@@ -84,8 +84,9 @@ export function pickHome(ctx: HomeContext): HomePick {
       out.missingSleep.push({ slug: sleep.suggestion.slug, label: sleep.suggestion.label });
     }
 
+    // The explanation already leads the reason line; repeating it as a note
+    // printed the same sentence twice on screen.
     out.reason = `Room is ~${round}°C — ${sleep.explanation}`;
-    out.notes.push(sleep.explanation);
     return out;
   }
 

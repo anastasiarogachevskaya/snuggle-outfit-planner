@@ -273,6 +273,48 @@ describe("recommendation engine", () => {
     expect(r.missingHelpfulItems.map((i) => i.slug)).toContain("footmuff");
   });
 
+  it("car seat in freezing weather never puts a winter overall under the harness", () => {
+    const r = recommend({
+      feelsLikeC: -8,
+      tempPref: 3,
+      situation: "car",
+      durationMin: 15,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(slugs(r.babyClothing)).not.toContain("winter_overall");
+    // The warm mid layer stays — the baby still has to get to the car.
+    expect(slugs(r.babyClothing)).toContain("fleece_overall");
+    expect(r.safetyAdvice.join(" ")).toMatch(/harness/i);
+  });
+
+  it("cold car trip suggests the over-harness blanket even on a short drive", () => {
+    const r = recommend({
+      feelsLikeC: 0,
+      tempPref: 3,
+      situation: "car",
+      durationMin: 15,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.transportExtras.map((e) => e.slug)).toContain("blanket");
+  });
+
+  it("15-17°C walk is dressed warmer than 19-20°C instead of being identical", () => {
+    const base = {
+      tempPref: 3 as const,
+      situation: "walk" as const,
+      transportMode: "pram" as const,
+      durationMin: 30,
+      ageMonths: 8,
+      owned: owned(),
+    };
+    const mild = recommend({ ...base, feelsLikeC: 15 });
+    const warm = recommend({ ...base, feelsLikeC: 20 });
+    expect(slugs(mild.babyClothing)).toContain("sweater");
+    expect(slugs(warm.babyClothing)).not.toContain("sweater");
+  });
+
   it("cold walk: 60+ min dresses baby warmer than 30 or 60 min (not just relabeled)", () => {
     const base = {
       feelsLikeC: 5,

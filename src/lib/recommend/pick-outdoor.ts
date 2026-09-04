@@ -77,7 +77,10 @@ function pickLayers(effectiveC: number): LayerNeed {
       return { base: "long_sleeve", bottom: "pants", mid: "none", outer: "none" };
 
     case "mild":
-      return { base: "long_sleeve", bottom: "pants", mid: "none", outer: "none" };
+      // 15–17°C outdoors: a baby sitting still in a stroller isn't generating
+      // heat the way a walking adult is, so a light mid layer belongs here.
+      // Without it, 15–21°C collapsed into one flat 7-degree band.
+      return { base: "long_sleeve", bottom: "pants", mid: "sweater", outer: "none" };
     case "cool":
       return { base: "long_sleeve", bottom: "pants", mid: "sweater", outer: "none" };
     case "cold":
@@ -137,10 +140,12 @@ function pickExtras(effectiveC: number, ctx: OutdoorContext) {
     }
   }
 
-  if (ctx.situation === "car" && (ctx.durationMin ?? 0) >= 30 && effectiveC < TEMP.MILD) {
+  // Not gated on trip length: this blanket replaces the outer layer the car
+  // seat can't safely take, so a 10-minute cold drive needs it just as much.
+  if (ctx.situation === "car" && effectiveC < TEMP.MILD) {
     extras.push({
       slug: "blanket",
-      label: "Blanket — remove the winter overall in the car seat",
+      label: "Blanket — tuck over the harness once baby is buckled",
       ownedRequired: true,
     });
   }
@@ -176,8 +181,24 @@ function buildNotes(ctx: OutdoorContext, effectiveC: number): string[] {
   return notes;
 }
 
-function buildSafety(ctx: OutdoorContext): string[] {
+function buildSafety(ctx: OutdoorContext, effectiveC: number): string[] {
   const advice: string[] = [];
+
+  // Car-seat harness safety. Bulky outerwear compresses in a crash, leaving
+  // the harness loose enough for the baby to be thrown from it, so the engine
+  // never puts an outer layer under the straps (see pickOutdoor) and says why.
+  if (ctx.situation === "car") {
+    if (effectiveC < TEMP.MILD) {
+      advice.push(
+        "🚗 Never buckle a baby into a car seat wearing a winter overall or thick coat — it compresses in a crash and leaves the harness dangerously loose.",
+      );
+      advice.push(
+        "🚗 Dress baby in thin warm layers, tighten the harness, then tuck a coat or blanket over the straps.",
+      );
+    }
+    return advice;
+  }
+
   if (ctx.situation !== "walk") return advice;
   const uv = ctx.uvIndex;
   const warmEnough = ctx.feelsLikeC >= TEMP.HOT || (uv !== undefined && uv >= 3);
@@ -207,6 +228,14 @@ export function pickOutdoor(ctx: OutdoorContext): OutdoorPick {
   const accessories = pickAccessories(effectiveC, ctx);
   const { extras } = pickExtras(effectiveC, ctx);
   const notes = buildNotes(ctx, effectiveC);
-  const safetyAdvice = buildSafety(ctx);
+  const safetyAdvice = buildSafety(ctx, effectiveC);
+
+  // A bulky outer layer under a car-seat harness is a crash hazard, so it is
+  // stripped here rather than in pickLayers — the temperature-driven pick
+  // stays honest, and buildSafety explains the swap.
+  if (ctx.situation === "car" && layers.outer !== "none") {
+    layers.outer = "none";
+  }
+
   return { effectiveC, layers, accessories, extras, notes, safetyAdvice };
 }
