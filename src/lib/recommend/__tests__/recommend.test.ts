@@ -273,6 +273,65 @@ describe("recommendation engine", () => {
     expect(r.missingHelpfulItems.map((i) => i.slug)).toContain("footmuff");
   });
 
+  it("jacket + snow pants stand in for a winter overall", () => {
+    const set = new Set<WardrobeSlug>([
+      "long_sleeve_bodysuit",
+      "leggings",
+      "fleece_overall",
+      "jacket",
+      "snow_pants",
+    ]);
+    const r = recommend({
+      feelsLikeC: -10,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      ageMonths: 8,
+      owned: set,
+    });
+    const clothing = slugs(r.babyClothing);
+    expect(clothing).toContain("jacket");
+    expect(clothing).toContain("snow_pants");
+    expect(r.missing).not.toContain("winter_overall");
+  });
+
+  it("a jacket without snow pants is not treated as a winter overall", () => {
+    const set = new Set<WardrobeSlug>([
+      "long_sleeve_bodysuit",
+      "leggings",
+      "fleece_overall",
+      "jacket",
+    ]);
+    const r = recommend({
+      feelsLikeC: -10,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      ageMonths: 8,
+      owned: set,
+    });
+    expect(r.missing).toContain("winter_overall");
+  });
+
+  it("prefers a car seat blanket over a generic blanket in the car", () => {
+    const set = new Set<WardrobeSlug>([
+      "long_sleeve_bodysuit",
+      "leggings",
+      "fleece_overall",
+      "blanket",
+      "car_seat_blanket",
+    ]);
+    const r = recommend({
+      feelsLikeC: 0,
+      tempPref: 3,
+      situation: "car",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: set,
+    });
+    expect(r.transportExtras.map((e) => e.slug)).toContain("car_seat_blanket");
+  });
+
   it("car seat in freezing weather never puts a winter overall under the harness", () => {
     const r = recommend({
       feelsLikeC: -8,

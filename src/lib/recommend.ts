@@ -94,12 +94,18 @@ export function recommend(input: RecommendInput): Recommendation {
   const usedExtras = new Set<WardrobeSlug>();
   const missingExtras = new Set<WardrobeSlug>();
   for (const e of out.extras) {
-    if (input.owned.has(e.slug)) {
-      transportExtras.push({ slug: e.slug, label: e.label });
-      usedExtras.add(e.slug);
+    // A car seat blanket is the purpose-made version of the over-harness
+    // blanket, so prefer it when the parent has one.
+    const slug =
+      e.slug === "blanket" && input.situation === "car" && input.owned.has("car_seat_blanket")
+        ? ("car_seat_blanket" as WardrobeSlug)
+        : e.slug;
+    if (input.owned.has(slug)) {
+      transportExtras.push({ slug, label: e.label });
+      usedExtras.add(slug);
     } else {
-      missingHelpfulItems.push({ slug: e.slug, label: e.label });
-      missingExtras.add(e.slug);
+      missingHelpfulItems.push({ slug, label: e.label });
+      missingExtras.add(slug);
     }
   }
 

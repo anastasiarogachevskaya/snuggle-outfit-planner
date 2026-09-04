@@ -25,19 +25,32 @@ const BOTTOM_MAP: Record<BottomKind, { slugs: WardrobeSlug[]; label: string } | 
   none: null,
   shorts: { slugs: ["shorts", "pants"], label: "Shorts" },
   pants: { slugs: ["pants", "leggings"], label: "Pants" },
-  leggings: { slugs: ["leggings", "wool_leggings", "pants"], label: "Leggings" },
+  leggings: { slugs: ["leggings", "wool_leggings", "tights", "pants"], label: "Leggings" },
 };
 
 const MID_MAP: Record<MidKind, { slugs: WardrobeSlug[]; label: string } | null> = {
   none: null,
   sweater: { slugs: ["sweater", "cardigan", "hoodie"], label: "Sweater" },
-  fleece: { slugs: ["fleece_overall", "fleece_layer", "wool_layer", "sweater"], label: "Fleece overall" },
+  fleece: {
+    slugs: ["fleece_overall", "fleece_layer", "wool_overall", "wool_layer", "sweater"],
+    label: "Fleece overall",
+  },
 };
 
 const OUTER_MAP: Record<OuterKind, { slugs: WardrobeSlug[]; label: string } | null> = {
   none: null,
   winter_overall: { slugs: ["winter_overall"], label: "Winter overall" },
 };
+
+/**
+ * A jacket worn with snow pants covers the same ground as a one-piece winter
+ * overall, so a parent who owns the two-piece version shouldn't be told their
+ * outer layer is missing. Deliberately requires *both*: a jacket on its own
+ * leaves the legs in whatever the bottom layer is, which is not equivalent.
+ */
+const OUTER_COMBOS: { kind: OuterKind; slugs: WardrobeSlug[] }[] = [
+  { kind: "winter_overall", slugs: ["jacket", "snow_pants"] },
+];
 
 const HAT_MAP: Record<HatKind, { slugs: WardrobeSlug[]; label: string } | null> = {
   none: null,
@@ -124,8 +137,20 @@ export function mapWardrobe(
   const mid = pickSlug(MID_MAP[layers.mid], owned);
   if (mid) addLayer("mid", mid);
 
-  const outer = pickSlug(OUTER_MAP[layers.outer], owned);
-  if (outer) addLayer("outer", outer);
+  const outerEntry = OUTER_MAP[layers.outer];
+  const combo = OUTER_COMBOS.find(
+    (c) => c.kind === layers.outer && c.slugs.every((s) => owned.has(s)),
+  );
+  if (outerEntry && combo && !outerEntry.slugs.some((s) => owned.has(s))) {
+    // Two-piece stand-in: list both garments rather than one row claiming to
+    // be the overall the parent doesn't have.
+    for (const s of combo.slugs) {
+      baby.push({ slot: "outer", slug: s, label: LABEL_BY_SLUG[s] ?? s });
+    }
+  } else {
+    const outer = pickSlug(outerEntry, owned);
+    if (outer) addLayer("outer", outer);
+  }
 
   const hat = pickSlug(HAT_MAP[accessories.hat], owned);
   if (hat) addAccessory(hat);
