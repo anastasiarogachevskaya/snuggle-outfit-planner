@@ -35,7 +35,7 @@ export type FeedbackContext = {
   situation: Situation;
   homeActivity: HomeActivity;
   transportMode: TransportMode;
-  duration: 15 | 30 | 60;
+  duration: 30 | 60 | 90;
   roomTemp: number;
   ageMonths: number | null;
   weather: Awaited<ReturnType<typeof fetchWeather>>;
@@ -109,7 +109,7 @@ export function TodayScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ageMonths]);
 
-  const [duration, setDuration] = useState<15 | 30 | 60>(30);
+  const [duration, setDuration] = useState<30 | 60 | 90>(30);
   const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
 
   const isRaining = isRainingCondition(weatherQ.data?.condition);
@@ -322,10 +322,10 @@ export function TodayScreen({
               <div>
                 <p className="text-sm text-ink/70 mb-2">Duration</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {[15, 30, 60].map((d) => (
+                  {[30, 60, 90].map((d) => (
                     <button
                       key={d}
-                      onClick={() => change(duration, d as 15 | 30 | 60, setDuration)}
+                      onClick={() => change(duration, d as 30 | 60 | 90, setDuration)}
                       className={
                         "py-2 rounded-xl text-sm " +
                         (duration === d
@@ -333,7 +333,7 @@ export function TodayScreen({
                           : "bg-canvas text-ink/70")
                       }
                     >
-                      {d === 60 ? "60+ min" : `${d} min`}
+                      {d === 90 ? "60+ min" : `${d} min`}
                     </button>
                   ))}
                 </div>
@@ -345,10 +345,10 @@ export function TodayScreen({
             <div>
               <p className="text-sm text-ink/70 mb-2">Trip duration</p>
               <div className="grid grid-cols-3 gap-2">
-                {[15, 30, 60].map((d) => (
+                {[30, 60, 90].map((d) => (
                   <button
                     key={d}
-                    onClick={() => change(duration, d as 15 | 30 | 60, setDuration)}
+                    onClick={() => change(duration, d as 30 | 60 | 90, setDuration)}
                     className={
                       "py-2 rounded-xl text-sm " +
                       (duration === d
@@ -356,7 +356,7 @@ export function TodayScreen({
                         : "bg-canvas text-ink/70")
                     }
                   >
-                    {d === 60 ? "60+ min" : `${d} min`}
+                    {d === 90 ? "60+ min" : `${d} min`}
                   </button>
                 ))}
               </div>

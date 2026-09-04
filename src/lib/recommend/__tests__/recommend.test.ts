@@ -273,18 +273,20 @@ describe("recommendation engine", () => {
     expect(r.missingHelpfulItems.map((i) => i.slug)).toContain("footmuff");
   });
 
-  it("cold walk: a longer duration dresses baby warmer than a short one", () => {
+  it("cold walk: 60+ min dresses baby warmer than 30 or 60 min (not just relabeled)", () => {
     const base = {
-      feelsLikeC: 4,
+      feelsLikeC: 5,
       tempPref: 3 as const,
       situation: "walk" as const,
       transportMode: "pram" as const,
       ageMonths: 8,
       owned: owned(),
     };
-    const short = recommend({ ...base, durationMin: 15 });
-    const long = recommend({ ...base, durationMin: 60 });
-    expect(slugs(short.babyClothing)).not.toContain("winter_overall");
-    expect(slugs(long.babyClothing)).toContain("winter_overall");
+    const thirty = recommend({ ...base, durationMin: 30 });
+    const sixty = recommend({ ...base, durationMin: 60 });
+    const sixtyPlus = recommend({ ...base, durationMin: 90 });
+    expect(slugs(thirty.babyClothing)).not.toContain("winter_overall");
+    expect(slugs(sixty.babyClothing)).not.toContain("winter_overall");
+    expect(slugs(sixtyPlus.babyClothing)).toContain("winter_overall");
   });
 });

@@ -41,11 +41,13 @@ export function computeEffectiveTemp(ctx: OutdoorContext): number {
     }
   }
 
-  // Duration influence — graduated, not a single 60-minute cutoff, so 15 vs
-  // 30 vs 60+ minutes can actually differ. Only near already-borderline
-  // temperatures: on a mild day, walk length doesn't change what to wear.
+  // Duration influence — graduated, not a single 60-minute cutoff, so the
+  // 30 / 60 / 60+ (90) picker options can actually differ. Only near
+  // already-borderline temperatures: on a mild day, walk length doesn't
+  // change what to wear.
   if (ctx.situation === "walk" && ctx.durationMin) {
-    const shift = ctx.durationMin >= 60 ? 1.5 : ctx.durationMin >= 30 ? 0.75 : 0;
+    const shift =
+      ctx.durationMin >= 90 ? 2.25 : ctx.durationMin >= 60 ? 1.5 : ctx.durationMin >= 30 ? 0.75 : 0;
     if (eff < TEMP.COOL) eff -= shift; // longer cold walk → dress warmer
     if (eff >= TEMP.HOT) eff += shift; // longer hot walk → dress lighter
   }
