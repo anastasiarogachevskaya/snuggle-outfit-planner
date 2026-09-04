@@ -82,7 +82,7 @@ describe("mapWardrobe", () => {
     expect(r.babyClothing.map((i) => i.slot)).toEqual(["base", "bottom", "mid", "outer"]);
   });
 
-  it("labels describe the layer kind, not the substituted item", () => {
+  it("labels describe the layer kind, and name the substituted item alongside it", () => {
     const r = mapWardrobe(
       { base: "sleeveless", bottom: "none", mid: "none", outer: "none" },
       { hat: "thin", socks: "cotton", mittens: false },
@@ -92,7 +92,22 @@ describe("mapWardrobe", () => {
       slot: "base",
       slug: "short_sleeve_bodysuit",
       label: "Sleeveless bodysuit",
+      usingLabel: "Short-sleeve bodysuit",
     });
     expect(r.accessories.map((a) => a.label)).toEqual(["Thin cotton hat", "Cotton socks"]);
+    expect(r.accessories.map((a) => a.usingLabel)).toEqual(["Warm hat", "Wool socks"]);
+  });
+
+  it("omits usingLabel when the recommended item itself is owned", () => {
+    const r = mapWardrobe(
+      { base: "sleeveless", bottom: "none", mid: "none", outer: "none" },
+      { hat: "none", socks: "none", mittens: false },
+      own("sleeveless_bodysuit"),
+    );
+    expect(r.babyClothing[0]).toEqual({
+      slot: "base",
+      slug: "sleeveless_bodysuit",
+      label: "Sleeveless bodysuit",
+    });
   });
 });

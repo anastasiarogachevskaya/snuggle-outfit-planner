@@ -1,4 +1,4 @@
-import type { WardrobeSlug } from "../wardrobe-catalog";
+import { LABEL_BY_SLUG, type WardrobeSlug } from "../wardrobe-catalog";
 import type { Layer, Accessory } from "../recommend";
 import type {
   LayerNeed,
@@ -55,9 +55,23 @@ const SOCK_MAP: Record<SockKind, { slugs: WardrobeSlug[]; label: string } | null
 function pickSlug(
   entry: { slugs: WardrobeSlug[]; label: string } | null,
   owned: Set<WardrobeSlug>,
-): { slug: WardrobeSlug; label: string; owned: boolean } | null {
+): { slug: WardrobeSlug; label: string; owned: boolean; usingLabel?: string } | null {
   if (!entry) return null;
-  for (const s of entry.slugs) if (owned.has(s)) return { slug: s, label: entry.label, owned: true };
+  for (const s of entry.slugs) {
+    if (!owned.has(s)) continue;
+    // The label keeps naming the layer kind, but when the match is a stand-in
+    // rather than the item itself, the real garment is carried alongside it —
+    // otherwise the screen claims a "Sleeveless bodysuit" is in a wardrobe
+    // that only holds a short-sleeve one.
+    const actual = LABEL_BY_SLUG[s];
+    const substituted = s !== entry.slugs[0] && actual !== undefined && actual !== entry.label;
+    return {
+      slug: s,
+      label: entry.label,
+      owned: true,
+      ...(substituted ? { usingLabel: actual } : {}),
+    };
+  }
   // Nothing owned — use the primary as the "missing" recommendation.
   return { slug: entry.slugs[0], label: entry.label, owned: false };
 }
@@ -77,45 +91,47 @@ export function mapWardrobe(
   const accs: Accessory[] = [];
   const missing: WardrobeSlug[] = [];
 
+  type Picked = NonNullable<ReturnType<typeof pickSlug>>;
+  const addLayer = (slot: Layer["slot"], p: Picked) => {
+    baby.push({
+      slot,
+      slug: p.slug,
+      label: p.label,
+      ...(p.usingLabel ? { usingLabel: p.usingLabel } : {}),
+    });
+    if (!p.owned) missing.push(p.slug);
+  };
+  const addAccessory = (p: Picked) => {
+    accs.push({
+      slug: p.slug,
+      label: p.label,
+      ...(p.usingLabel ? { usingLabel: p.usingLabel } : {}),
+    });
+    if (!p.owned) missing.push(p.slug);
+  };
+
   // Base
   if (layers.base === "diaper_only") {
     baby.push({ slot: "base", slug: "diaper_only", label: "Diaper only" });
   } else {
     const b = pickSlug(BASE_MAP[layers.base], owned);
-    if (b) {
-      baby.push({ slot: "base", slug: b.slug, label: b.label });
-      if (!b.owned) missing.push(b.slug);
-    }
+    if (b) addLayer("base", b);
   }
 
   const bottom = pickSlug(BOTTOM_MAP[layers.bottom], owned);
-  if (bottom) {
-    baby.push({ slot: "bottom", slug: bottom.slug, label: bottom.label });
-    if (!bottom.owned) missing.push(bottom.slug);
-  }
+  if (bottom) addLayer("bottom", bottom);
 
   const mid = pickSlug(MID_MAP[layers.mid], owned);
-  if (mid) {
-    baby.push({ slot: "mid", slug: mid.slug, label: mid.label });
-    if (!mid.owned) missing.push(mid.slug);
-  }
+  if (mid) addLayer("mid", mid);
 
   const outer = pickSlug(OUTER_MAP[layers.outer], owned);
-  if (outer) {
-    baby.push({ slot: "outer", slug: outer.slug, label: outer.label });
-    if (!outer.owned) missing.push(outer.slug);
-  }
+  if (outer) addLayer("outer", outer);
 
   const hat = pickSlug(HAT_MAP[accessories.hat], owned);
-  if (hat) {
-    accs.push({ slug: hat.slug, label: hat.label });
-    if (!hat.owned) missing.push(hat.slug);
-  }
+  if (hat) addAccessory(hat);
+
   const socks = pickSlug(SOCK_MAP[accessories.socks], owned);
-  if (socks) {
-    accs.push({ slug: socks.slug, label: socks.label });
-    if (!socks.owned) missing.push(socks.slug);
-  }
+  if (socks) addAccessory(socks);
   if (accessories.mittens) {
     const m: WardrobeSlug = "mittens";
     accs.push({ slug: m, label: "Mittens" });

@@ -27,8 +27,10 @@ export type Layer = {
   slot: "base" | "bottom" | "mid" | "outer";
   slug: WardrobeSlug | "diaper_only";
   label: string;
+  /** Set when `slug` is a stand-in: the name of the item actually owned. */
+  usingLabel?: string;
 };
-export type Accessory = { slug: WardrobeSlug; label: string };
+export type Accessory = { slug: WardrobeSlug; label: string; usingLabel?: string };
 
 export type Recommendation = {
   babyClothing: Layer[];

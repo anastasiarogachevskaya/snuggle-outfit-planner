@@ -55,6 +55,14 @@ function isRainingCondition(condition: string | undefined) {
   return /rain|drizzle|shower|thunder/i.test(condition);
 }
 
+/**
+ * The row label names the layer kind ("Sleeveless bodysuit"); when the engine
+ * matched a stand-in instead, say which garment that actually is.
+ */
+function usingHint(usingLabel: string | undefined) {
+  return usingLabel ? `Using your ${usingLabel.toLowerCase()}` : "";
+}
+
 export function TodayScreen({
   baby,
   owned,
@@ -399,7 +407,13 @@ export function TodayScreen({
                       slug={isSynthetic ? undefined : (l.slug as WardrobeSlug)}
                       chip={l.slot.slice(0, 3).toUpperCase()}
                       label={l.label}
-                      hint={isSynthetic ? "" : isOwned ? "In your wardrobe" : "Not in your wardrobe"}
+                      hint={
+                        isSynthetic
+                          ? ""
+                          : isOwned
+                            ? (usingHint(l.usingLabel) || "In your wardrobe")
+                            : "Not in your wardrobe"
+                      }
                       dim={!isSynthetic && !isOwned}
                     />
                   );
@@ -410,7 +424,7 @@ export function TodayScreen({
                     slug={a.slug}
                     chip="+"
                     label={a.label}
-                    hint={owned.has(a.slug) ? "" : "Not in your wardrobe"}
+                    hint={owned.has(a.slug) ? usingHint(a.usingLabel) : "Not in your wardrobe"}
                     accent
                     dim={!owned.has(a.slug)}
                   />
