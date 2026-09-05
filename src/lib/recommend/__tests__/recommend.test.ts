@@ -60,6 +60,27 @@ describe("recommendation engine", () => {
     expect(accs).not.toContain("wool_socks");
   });
 
+  it("no sweater owned, jacket owned → short-sleeve body + jacket, not long-sleeve + jacket-as-sweater", () => {
+    const wardrobe = new Set<WardrobeSlug>(FULL_WARDROBE);
+    wardrobe.delete("sweater");
+    wardrobe.add("jacket");
+    const r = recommend({
+      feelsLikeC: 12,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      ageMonths: 8,
+      owned: wardrobe,
+    });
+    const clothing = slugs(r.babyClothing);
+    expect(clothing).toContain("short_sleeve_bodysuit");
+    expect(clothing).not.toContain("long_sleeve_bodysuit");
+    expect(clothing).not.toContain("sweater");
+    const outer = r.babyClothing.find((i) => i.slot === "outer");
+    expect(outer?.slug).toBe("jacket");
+    expect(r.babyClothing.some((i) => i.slot === "mid")).toBe(false);
+  });
+
   it("spring walk 12°C pram → long-sleeve + pants + sweater + thin hat", () => {
     const r = recommend({
       feelsLikeC: 12,

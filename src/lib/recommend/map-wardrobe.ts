@@ -64,6 +64,20 @@ const OUTER_COMBOS: { kind: OuterKind; slugs: WardrobeSlug[] }[] = [
   { kind: "winter_overall", slugs: ["jacket", "snow_pants"] },
 ];
 
+/**
+ * A jacket already carries a sweater's worth of warmth built in, so a parent
+ * without a sweater/cardigan/hoodie shouldn't be told to layer a long-sleeve
+ * bodysuit under it too — that double-counts the warmth. Instead this drops
+ * the base down a notch and wears the jacket alone, in the outer slot, in
+ * place of the mid layer. Only long_sleeve has a lighter base to fall back
+ * to; the other base kinds this pairs with (sleeveless/short_sleeve, or
+ * pajamas at home) don't apply here since "mid: sweater" only ever pairs
+ * with long_sleeve outdoors.
+ */
+const BASE_DOWNGRADE_FOR_JACKET: Partial<Record<BaseKind, BaseKind>> = {
+  long_sleeve: "short_sleeve",
+};
+
 const HAT_MAP: Record<HatKind, { slugs: WardrobeSlug[]; label: string } | null> = {
   none: null,
   sun: { slugs: ["sun_hat"], label: "Sun hat" },
@@ -144,8 +158,19 @@ export function mapWardrobe(
       c.bottom.includes(layers.bottom),
   );
 
+  const midOwnsRealMatch = MID_MAP[layers.mid]?.slugs.some((s) => owned.has(s)) ?? false;
+  const jacketForSweater =
+    layers.mid === "sweater" &&
+    !midOwnsRealMatch &&
+    layers.outer === "none" &&
+    owned.has("jacket") &&
+    layers.base in BASE_DOWNGRADE_FOR_JACKET;
+  const effectiveBase = jacketForSweater
+    ? (BASE_DOWNGRADE_FOR_JACKET[layers.base] as BaseKind)
+    : layers.base;
+
   // Base
-  if (layers.base === "diaper_only") {
+  if (effectiveBase === "diaper_only") {
     baby.push({ slot: "base", slug: "diaper_only", label: "Diaper only" });
   } else if (onePiece) {
     baby.push({
@@ -154,7 +179,7 @@ export function mapWardrobe(
       label: LABEL_BY_SLUG[onePiece.slug] ?? onePiece.slug,
     });
   } else {
-    const b = pickSlug(BASE_MAP[layers.base], owned);
+    const b = pickSlug(BASE_MAP[effectiveBase], owned);
     if (b) addLayer("base", b);
   }
 
@@ -163,14 +188,18 @@ export function mapWardrobe(
     if (bottom) addLayer("bottom", bottom);
   }
 
-  const mid = pickSlug(MID_MAP[layers.mid], owned);
-  if (mid) addLayer("mid", mid);
+  if (!jacketForSweater) {
+    const mid = pickSlug(MID_MAP[layers.mid], owned);
+    if (mid) addLayer("mid", mid);
+  }
 
   const outerEntry = OUTER_MAP[layers.outer];
   const combo = OUTER_COMBOS.find(
     (c) => c.kind === layers.outer && c.slugs.every((s) => owned.has(s)),
   );
-  if (outerEntry && combo && !outerEntry.slugs.some((s) => owned.has(s))) {
+  if (jacketForSweater) {
+    baby.push({ slot: "outer", slug: "jacket", label: "Jacket" });
+  } else if (outerEntry && combo && !outerEntry.slugs.some((s) => owned.has(s))) {
     // Two-piece stand-in: list both garments rather than one row claiming to
     // be the overall the parent doesn't have.
     for (const s of combo.slugs) {
