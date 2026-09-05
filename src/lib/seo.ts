@@ -15,6 +15,7 @@ export const PUBLIC_ROUTES: { path: string; changefreq: string; priority: string
   { path: "/ios", changefreq: "monthly", priority: "0.6" },
   { path: "/android", changefreq: "monthly", priority: "0.6" },
   { path: "/auth", changefreq: "monthly", priority: "0.4" },
+  { path: "/privacy", changefreq: "yearly", priority: "0.3" },
 ];
 
 export function pageMeta(opts: {

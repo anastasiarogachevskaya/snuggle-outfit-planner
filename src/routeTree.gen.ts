@@ -20,6 +20,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as IosRouteImport } from './routes/ios'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TryRouteImport } from './routes/try'
@@ -90,6 +91,11 @@ const IosRoute = IosRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/ios': typeof IosRoute
   '/mcp': typeof McpRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/try': typeof TryRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/ios': typeof IosRoute
   '/mcp': typeof McpRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/try': typeof TryRoute
@@ -253,6 +261,7 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/ios': typeof IosRoute
   '/mcp': typeof McpRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/try': typeof TryRoute
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/ios'
     | '/mcp'
+    | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
     | '/try'
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/ios'
     | '/mcp'
+    | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
     | '/try'
@@ -343,6 +354,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/ios'
     | '/mcp'
+    | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
     | '/try'
@@ -374,6 +386,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   IosRoute: typeof IosRoute
   McpRoute: typeof McpRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TryRoute: typeof TryRoute
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -620,6 +640,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   IosRoute: IosRoute,
   McpRoute: McpRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TryRoute: TryRoute,
