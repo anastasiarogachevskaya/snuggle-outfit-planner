@@ -19,7 +19,14 @@ function abortSignal(ms: number): AbortSignal | undefined {
   }
 }
 
-/** Resolves to the nearest place, or `null` when it times out / fails. */
+/**
+ * Uses BigDataCloud's free client-side reverse geocoder, not Open-Meteo's
+ * own `/v1/reverse` endpoint: that endpoint 404s for the large majority of
+ * real coordinates (confirmed against several city centers, including ones
+ * it lists in its own `/v1/search` results), which meant most users saw raw
+ * coordinates instead of a place name. No API key is required for this
+ * BigDataCloud endpoint.
+ */
 export async function reverseGeocode(
   latitude: number,
   longitude: number,
@@ -27,14 +34,14 @@ export async function reverseGeocode(
 ): Promise<ReverseGeocodePlace | null> {
   try {
     const res = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&count=1&language=en`,
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
       { signal: abortSignal(timeoutMs) },
     );
     if (!res.ok) return null;
     const json = await res.json();
-    const place = json?.results?.[0];
-    if (!place?.name) return null;
-    return { name: place.name, country: place.country ?? null };
+    const name = json?.city || json?.locality || json?.principalSubdivision;
+    if (!name) return null;
+    return { name, country: json?.countryName ?? null };
   } catch {
     return null;
   }

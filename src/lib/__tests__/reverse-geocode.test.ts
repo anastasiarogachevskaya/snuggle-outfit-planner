@@ -33,11 +33,26 @@ describe("reverseGeocode", () => {
   it("returns a place when the geocoder answers", async () => {
     globalThis.fetch = (async () =>
       new Response(
-        JSON.stringify({ results: [{ name: "Helsinki", country: "Finland" }] }),
+        JSON.stringify({ city: "Helsinki", countryName: "Finland" }),
         { status: 200 },
       )) as unknown as typeof fetch;
 
     expect(await reverseGeocodeLabel(60.17, 24.94)).toBe("Helsinki, Finland");
+  });
+
+  it("falls back to locality, then subdivision, when no city is given", async () => {
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ locality: "Kupittaa", countryName: "Finland" }), {
+        status: 200,
+      })) as unknown as typeof fetch;
+    expect(await reverseGeocodeLabel(60.45, 22.3)).toBe("Kupittaa, Finland");
+
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({ principalSubdivision: "Southwest Finland", countryName: "Finland" }),
+        { status: 200 },
+      )) as unknown as typeof fetch;
+    expect(await reverseGeocodeLabel(60.45, 22.3)).toBe("Southwest Finland, Finland");
   });
 
   it("aborts and falls back to null when the geocoder exceeds the abort window", async () => {
@@ -74,7 +89,7 @@ describe("reverseGeocode", () => {
     expect(await reverseGeocode(1, 2)).toBeNull();
 
     globalThis.fetch = (async () =>
-      new Response(JSON.stringify({ results: [] }), { status: 200 })) as unknown as typeof fetch;
+      new Response(JSON.stringify({}), { status: 200 })) as unknown as typeof fetch;
     expect(await reverseGeocode(1, 2)).toBeNull();
   });
 

@@ -52,7 +52,7 @@ export async function stubOpenMeteo(
 ) {
   const tempC = opts.tempC ?? 8;
 
-  await page.route("**/geocoding-api.open-meteo.com/v1/reverse**", async (route) => {
+  await page.route("**/api.bigdatacloud.net/data/reverse-geocode-client**", async (route) => {
     if (opts.stallReverseGeocode) {
       // Never respond: the client-side 6s abort must kick in.
       await new Promise((r) => setTimeout(r, 30_000));
@@ -62,7 +62,7 @@ export async function stubOpenMeteo(
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ results: [{ name: "Helsinki", country: "Finland" }] }),
+      body: JSON.stringify({ city: "Helsinki", countryName: "Finland" }),
     });
   });
 
