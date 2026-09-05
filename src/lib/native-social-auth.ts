@@ -57,6 +57,7 @@ function loadBrowser() {
 export function preloadNativeSocialAuth(): void {
   if (!isNativeApp()) return;
   void loadBrowser();
+  void ensureGoogleAuthInitialized();
 }
 
 
@@ -175,11 +176,26 @@ export async function signInWithAppleNative(): Promise<NativeSocialResult> {
  * scope, which would crash SSR. On iOS the pod registers the native side.
  */
 const GoogleAuth = registerPlugin<{
+  initialize(): Promise<void>;
   signIn(): Promise<{
     authentication?: { idToken?: string; accessToken?: string };
   }>;
   signOut?(): Promise<void>;
 }>("GoogleAuth");
+
+/**
+ * The native plugin's `signIn` force-unwraps state that only `initialize`
+ * sets up (client ID, scopes) — call `signIn` first and it crashes the whole
+ * app outright (a Swift trap, not a catchable JS error), even with a real
+ * client ID configured. `initialize()` takes no arguments here: the plugin
+ * reads iosClientId/serverClientId/scopes straight from the GoogleAuth block
+ * already set in capacitor.config.ts.
+ */
+let googleAuthInit: Promise<void> | null = null;
+function ensureGoogleAuthInitialized(): Promise<void> {
+  googleAuthInit ??= GoogleAuth.initialize();
+  return googleAuthInit;
+}
 
 /**
  * Fallback: the old system-browser flow. Only used when the native Google
@@ -213,6 +229,7 @@ export async function signInWithGoogleNative(): Promise<NativeSocialResult> {
   if (!isNativeApp()) return { status: "error", message: "Native Google sign-in is iOS only." };
 
   try {
+    await ensureGoogleAuthInitialized();
     const result = await GoogleAuth.signIn();
     const idToken = result?.authentication?.idToken;
     log(`Google credential received: ${idToken ? "yes" : "no"}`);
