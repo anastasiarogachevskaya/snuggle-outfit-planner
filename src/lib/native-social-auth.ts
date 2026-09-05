@@ -177,7 +177,7 @@ export async function signInWithAppleNative(): Promise<NativeSocialResult> {
  */
 const GoogleAuth = registerPlugin<{
   initialize(): Promise<void>;
-  signIn(): Promise<{
+  signIn(options?: { nonce?: string }): Promise<{
     authentication?: { idToken?: string; accessToken?: string };
   }>;
   signOut?(): Promise<void>;
@@ -230,7 +230,15 @@ export async function signInWithGoogleNative(): Promise<NativeSocialResult> {
 
   try {
     await ensureGoogleAuthInitialized();
-    const result = await GoogleAuth.signIn();
+
+    // Google's SDK (via AppAuth) always mints its own nonce and bakes it into
+    // the id_token regardless of what we do — Supabase then requires a
+    // matching nonce or none at all. So this passes one through explicitly,
+    // same as Apple above: the raw value to Supabase, its hash to Google.
+    const rawNonce = createRawNonce();
+    const hashedNonce = await sha256Hex(rawNonce);
+
+    const result = await GoogleAuth.signIn({ nonce: hashedNonce });
     const idToken = result?.authentication?.idToken;
     log(`Google credential received: ${idToken ? "yes" : "no"}`);
     if (!idToken) {
@@ -241,6 +249,7 @@ export async function signInWithGoogleNative(): Promise<NativeSocialResult> {
       provider: "google",
       token: idToken,
       access_token: result.authentication?.accessToken,
+      nonce: rawNonce,
     });
     if (error) {
       log("session established: no");
