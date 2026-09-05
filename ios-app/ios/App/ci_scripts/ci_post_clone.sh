@@ -31,7 +31,8 @@ echo "<!doctype html><title>Layerly</title>" > www/index.html
 # node_modules is regenerated from scratch on this clean clone, so the
 # capacitor-google-auth patch (nonce support, GoogleSignIn 9.x — see the
 # script itself for why) must be reapplied before pod install picks up the
-# podspec's GoogleSignIn version.
-node scripts/patch-google-auth-plugin.mjs
+# podspec's GoogleSignIn version. Run with bun, not node — this image only
+# has bun on PATH (installed above), not a standalone Node.js.
+bun scripts/patch-google-auth-plugin.mjs
 
 bunx cap sync ios
