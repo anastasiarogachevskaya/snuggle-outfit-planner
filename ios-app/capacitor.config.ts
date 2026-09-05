@@ -19,8 +19,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
 // GOOGLE_IOS_CLIENT_ID  → Google Cloud Console → Credentials → OAuth client, type "iOS"
 // GOOGLE_WEB_CLIENT_ID  → the existing Web client (used as audience so the
 //                          backend accepts the id_token).
-const GOOGLE_IOS_CLIENT_ID = 'REPLACE_WITH_IOS_OAUTH_CLIENT_ID.apps.googleusercontent.com';
-const GOOGLE_WEB_CLIENT_ID = 'REPLACE_WITH_WEB_OAUTH_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_IOS_CLIENT_ID = '614898700516-or4tddis777mpvvmkr3g5v66re82fv0h.apps.googleusercontent.com';
+const GOOGLE_WEB_CLIENT_ID = '614898700516-ld3f6r0bi9k33iots2h2kfsdqob3mo8j.apps.googleusercontent.com';
 
 const config: CapacitorConfig = {
   appId: 'online.layerly.app',
