@@ -9,7 +9,7 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
-const SITE_NAME = "snuggle-outfit-planner"
+const SITE_NAME = "Layerly"
 const SENDER_DOMAIN = "notify.layerly.online"
 const ROOT_DOMAIN = "layerly.online"
 const FROM_DOMAIN = "layerly.online"
