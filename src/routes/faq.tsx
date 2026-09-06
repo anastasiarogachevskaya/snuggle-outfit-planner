@@ -104,6 +104,17 @@ function FaqPage() {
             ))}
           </section>
 
+          <section className="mt-10 rounded-2xl border border-ink/10 bg-white/50 p-5">
+            <h2 className="font-medium text-ink">Still need help?</h2>
+            <p className="mt-1 text-sm leading-relaxed text-ink/70">
+              Email{" "}
+              <a href="mailto:hello@layerly.online" className="text-primary underline">
+                hello@layerly.online
+              </a>{" "}
+              and we'll get back to you.
+            </p>
+          </section>
+
           <div className="mt-12">
             <Link
               to="/try"
