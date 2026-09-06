@@ -58,11 +58,11 @@ export const SignupEmail = ({
           </Section>
 
           <Text style={brand.mutedText}>
-            Or paste this link into your browser:
-            <br />
+            Button not working?{' '}
             <Link href={confirmationUrl} style={brand.plainLink}>
-              {confirmationUrl}
+              Confirm your email here
             </Link>
+            .
           </Text>
 
           <Hr style={brand.hr} />

@@ -47,11 +47,11 @@ export const RecoveryEmail = ({
           </Section>
 
           <Text style={brand.mutedText}>
-            Or paste this link into your browser:
-            <br />
+            Button not working?{' '}
             <Link href={confirmationUrl} style={brand.plainLink}>
-              {confirmationUrl}
+              Reset your password here
             </Link>
+            .
           </Text>
 
           <Hr style={brand.hr} />
