@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { SiteFooter } from "@/components/site-footer";
+import { deleteAccount } from "@/lib/account.functions";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/_authenticated/account")({
       {
         name: "description",
         content:
-          "Manage your Layerly account: sign out, export your data, reset your wardrobe, or delete your profile.",
+          "Manage your Layerly account: sign out, export your data, reset your wardrobe, or delete your account.",
       },
       { property: "og:title", content: "Account & data — Layerly" },
       { property: "og:url", content: "https://layerly.online/account" },
@@ -145,19 +146,12 @@ function AccountPage() {
   };
 
   const deleteProfile = async () => {
-    if (!babyQ.data) return;
     setBusy("delete");
     try {
-      const id = babyQ.data.id;
-      const f = await supabase.from("feedback").delete().eq("baby_id", id);
-      if (f.error) throw f.error;
-      const w = await supabase.from("wardrobe_items").delete().eq("baby_id", id);
-      if (w.error) throw w.error;
-      const b = await supabase.from("babies").delete().eq("id", id);
-      if (b.error) throw b.error;
+      await deleteAccount();
       qc.clear();
       await supabase.auth.signOut();
-      toast.success("Profile deleted");
+      toast.success("Account deleted");
       navigate({ to: "/auth" });
     } catch (e: any) {
       toast.error(e.message ?? "Delete failed");
@@ -166,7 +160,7 @@ function AccountPage() {
     }
   };
 
-  const deleteMatches = babyQ.data && deleteInput.trim() === babyQ.data.name.trim();
+  const deleteMatches = deleteInput.trim().toUpperCase() === "DELETE";
 
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
@@ -209,15 +203,14 @@ function AccountPage() {
             disabled={!babyQ.data}
           />
           <ActionRow
-            title="Delete profile"
-            desc="Permanently remove baby, wardrobe and feedback"
+            title="Delete account"
+            desc="Permanently delete your account and all data"
             icon="×"
             destructive
             onClick={() => {
               setDeleteInput("");
               setConfirmDelete(true);
             }}
-            disabled={!babyQ.data}
           />
         </div>
 
@@ -261,24 +254,25 @@ function AccountPage() {
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete profile permanently</DialogTitle>
+            <DialogTitle>Delete account permanently</DialogTitle>
             <DialogDescription>
-              This will remove {babyQ.data?.name}'s profile, wardrobe, and all feedback. This
-              cannot be undone.
+              This deletes your Layerly account — sign-in, baby profile, wardrobe, and all
+              feedback. You won't be able to sign back in with this email afterward. This cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <label className="text-xs font-medium uppercase tracking-widest text-primary/60 block">
-              Type «{babyQ.data?.name}» to confirm
+              Type «DELETE» to confirm
             </label>
             <input
               className="w-full border border-black/10 bg-canvas/60 px-4 py-3 rounded-2xl text-sm outline-none focus:border-primary/40"
               autoComplete="off"
-              autoCapitalize="words"
+              autoCapitalize="characters"
               enterKeyHint="done"
               value={deleteInput}
               onChange={(e) => setDeleteInput(e.target.value)}
-              placeholder={babyQ.data?.name}
+              placeholder="DELETE"
               autoFocus
             />
           </div>
