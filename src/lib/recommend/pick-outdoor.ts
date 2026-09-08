@@ -155,7 +155,77 @@ function pickExtras(effectiveC: number, ctx: OutdoorContext) {
   return { extras, notes };
 }
 
-function buildNotes(ctx: OutdoorContext, effectiveC: number): string[] {
+const HAT_LABEL: Record<Exclude<AccessoryNeed["hat"], "none">, string> = {
+  sun: "sun hat",
+  thin: "thin hat",
+  warm: "warm hat",
+};
+
+function joinWithAnd(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
+/**
+ * Compares the outfit picked for right now against the outfit that would be
+ * picked for the forecast temperature at the end of the walk, and names
+ * only what's actually practical to take off outdoors without a full change
+ * of clothes — the outer layer, mittens, and a hat swap. Base/bottom/mid
+ * layers and socks are skipped even when they technically differ too: you
+ * can't realistically swap a baby's leggings for pants mid-walk.
+ */
+function buildForecastShiftNote(
+  ctx: OutdoorContext,
+  layers: LayerNeed,
+  accessories: AccessoryNeed,
+): string | null {
+  if (
+    ctx.situation !== "walk" ||
+    !ctx.durationMin ||
+    ctx.feelsLikeAtEndC === undefined ||
+    ctx.feelsLikeAtEndC <= ctx.feelsLikeC
+  ) {
+    return null;
+  }
+
+  const laterCtx: OutdoorContext = { ...ctx, feelsLikeC: ctx.feelsLikeAtEndC };
+  const laterEffectiveC = computeEffectiveTemp(laterCtx);
+  const laterAccessories = pickAccessories(laterEffectiveC, laterCtx);
+  const laterOuter = pickLayers(laterEffectiveC).outer;
+
+  const removable: string[] = [];
+  if (layers.outer === "winter_overall" && laterOuter === "none") {
+    removable.push("winter overall");
+  }
+  if (accessories.mittens && !laterAccessories.mittens) {
+    removable.push("mittens");
+  }
+
+  const actions = removable.length ? [`take off the ${joinWithAnd(removable)}`] : [];
+  if (accessories.hat !== "none" && laterAccessories.hat === "none") {
+    actions.push("leave off the hat");
+  } else if (
+    accessories.hat !== "none" &&
+    laterAccessories.hat !== "none" &&
+    accessories.hat !== laterAccessories.hat
+  ) {
+    actions.push(`swap to the ${HAT_LABEL[laterAccessories.hat]}`);
+  }
+
+  if (actions.length === 0) return null;
+
+  const nowRounded = Math.round(ctx.feelsLikeC);
+  const laterRounded = Math.round(ctx.feelsLikeAtEndC);
+  return `It's ${nowRounded}°C now but expected to warm up to about ${laterRounded}°C by the time you're back — plan to ${joinWithAnd(actions)} partway through.`;
+}
+
+function buildNotes(
+  ctx: OutdoorContext,
+  effectiveC: number,
+  layers: LayerNeed,
+  accessories: AccessoryNeed,
+): string[] {
   const notes: string[] = [];
   if (ctx.situation === "walk" && ctx.transportMode === "carrier") {
     if (ctx.feelsLikeC >= TEMP.WARM)
@@ -181,24 +251,8 @@ function buildNotes(ctx: OutdoorContext, effectiveC: number): string[] {
       );
   }
 
-  // The outfit below is picked for right now — if the sun (or just the time
-  // of day) warms things up enough by the end of the walk to actually change
-  // what band the layers come from, that outfit will run too warm well
-  // before baby is back. Only worth a note when it crosses a real layer
-  // boundary, not for a harmless one-or-two-degree drift.
-  if (
-    ctx.situation === "walk" &&
-    ctx.durationMin &&
-    ctx.feelsLikeAtEndC !== undefined &&
-    ctx.feelsLikeAtEndC > ctx.feelsLikeC &&
-    bandFor(ctx.feelsLikeAtEndC) !== bandFor(ctx.feelsLikeC)
-  ) {
-    const nowRounded = Math.round(ctx.feelsLikeC);
-    const laterRounded = Math.round(ctx.feelsLikeAtEndC);
-    notes.push(
-      `It's ${nowRounded}°C now but expected to warm up to about ${laterRounded}°C by the time you're back — this outfit may end up too warm later, so bring a layer that's easy to remove.`,
-    );
-  }
+  const forecastShift = buildForecastShiftNote(ctx, layers, accessories);
+  if (forecastShift) notes.push(forecastShift);
 
   return notes;
 }
@@ -249,7 +303,7 @@ export function pickOutdoor(ctx: OutdoorContext): OutdoorPick {
   const layers = pickLayers(effectiveC);
   const accessories = pickAccessories(effectiveC, ctx);
   const { extras } = pickExtras(effectiveC, ctx);
-  const notes = buildNotes(ctx, effectiveC);
+  const notes = buildNotes(ctx, effectiveC, layers, accessories);
   const safetyAdvice = buildSafety(ctx, effectiveC);
 
   // A bulky outer layer under a car-seat harness is a crash hazard, so it is

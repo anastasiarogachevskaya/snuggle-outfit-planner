@@ -260,7 +260,24 @@ describe("recommendation engine", () => {
     expect(r.notes.join(" ")).toMatch(/shade|water|warm/i);
   });
 
-  it("6°C now warming to 12°C over a 60-min walk → warns the outfit will run too warm", () => {
+  it("6°C now warming to 12°C over a 60-min sitting-stroller walk → names the winter overall, mittens, and hat swap", () => {
+    const r = recommend({
+      feelsLikeC: 6,
+      feelsLikeAtEndC: 12,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "sitting-stroller",
+      durationMin: 60,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    const note = r.notes.join(" ");
+    expect(note).toMatch(/warm up to about 12/i);
+    expect(note).toMatch(/take off the winter overall and mittens/i);
+    expect(note).toMatch(/swap to the thin hat/i);
+  });
+
+  it("only a hat swap is named when the outer layer and mittens don't change", () => {
     const r = recommend({
       feelsLikeC: 6,
       feelsLikeAtEndC: 12,
@@ -271,10 +288,12 @@ describe("recommendation engine", () => {
       ageMonths: 8,
       owned: owned(),
     });
-    expect(r.notes.join(" ")).toMatch(/warm up.*12.*too warm/i);
+    const note = r.notes.join(" ");
+    expect(note).toMatch(/swap to the thin hat/i);
+    expect(note).not.toMatch(/take off/i);
   });
 
-  it("a one-degree rise that doesn't cross a layer band gets no warm-up note", () => {
+  it("a one-degree rise that changes nothing practical gets no warm-up note", () => {
     const r = recommend({
       feelsLikeC: 6,
       feelsLikeAtEndC: 7,
