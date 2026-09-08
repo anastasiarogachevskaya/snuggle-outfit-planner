@@ -1,20 +1,21 @@
 // @ts-expect-error bun:test is provided by the bun test runner
 import { describe, it, expect, afterEach } from "bun:test";
-import { fetchWeather } from "../weather";
+import { fetchWeather, feelsLikeAtMinutesFromNow } from "../weather";
 
 const realFetch = globalThis.fetch;
 
 type Current = Record<string, unknown>;
+type Hourly = Record<string, unknown>;
 
 let lastUrl = "";
 
-function stubFetch(current: Current, ok = true) {
+function stubFetch(current: Current, ok = true, hourly?: Hourly) {
   lastUrl = "";
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     lastUrl = String(input);
     return {
       ok,
-      json: async () => ({ current }),
+      json: async () => ({ current, hourly }),
     } as Response;
   }) as typeof fetch;
 }
@@ -24,6 +25,7 @@ afterEach(() => {
 });
 
 const SAMPLE: Current = {
+  time: "2026-01-15T10:00",
   temperature_2m: 11.4,
   apparent_temperature: 8.2,
   wind_speed_10m: 17,
@@ -43,6 +45,9 @@ describe("fetchWeather", () => {
     expect(url.searchParams.get("current")).toBe(
       "temperature_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index",
     );
+    expect(url.searchParams.get("hourly")).toBe("apparent_temperature");
+    expect(url.searchParams.get("forecast_days")).toBe("2");
+    expect(url.searchParams.get("timezone")).toBe("auto");
   });
 
   it("maps the response onto the Weather shape", async () => {
@@ -55,6 +60,9 @@ describe("fetchWeather", () => {
       code: 61,
       condition: "Rain",
       uvIndex: 2.5,
+      asOfIso: "2026-01-15T10:00",
+      hourlyTimeIso: [],
+      hourlyFeelsLikeC: [],
     });
   });
 
@@ -73,6 +81,26 @@ describe("fetchWeather", () => {
   it("throws when the response is not ok", async () => {
     stubFetch(SAMPLE, false);
     await expect(fetchWeather(1, 2)).rejects.toThrow("weather fetch failed");
+  });
+});
+
+describe("feelsLikeAtMinutesFromNow", () => {
+  it("finds the closest hourly value ahead of now", async () => {
+    stubFetch(SAMPLE, true, {
+      time: ["2026-01-15T10:00", "2026-01-15T11:00", "2026-01-15T12:00"],
+      apparent_temperature: [8.2, 10.5, 12.8],
+    });
+    const w = await fetchWeather(1, 2);
+    expect(feelsLikeAtMinutesFromNow(w, 60)).toBe(10.5);
+    expect(feelsLikeAtMinutesFromNow(w, 120)).toBe(12.8);
+    // 50 minutes rounds to the 11:00 bucket, not 10:00 or 12:00.
+    expect(feelsLikeAtMinutesFromNow(w, 50)).toBe(10.5);
+  });
+
+  it("returns null when there is no hourly data", async () => {
+    stubFetch(SAMPLE);
+    const w = await fetchWeather(1, 2);
+    expect(feelsLikeAtMinutesFromNow(w, 60)).toBeNull();
   });
 });
 

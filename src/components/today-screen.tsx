@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchWeather } from "@/lib/weather";
+import { fetchWeather, feelsLikeAtMinutesFromNow } from "@/lib/weather";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import {
@@ -136,6 +136,10 @@ export function TodayScreen({
       homeActivity: situation === "home" ? homeActivity : undefined,
       ageMonths,
       uvIndex: weatherQ.data.uvIndex,
+      feelsLikeAtEndC:
+        situation === "walk"
+          ? (feelsLikeAtMinutesFromNow(weatherQ.data, duration) ?? undefined)
+          : undefined,
     });
   }, [
     baby.temperature_pref,

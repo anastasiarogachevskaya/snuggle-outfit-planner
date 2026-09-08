@@ -20,6 +20,8 @@ export type RecommendInput = {
   homeActivity?: HomeActivity;
   ageMonths?: number | null;
   uvIndex?: number;
+  /** Forecast "feels like" for roughly `durationMin` minutes from now. */
+  feelsLikeAtEndC?: number;
 };
 
 // slug can be a real WardrobeSlug or a synthetic display-only value like "diaper_only"
@@ -85,6 +87,7 @@ export function recommend(input: RecommendInput): Recommendation {
     durationMin: input.durationMin,
     ageMonths: input.ageMonths,
     uvIndex: input.uvIndex,
+    feelsLikeAtEndC: input.feelsLikeAtEndC,
   };
   const out = pickOutdoor(ctx);
   const mapped = mapWardrobe(out.layers, out.accessories, input.owned);

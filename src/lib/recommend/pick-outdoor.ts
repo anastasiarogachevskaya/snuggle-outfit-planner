@@ -12,6 +12,8 @@ export type OutdoorContext = {
   durationMin?: number;
   ageMonths?: number | null;
   uvIndex?: number;
+  /** Forecast "feels like" for roughly `durationMin` minutes from now. */
+  feelsLikeAtEndC?: number;
 };
 
 export type OutdoorPick = {
@@ -178,6 +180,26 @@ function buildNotes(ctx: OutdoorContext, effectiveC: number): string[] {
         long ? "Long cold walk — outfit adjusted a bit warmer." : "Cool weather — outfit adjusted slightly warmer.",
       );
   }
+
+  // The outfit below is picked for right now — if the sun (or just the time
+  // of day) warms things up enough by the end of the walk to actually change
+  // what band the layers come from, that outfit will run too warm well
+  // before baby is back. Only worth a note when it crosses a real layer
+  // boundary, not for a harmless one-or-two-degree drift.
+  if (
+    ctx.situation === "walk" &&
+    ctx.durationMin &&
+    ctx.feelsLikeAtEndC !== undefined &&
+    ctx.feelsLikeAtEndC > ctx.feelsLikeC &&
+    bandFor(ctx.feelsLikeAtEndC) !== bandFor(ctx.feelsLikeC)
+  ) {
+    const nowRounded = Math.round(ctx.feelsLikeC);
+    const laterRounded = Math.round(ctx.feelsLikeAtEndC);
+    notes.push(
+      `It's ${nowRounded}°C now but expected to warm up to about ${laterRounded}°C by the time you're back — this outfit may end up too warm later, so bring a layer that's easy to remove.`,
+    );
+  }
+
   return notes;
 }
 

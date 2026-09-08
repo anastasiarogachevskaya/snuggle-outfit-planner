@@ -260,6 +260,34 @@ describe("recommendation engine", () => {
     expect(r.notes.join(" ")).toMatch(/shade|water|warm/i);
   });
 
+  it("6°C now warming to 12°C over a 60-min walk → warns the outfit will run too warm", () => {
+    const r = recommend({
+      feelsLikeC: 6,
+      feelsLikeAtEndC: 12,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 60,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.notes.join(" ")).toMatch(/warm up.*12.*too warm/i);
+  });
+
+  it("a one-degree rise that doesn't cross a layer band gets no warm-up note", () => {
+    const r = recommend({
+      feelsLikeC: 6,
+      feelsLikeAtEndC: 7,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 60,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.notes.join(" ")).not.toMatch(/warm up/i);
+  });
+
   it("carrier at 22°C is not dressed warmer than pram at 22°C", () => {
     const carrier = recommend({
       feelsLikeC: 22,
