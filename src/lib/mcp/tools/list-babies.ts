@@ -1,4 +1,5 @@
 import { defineTool } from "@lovable.dev/mcp-js";
+import { ageInMonths } from "@/lib/baby-age";
 import { errorResult, supabaseForUser, textResult } from "../supabase";
 
 export default defineTool({
@@ -17,10 +18,7 @@ export default defineTool({
 
     const babies = (data ?? []).map((b) => ({
       ...b,
-      age_months: Math.max(
-        0,
-        Math.floor((Date.now() - new Date(b.dob).getTime()) / (1000 * 60 * 60 * 24 * 30.44)),
-      ),
+      age_months: Math.max(0, ageInMonths(b.dob) ?? 0),
     }));
     return textResult(babies, { babies });
   },

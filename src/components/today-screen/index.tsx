@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchWeather, feelsLikeAtMinutesFromNow } from "@/lib/weather";
+import { fetchWeather, feelsLikeAtMinutesFromNow, isRainingCode } from "@/lib/weather";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { ageInMonths } from "@/lib/baby-age";
 import { SiteFooter } from "@/components/site-footer";
 import { selectionHaptic } from "@/lib/haptics";
 import { WeatherSummary } from "./weather-summary";
@@ -37,19 +38,6 @@ export type FeedbackContext = {
   weather: Awaited<ReturnType<typeof fetchWeather>>;
   rec: NonNullable<ReturnType<typeof recommend>>;
 };
-
-export function ageInMonths(dob: string | null | undefined): number | null {
-  if (!dob) return null;
-  const d = new Date(dob);
-  if (isNaN(d.getTime())) return null;
-  const now = new Date();
-  return (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
-}
-
-function isRainingCondition(condition: string | undefined) {
-  if (!condition) return false;
-  return /rain|drizzle|shower|thunder/i.test(condition);
-}
 
 export function TodayScreen({
   baby,
@@ -108,7 +96,7 @@ export function TodayScreen({
   const [duration, setDuration] = useState<30 | 60 | 90>(30);
   const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
 
-  const isRaining = isRainingCondition(weatherQ.data?.condition);
+  const isRaining = weatherQ.data ? isRainingCode(weatherQ.data.code) : false;
 
   const rec = useMemo(() => {
     if (!weatherQ.data) return null;

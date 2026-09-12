@@ -67,14 +67,29 @@ export function feelsLikeAtMinutesFromNow(weather: Weather, minutesFromNow: numb
   return closestIdx === -1 ? null : weather.hourlyFeelsLikeC[closestIdx];
 }
 
+const DRIZZLE_CODES = [51, 53, 55, 56, 57];
+const RAIN_CODES = [61, 63, 65, 66, 67, 80, 81, 82];
+const THUNDERSTORM_CODES = [95, 96, 99];
+
 function describeCode(code: number): string {
   if (code === 0) return "Clear";
   if ([1, 2].includes(code)) return "Mostly clear";
   if (code === 3) return "Overcast";
   if ([45, 48].includes(code)) return "Foggy";
-  if ([51, 53, 55, 56, 57].includes(code)) return "Drizzle";
-  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "Rain";
+  if (DRIZZLE_CODES.includes(code)) return "Drizzle";
+  if (RAIN_CODES.includes(code)) return "Rain";
   if ([71, 73, 75, 77, 85, 86].includes(code)) return "Snow";
-  if ([95, 96, 99].includes(code)) return "Thunderstorm";
+  if (THUNDERSTORM_CODES.includes(code)) return "Thunderstorm";
   return "Cloudy";
+}
+
+/**
+ * Whether a stroller rain cover is warranted. Shared by the web app and the
+ * MCP tools so both agree on the same weather reading — this directly gates
+ * the rain_cover recommendation in recommend/pick-outdoor.ts.
+ */
+export function isRainingCode(code: number): boolean {
+  return (
+    DRIZZLE_CODES.includes(code) || RAIN_CODES.includes(code) || THUNDERSTORM_CODES.includes(code)
+  );
 }

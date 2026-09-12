@@ -1,8 +1,9 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
-import { fetchWeather } from "@/lib/weather";
+import { fetchWeather, isRainingCode } from "@/lib/weather";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { ageInMonths } from "@/lib/baby-age";
 import { errorResult, supabaseForUser, textResult } from "../supabase";
 
 export default defineTool({
@@ -44,10 +45,7 @@ export default defineTool({
     if (itemsError) return errorResult(itemsError.message);
     const owned = new Set((items ?? []).map((r) => r.slug as WardrobeSlug));
 
-    const ageMonths = Math.max(
-      0,
-      Math.floor((Date.now() - new Date(baby.dob).getTime()) / (1000 * 60 * 60 * 24 * 30.44)),
-    );
+    const ageMonths = Math.max(0, ageInMonths(baby.dob) ?? 0);
 
     let weather: Awaited<ReturnType<typeof fetchWeather>> | null = null;
     if (input.feels_like_c === undefined && baby.latitude != null && baby.longitude != null) {
@@ -71,7 +69,7 @@ export default defineTool({
       situation: input.situation as Situation,
       roomTempC: input.room_temp_c,
       transportMode: input.transport_mode as TransportMode | undefined,
-      isRaining: weather ? [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(weather.code) : undefined,
+      isRaining: weather ? isRainingCode(weather.code) : undefined,
       durationMin: input.duration_min,
       owned,
       homeActivity: input.home_activity as HomeActivity | undefined,
