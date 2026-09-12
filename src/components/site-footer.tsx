@@ -24,10 +24,10 @@ export function SiteFooter({
 }) {
   let links = variant === "compact" ? LINKS.filter((l) => (COMPACT as readonly string[]).includes(l.to)) : LINKS;
   // Apple guideline 2.3.10: no third-party platform references reachable from
-  // inside the iOS app. The web/Android pages themselves stay live for
-  // browser and Android visitors — only the native build's footer drops the
-  // link into them.
-  if (isNativeApp()) links = links.filter((l) => l.to !== "/android");
+  // inside the iOS app. The /ios and /android pages themselves stay live for
+  // browser visitors — only the native build's footer drops both links,
+  // keeping just "Web app" as the cross-platform option.
+  if (isNativeApp()) links = links.filter((l) => l.to !== "/android" && l.to !== "/ios");
 
   return (
     <footer className={`${className} border-t border-black/5 pt-6`}>
