@@ -337,6 +337,31 @@ describe("recommendation engine", () => {
     expect(r.notes.join(" ")).not.toMatch(/drop to about/i);
   });
 
+  it("a swaddled and an unswaddled newborn get the same sleepwear in the same room", () => {
+    // The swaddle path used its own room-temperature boundaries and drifted a
+    // degree from the sleep-sack path, splitting at 20–21°C.
+    const base = {
+      feelsLikeC: 20,
+      tempPref: 3 as const,
+      situation: "home" as const,
+      homeActivity: "sleeping" as const,
+      ageMonths: 2,
+    };
+    for (const roomTempC of [20, 20.5, 21]) {
+      const swaddled = recommend({
+        ...base,
+        roomTempC,
+        owned: new Set<WardrobeSlug>(["pajamas", "swaddle", "sleep_sack_10"]),
+      });
+      const unswaddled = recommend({
+        ...base,
+        roomTempC,
+        owned: new Set<WardrobeSlug>(["pajamas", "sleep_sack_10"]),
+      });
+      expect(swaddled.babyClothing[0].slug).toBe(unswaddled.babyClothing[0].slug);
+    }
+  });
+
   it("carrier at 22°C is not dressed warmer than pram at 22°C", () => {
     const carrier = recommend({
       feelsLikeC: 22,

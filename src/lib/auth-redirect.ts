@@ -43,11 +43,20 @@ export function clearStoredAuthNext() {
 }
 const AUTH_RETURN_URL_KEY = "layer.auth.returnUrl";
 
+/**
+ * A path is only safe to redirect to if it cannot escape this origin.
+ * Browsers normalise a backslash to a slash, so "/\\evil.com" would leave
+ * the site as "//evil.com" despite passing a naive startsWith("/") check.
+ */
+function isSameOriginPath(value: string): boolean {
+  return value.startsWith("/") && !value.startsWith("//") && !value.startsWith("/\\");
+}
+
 // A same-origin relative URL (path + query) to return to after sign-in.
 // Used for flows outside the fixed allow-list, e.g. the OAuth consent screen.
 export function storeAuthReturnUrl(value: string) {
   if (typeof window === "undefined") return;
-  if (!value.startsWith("/") || value.startsWith("//")) return;
+  if (!isSameOriginPath(value)) return;
   window.sessionStorage.setItem(AUTH_RETURN_URL_KEY, value);
 }
 
@@ -55,6 +64,6 @@ export function takeAuthReturnUrl(): string | null {
   if (typeof window === "undefined") return null;
   const value = window.sessionStorage.getItem(AUTH_RETURN_URL_KEY);
   window.sessionStorage.removeItem(AUTH_RETURN_URL_KEY);
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
+  if (!value || !isSameOriginPath(value)) return null;
   return value;
 }

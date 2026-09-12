@@ -16,11 +16,24 @@ export const TOG_ITEMS: TogItem[] = [
   { slug: "sleep_sack_35", tog: 3.5, label: "Sleep sack (3.5 TOG)" },
 ];
 
+/**
+ * Room-temperature boundaries for sleepwear weight. Exported because the
+ * swaddled-newborn path in pick-home.ts has to agree with them — it used its
+ * own offsets off TEMP and drifted a degree, so a swaddled and an unswaddled
+ * newborn in the same 20°C room were dressed differently.
+ */
+export const SLEEP_ROOM_TEMP = {
+  NO_SACK: 27,
+  LIGHTEST: 24,
+  LIGHT: 20,
+  WARM: 16,
+} as const;
+
 export function idealTogFor(roomTempC: number): TogValue | null {
-  if (roomTempC >= 27) return null;
-  if (roomTempC >= 24) return 0.5;
-  if (roomTempC >= 20) return 1.0;
-  if (roomTempC >= 16) return 2.5;
+  if (roomTempC >= SLEEP_ROOM_TEMP.NO_SACK) return null;
+  if (roomTempC >= SLEEP_ROOM_TEMP.LIGHTEST) return 0.5;
+  if (roomTempC >= SLEEP_ROOM_TEMP.LIGHT) return 1.0;
+  if (roomTempC >= SLEEP_ROOM_TEMP.WARM) return 2.5;
   return 3.5;
 }
 
@@ -136,7 +149,6 @@ export function pickSleep(roomTempC: number, owned: Set<WardrobeSlug>): SleepPic
   // without a suitable sack.
   const coldRoomWithoutSack = roomTempC < 17 && (!chosen || (ideal !== null && chosen.tog < ideal));
   const socks: SockKind = coldRoomWithoutSack ? rawSocks : "none";
-
 
   let explanation: string;
   if (ideal === null) {

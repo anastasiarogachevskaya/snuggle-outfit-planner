@@ -30,8 +30,11 @@ export type OutdoorPick = {
 export function computeEffectiveTemp(ctx: OutdoorContext): number {
   let eff = ctx.situation === "car" ? ctx.feelsLikeC + 2 : ctx.feelsLikeC;
 
-  // Preference (1 warm .. 5 cold)
-  eff -= (ctx.tempPref - 3) * 1.5;
+  // Preference (1 warm .. 5 cold). A missing value would make every
+  // comparison below false and silently land on the warmest possible outfit,
+  // so fall back to the neutral middle instead.
+  const tempPref = Number.isFinite(ctx.tempPref) ? ctx.tempPref : 3;
+  eff -= (tempPref - 3) * 1.5;
 
   // Transport
   if (ctx.situation === "walk") {

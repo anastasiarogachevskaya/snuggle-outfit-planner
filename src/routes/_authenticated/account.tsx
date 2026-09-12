@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { SiteFooter } from "@/components/site-footer";
+import { isNativeApp } from "@/lib/platform";
 import { deleteAccount } from "@/lib/account.functions";
 
 export const Route = createFileRoute("/_authenticated/account")({
@@ -90,7 +91,25 @@ function AccountPage() {
         wardrobe_items: wardrobe.data ?? [],
         feedback: feedback.data ?? [],
       };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const json = JSON.stringify(payload, null, 2);
+
+      // WKWebView ignores `<a download>`, so inside the iOS app the old code
+      // did nothing at all and still said "Export downloaded". Share sheet
+      // and clipboard are what actually work there.
+      if (isNativeApp()) {
+        const shareable = navigator.share
+          ? navigator
+              .share({ title: "Layerly export", text: json })
+              .then(() => true)
+              .catch(() => false)
+          : Promise.resolve(false);
+        if (await shareable) return;
+        await navigator.clipboard.writeText(json);
+        toast.success("Export copied to the clipboard");
+        return;
+      }
+
+      const blob = new Blob([json], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       const safeName = (babyQ.data.name || "baby").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
@@ -100,7 +119,8 @@ function AccountPage() {
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
+      // Revoking in the same tick can cancel the download in some browsers.
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
       toast.success("Export downloaded");
     } catch (e: any) {
       toast.error(e.message ?? "Export failed");
@@ -113,10 +133,7 @@ function AccountPage() {
     if (!babyQ.data) return;
     setBusy("reset");
     try {
-      const { error } = await supabase
-        .from("wardrobe_items")
-        .delete()
-        .eq("baby_id", babyQ.data.id);
+      const { error } = await supabase.from("wardrobe_items").delete().eq("baby_id", babyQ.data.id);
       if (error) throw error;
       qc.invalidateQueries({ queryKey: ["wardrobe"] });
       setConfirmReset(false);
@@ -153,8 +170,9 @@ function AccountPage() {
       await supabase.auth.signOut();
       toast.success("Account deleted");
       navigate({ to: "/auth" });
-    } catch (e: any) {
-      toast.error(e.message ?? "Delete failed");
+    } catch {
+      // The admin API's wording is backend-shaped and not useful to a parent.
+      toast.error("Couldn't delete the account. Please try again.");
     } finally {
       setBusy(null);
     }
@@ -256,10 +274,9 @@ function AccountPage() {
           <DialogHeader>
             <DialogTitle>Delete account permanently</DialogTitle>
             <DialogDescription>
-              This deletes your Layerly account — sign-in, baby profile, wardrobe, and all
-              feedback. Usage events are anonymized immediately and automatically deleted within
-              90 days. You won't be able to sign back in with this email afterward. This cannot be
-              undone.
+              This deletes your Layerly account — sign-in, baby profile, wardrobe, and all feedback.
+              Usage events are anonymized immediately and automatically deleted within 90 days. You
+              won't be able to sign back in with this email afterward. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">

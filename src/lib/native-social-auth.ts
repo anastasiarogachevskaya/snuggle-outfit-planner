@@ -215,6 +215,8 @@ async function signInWithGoogleBrowser(): Promise<NativeSocialResult> {
   if (!data?.url) return { status: "error", message: "Could not start Google sign-in." };
 
   markOAuthFlow();
+  // Fresh attempt: a previous success must not silence this one's cancel.
+  closedAfterSuccess = false;
   const { Browser } = await loadBrowser();
   await Browser.open({ url: data.url, presentationStyle: "popover" });
   return { status: "pending" };
@@ -286,7 +288,10 @@ export function onAuthBrowserFinished(callback: () => void): () => void {
     try {
       const { Browser } = await loadBrowser();
       const handle = await Browser.addListener("browserFinished", () => {
-        if (!cancelled) callback();
+        // We close the browser ourselves once the deep link lands, which
+        // fires this same event — reporting that as a cancellation made the
+        // funnel count every successful browser sign-in as abandoned too.
+        if (!cancelled && !closedAfterSuccess) callback();
       });
       if (cancelled) void handle.remove();
       else remove = () => void handle.remove();
@@ -302,8 +307,12 @@ export function onAuthBrowserFinished(callback: () => void): () => void {
 }
 
 /** Dismisses the in-app browser after the deep link returns. Never throws. */
+/** Set when the app itself dismisses the browser after a successful link. */
+let closedAfterSuccess = false;
+
 export async function closeAuthBrowser(): Promise<void> {
   if (!isNativeApp()) return;
+  closedAfterSuccess = true;
   try {
     const { Browser } = await loadBrowser();
     await Browser.close();

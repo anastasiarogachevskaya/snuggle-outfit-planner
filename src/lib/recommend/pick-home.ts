@@ -2,7 +2,7 @@ import { TEMP } from "./temperature";
 import type { LayerNeed, AccessoryNeed } from "./layers";
 import type { HomeActivity } from "../recommend";
 import type { WardrobeSlug } from "../wardrobe-catalog";
-import { pickSleep } from "./pick-sleep";
+import { pickSleep, SLEEP_ROOM_TEMP } from "./pick-sleep";
 
 export type HomeContext = {
   roomTempC: number;
@@ -22,12 +22,7 @@ export type HomePick = {
   safetyAdvice: string[];
 };
 
-function suggest(
-  slug: WardrobeSlug,
-  label: string,
-  owned: Set<WardrobeSlug>,
-  out: HomePick,
-) {
+function suggest(slug: WardrobeSlug, label: string, owned: Set<WardrobeSlug>, out: HomePick) {
   if (owned.has(slug)) out.sleepAccessories.push({ slug, label, owned: true });
   else out.missingSleep.push({ slug, label });
 }
@@ -58,10 +53,11 @@ export function pickHome(ctx: HomeContext): HomePick {
 
     // Newborns in a swaddle: swaddle replaces the sleep sack entirely.
     const newborn = ageMonths !== null && ageMonths < 4;
-    if (newborn && owned.has("swaddle") && roomTempC < TEMP.VERY_HOT + 1) {
-      // Sensible baseline pajamas based on room temp, no TOG suggestion.
-      if (roomTempC >= TEMP.HOT + 2) out.layers.base = "short_sleeve";
-      else if (roomTempC >= TEMP.WARM + 3) out.layers.base = "pajamas_light";
+    if (newborn && owned.has("swaddle") && roomTempC < SLEEP_ROOM_TEMP.NO_SACK) {
+      // Baseline pajamas by room temp, no TOG suggestion — but read off the
+      // same boundaries the sleep-sack path uses, so the two agree.
+      if (roomTempC >= SLEEP_ROOM_TEMP.LIGHTEST) out.layers.base = "short_sleeve";
+      else if (roomTempC >= SLEEP_ROOM_TEMP.LIGHT) out.layers.base = "pajamas_light";
       else out.layers.base = "pajamas";
       out.sleepAccessories.push({ slug: "swaddle", label: "Swaddle", owned: true });
       out.reason = `Room is ~${round}°C — swaddle with sleepwear underneath.`;
@@ -97,12 +93,16 @@ export function pickHome(ctx: HomeContext): HomePick {
     out.safetyAdvice.push(
       "🌡️ The room is very warm. Keeping baby in only a diaper helps reduce overheating.",
     );
-    out.safetyAdvice.push("🌡️ Avoid extra blankets. Check baby's neck/chest for signs of overheating.");
+    out.safetyAdvice.push(
+      "🌡️ Avoid extra blankets. Check baby's neck/chest for signs of overheating.",
+    );
     out.reason = `Room is ~${round}°C — very warm, so reduce layers.`;
   } else if (roomTempC >= TEMP.VERY_HOT) {
     // 26–27
     out.layers.base = "short_sleeve";
-    out.safetyAdvice.push("🌡️ Warm room — keep it to a single light layer and skip extra blankets.");
+    out.safetyAdvice.push(
+      "🌡️ Warm room — keep it to a single light layer and skip extra blankets.",
+    );
     out.reason = `Room is ~${round}°C — warm, so a single light layer is enough.`;
   } else if (roomTempC >= TEMP.HOT + 2) {
     // 24–25

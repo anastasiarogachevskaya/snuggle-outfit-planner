@@ -110,12 +110,9 @@ function AuthPage() {
       navigate({ to: "/today", replace: true });
     } catch (err: any) {
       // Record that it failed and roughly why, never the raw message.
-      logEvent("auth_failed", {
-        method: "email",
-        surface,
-        reason: classifyAuthError(err?.message),
-      });
-      toast.error(err.message ?? "Something went wrong");
+      const reason = classifyAuthError(err?.message);
+      logEvent("auth_failed", { method: "email", surface, reason });
+      toast.error(authErrorMessage(reason));
     } finally {
       setBusy(false);
     }
@@ -144,12 +141,9 @@ function AuthPage() {
         return;
       }
       if (result.status === "error") {
-        logEvent("auth_failed", {
-          method,
-          surface,
-          reason: classifyAuthError(result.message),
-        });
-        toast.error(result.message);
+        const reason = classifyAuthError(result.message);
+        logEvent("auth_failed", { method, surface, reason });
+        toast.error(authErrorMessage(reason));
         setBusy(false);
         return;
       }
@@ -177,16 +171,11 @@ function AuthPage() {
       redirect_uri: authCallbackUrl(),
     });
     if (result.error) {
-      logEvent("auth_failed", {
-        method,
-        surface,
-        reason: classifyAuthError(result.error instanceof Error ? result.error.message : undefined),
-      });
-      toast.error(
-        result.error instanceof Error
-          ? result.error.message
-          : `${provider === "apple" ? "Apple" : "Google"} sign-in failed`,
+      const reason = classifyAuthError(
+        result.error instanceof Error ? result.error.message : undefined,
       );
+      logEvent("auth_failed", { method, surface, reason });
+      toast.error(authErrorMessage(reason));
       setBusy(false);
       return;
     }
@@ -298,6 +287,24 @@ function AuthPage() {
  * sign-ins fail without ever storing the raw message, which can contain the
  * email address or other details we deliberately keep out of analytics.
  */
+/**
+ * Raw Supabase wording is backend-shaped and occasionally leaks how the
+ * account store answered, so users see a sentence written for them instead.
+ */
+const AUTH_ERROR_MESSAGE: Record<string, string> = {
+  bad_credentials: "That email or password isn't right.",
+  already_registered: "That email already has an account. Try signing in instead.",
+  email_unconfirmed: "Check your email and confirm your address first.",
+  password_rejected: "That password isn't accepted — use at least 6 characters.",
+  rate_limited: "Too many attempts. Wait a minute and try again.",
+  network: "Couldn't reach Layerly. Check your connection and try again.",
+  provider_config: "That sign-in method isn't available right now.",
+};
+
+function authErrorMessage(reason: string): string {
+  return AUTH_ERROR_MESSAGE[reason] ?? "Something went wrong. Please try again.";
+}
+
 function classifyAuthError(message?: string): string {
   const m = (message ?? "").toLowerCase();
   if (!m) return "unknown";
