@@ -15,6 +15,13 @@
       "when": 1789198244266,
       "tag": "0001_cascade_app_events_on_user_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789198410263,
+      "tag": "0002_anonymize_and_retain_app_events",
+      "breakpoints": true
     }
   ]
 }
