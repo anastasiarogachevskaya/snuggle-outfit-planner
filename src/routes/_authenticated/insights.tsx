@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { Button } from "@/components/ui/button";
 import { getFunnelReport, type BreakdownRow, type FunnelStep } from "@/lib/funnel.functions";
 
 export const Route = createFileRoute("/_authenticated/insights")({
@@ -9,6 +10,10 @@ export const Route = createFileRoute("/_authenticated/insights")({
     meta: [
       { title: "Insights — Layerly" },
       { name: "description", content: "Private Layerly funnel and sign-in insights." },
+      { property: "og:title", content: "Insights — Layerly" },
+      { property: "og:description", content: "Private Layerly funnel and sign-in insights." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -38,25 +43,23 @@ function InsightsPage() {
 
         <div className="mt-5 flex gap-2">
           {RANGES.map((r) => (
-            <button
+            <Button
               key={r}
+              type="button"
+              variant={days === r ? "default" : "outline"}
               onClick={() => setDays(r)}
-              className={
-                "flex-1 rounded-2xl py-2.5 text-sm font-medium " +
-                (days === r
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-black/10 text-ink/60")
-              }
+              aria-pressed={days === r}
+              className="h-10 flex-1 rounded-xl px-2 text-sm"
             >
               {r} days
-            </button>
+            </Button>
           ))}
         </div>
 
         {q.isPending && <p className="mt-8 text-sm text-ink/40">Loading…</p>}
 
         {q.isError && (
-          <div className="mt-8 rounded-2xl border border-black/10 bg-surface p-4">
+          <div className="mt-8 rounded-2xl border border-border bg-surface p-4">
             <p className="text-sm text-ink/70">This page isn’t available for this account.</p>
             <Link to="/today" className="mt-3 inline-block text-sm font-medium text-primary">
               Back to today
@@ -89,7 +92,7 @@ function InsightsPage() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-black/10 bg-surface p-4">
+    <div className="min-w-0 rounded-2xl border border-border bg-surface p-4">
       <p className="text-2xl font-semibold">{value}</p>
       <p className="mt-1 text-xs uppercase tracking-widest text-ink/40">{label}</p>
     </div>
@@ -104,15 +107,15 @@ function Funnel({ title, steps }: { title: string; steps: FunnelStep[] }) {
       <div className="mt-3 space-y-2">
         {steps.map((s, i) => {
           const prev = i > 0 ? steps[i - 1].sessions : null;
-          const width = top > 0 ? Math.max((s.sessions / top) * 100, 2) : 2;
+          const width = top > 0 ? Math.min(Math.max((s.sessions / top) * 100, 2), 100) : 2;
           const drop = prev && prev > 0 ? Math.round(((prev - s.sessions) / prev) * 100) : null;
           return (
-            <div key={s.key} className="rounded-2xl border border-black/10 bg-surface p-3">
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="text-sm">{s.label}</p>
-                <p className="text-sm font-semibold tabular-nums">{s.sessions}</p>
+            <div key={s.key} className="min-w-0 rounded-2xl border border-border bg-surface p-3">
+              <div className="flex min-w-0 items-baseline justify-between gap-3">
+                <p className="min-w-0 text-sm leading-snug">{s.label}</p>
+                <p className="shrink-0 text-sm font-semibold tabular-nums">{s.sessions}</p>
               </div>
-              <div className="mt-2 h-1.5 rounded-full bg-black/5">
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div className="h-1.5 rounded-full bg-primary" style={{ width: `${width}%` }} />
               </div>
               {drop !== null && drop > 0 && (
@@ -133,11 +136,11 @@ function Breakdown({ title, rows }: { title: string; rows: BreakdownRow[] }) {
       {rows.length === 0 ? (
         <p className="mt-2 text-sm text-ink/40">Nothing yet.</p>
       ) : (
-        <div className="mt-3 divide-y divide-black/5 rounded-2xl border border-black/10 bg-surface">
+        <div className="mt-3 divide-y divide-border rounded-2xl border border-border bg-surface">
           {rows.map((r) => (
-            <div key={r.label} className="flex items-center justify-between px-4 py-2.5">
-              <p className="text-sm text-ink/70">{r.label}</p>
-              <p className="text-sm font-semibold tabular-nums">{r.count}</p>
+            <div key={r.label} className="flex min-w-0 items-center justify-between gap-3 px-4 py-2.5">
+              <p className="min-w-0 break-words text-sm text-ink/70">{r.label}</p>
+              <p className="shrink-0 text-sm font-semibold tabular-nums">{r.count}</p>
             </div>
           ))}
         </div>
