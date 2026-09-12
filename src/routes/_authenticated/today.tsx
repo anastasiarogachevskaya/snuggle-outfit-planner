@@ -109,6 +109,11 @@ function TodayPage() {
 
   const [confirmation, setConfirmation] = useState<null | "cold" | "comfortable" | "warm">(null);
 
+  const hasBaby = Boolean(babyQ.data);
+  useEffect(() => {
+    if (hasBaby) logEvent("today_viewed", { wardrobe_items: owned.size });
+  }, [hasBaby]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const feedback = useMutation({
     mutationFn: async ({
       rating,
@@ -146,6 +151,10 @@ function TodayPage() {
       if (error) throw error;
     },
     onSuccess: (_data, vars) => {
+      logEvent("today_feedback_submitted", {
+        rating: vars.rating,
+        situation: vars.ctx?.situation ?? null,
+      });
       successHaptic();
       setConfirmation(vars.rating);
       setTimeout(() => setConfirmation((c) => (c === vars.rating ? null : c)), 4000);
