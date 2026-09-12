@@ -362,6 +362,88 @@ describe("recommendation engine", () => {
     }
   });
 
+  it("a bright freezing day gives sun advice without telling the parent to dress lighter", () => {
+    const r = recommend({
+      feelsLikeC: 4,
+      uvIndex: 8,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 3,
+      owned: owned(),
+    });
+    const safety = r.safetyAdvice.join(" ");
+    expect(safety).toMatch(/shade/i);
+    expect(safety).not.toMatch(/lightweight clothing/i);
+    // …and the outfit itself is still dressed for 4°C.
+    expect(slugs(r.accessories)).toContain("warm_hat");
+  });
+
+  it("a hot sunny day still tells the parent to dress lightly", () => {
+    const r = recommend({
+      feelsLikeC: 26,
+      uvIndex: 8,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 3,
+      owned: owned(),
+    });
+    expect(r.safetyAdvice.join(" ")).toMatch(/lightweight clothing/i);
+  });
+
+  it("a rainy stroller walk recommends a rain cover", () => {
+    const r = recommend({
+      feelsLikeC: 12,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "sitting-stroller",
+      isRaining: true,
+      durationMin: 30,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.transportExtras.map((e) => e.slug)).toContain("rain_cover");
+    expect(r.notes.join(" ")).toMatch(/airflow/i);
+  });
+
+  it("a cold carrier walk recommends a babywearing cover", () => {
+    const r = recommend({
+      feelsLikeC: -2,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "carrier",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.transportExtras.map((e) => e.slug)).toContain("babywearing_cover");
+  });
+
+  it("a missing temperature preference falls back to neutral, not the warmest outfit", () => {
+    const withPref = recommend({
+      feelsLikeC: 14,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    const withoutPref = recommend({
+      feelsLikeC: 14,
+      tempPref: undefined as unknown as number,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(slugs(withoutPref.babyClothing)).toEqual(slugs(withPref.babyClothing));
+  });
+
   it("carrier at 22°C is not dressed warmer than pram at 22°C", () => {
     const carrier = recommend({
       feelsLikeC: 22,

@@ -90,12 +90,7 @@ export function recommend(input: RecommendInput): Recommendation {
     feelsLikeAtEndC: input.feelsLikeAtEndC,
   };
   const out = pickOutdoor(ctx);
-  const mapped = mapWardrobe(
-    out.layers,
-    out.accessories,
-    input.owned,
-    input.situation === "car",
-  );
+  const mapped = mapWardrobe(out.layers, out.accessories, input.owned, input.situation === "car");
 
   const transportExtras: Accessory[] = [];
   const missingHelpfulItems: Accessory[] = [];
@@ -123,7 +118,7 @@ export function recommend(input: RecommendInput): Recommendation {
     if (missingExtras.has("footmuff"))
       notes.push("No footmuff in your wardrobe — consider one for cold stroller walks.");
     if (missingExtras.has("rain_cover") && input.isRaining)
-      notes.push("No rain cover in your wardrobe — consider a rain overall to keep baby dry.");
+      notes.push("No rain cover in your wardrobe — consider one to keep baby dry.");
     if (usedExtras.has("rain_cover"))
       notes.push(
         "Rain cover makes the stroller warmer and reduces airflow. Check baby's neck or chest regularly.",

@@ -319,19 +319,33 @@ function buildSafety(ctx: OutdoorContext, effectiveC: number): string[] {
 
   if (ctx.situation !== "walk") return advice;
   const uv = ctx.uvIndex;
-  const warmEnough = ctx.feelsLikeC >= TEMP.HOT || (uv !== undefined && uv >= 3);
-  if (warmEnough) {
-    if (ctx.ageMonths !== null && ctx.ageMonths !== undefined && ctx.ageMonths < 6) {
+  const sunny = uv !== undefined && uv >= 3;
+  const hot = ctx.feelsLikeC >= TEMP.HOT;
+  const infant = ctx.ageMonths !== null && ctx.ageMonths !== undefined && ctx.ageMonths < 6;
+
+  if (hot || sunny) {
+    if (infant) {
       advice.push("☀️ Keep baby in the shade whenever possible.");
       advice.push("☀️ Avoid direct sunlight.");
-      advice.push("☀️ Dress baby in lightweight clothing and always use a sun hat if available.");
     } else {
       advice.push(
-        "☀️ Use a sun hat, seek shade whenever possible, and apply broad-spectrum SPF 30+ to exposed skin before going outside.",
+        "☀️ Seek shade whenever possible, and apply broad-spectrum SPF 30+ to exposed skin before going outside.",
       );
       advice.push(
         "☀️ Reapply sunscreen per product instructions, especially after sweating or getting wet.",
       );
+    }
+    // Bright winter days hit UV 3+ at freezing temperatures, where a sun hat
+    // and "lightweight clothing" would directly contradict the warm hat and
+    // layers the engine just picked.
+    if (hot) {
+      advice.push(
+        infant
+          ? "☀️ Dress baby in lightweight clothing and always use a sun hat if available."
+          : "☀️ Use a sun hat to keep the sun off baby's face and neck.",
+      );
+    } else {
+      advice.push("☀️ Bright but cold — keep the sun off baby's face without losing any layers.");
     }
   }
   if (uv !== undefined) {
