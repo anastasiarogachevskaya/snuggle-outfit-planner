@@ -80,12 +80,22 @@ export function readGuestProfile(): GuestProfile | null {
 
 export function writeGuestProfile(profile: GuestProfile) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(profile));
+  try {
+    window.localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(profile));
+  } catch {
+    // Safari private mode throws on write. The guest trial is deliberately
+    // throwaway, so losing it is survivable — crashing the first tap of the
+    // funnel into the root error boundary is not.
+  }
 }
 
 export function clearGuestProfile() {
   if (typeof window === "undefined") return;
-  window.localStorage.removeItem(GUEST_STORAGE_KEY);
+  try {
+    window.localStorage.removeItem(GUEST_STORAGE_KEY);
+  } catch {
+    /* nothing to clear if storage is unavailable */
+  }
 }
 
 /** Hydration-safe access to the guest profile. */

@@ -75,9 +75,9 @@ function TodayPage() {
         .select("id")
         .single();
       if (error) throw error;
-      const { error: wErr } = await supabase.from("wardrobe_items").insert(
-        GUEST_DEFAULT_WARDROBE.map((slug) => ({ baby_id: baby.id, slug, owned: true })),
-      );
+      const { error: wErr } = await supabase
+        .from("wardrobe_items")
+        .insert(GUEST_DEFAULT_WARDROBE.map((slug) => ({ baby_id: baby.id, slug, owned: true })));
       if (wErr) throw wErr;
       clearGuestProfile();
       return true;
@@ -123,7 +123,10 @@ function TodayPage() {
       rating: "comfortable" | "cold" | "warm";
       ctx: FeedbackContext | null;
     }) => {
-      if (!babyQ.data || !ctx) return;
+      // Without weather there is no recommendation to attach the rating to.
+      // Returning quietly here would still run onSuccess and thank the parent
+      // for feedback that was never saved.
+      if (!babyQ.data || !ctx) throw new Error("Nothing to rate yet — no recommendation loaded.");
       const { error } = await supabase.from("feedback").insert({
         baby_id: babyQ.data.id,
         situation: ctx.situation,
@@ -174,6 +177,9 @@ function TodayPage() {
   };
 
   if (babyQ.isLoading || seed.isPending) return <Loading />;
+  // A failed load is not the same as having no baby yet — telling a parent
+  // with a saved profile to "tell us about your baby" reads as lost data.
+  if (babyQ.isError) return <LoadFailed onRetry={() => babyQ.refetch()} />;
   if (!babyQ.data) return <NoBaby />;
   const baby = babyQ.data;
 
@@ -195,6 +201,25 @@ function Loading() {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas flex items-center justify-center">
       <p className="text-ink/40 text-sm">Loading…</p>
+    </div>
+  );
+}
+
+function LoadFailed({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas font-sans">
+      <div className="mx-auto w-full max-w-md px-6 py-16 text-center">
+        <h1 className="text-2xl font-serif font-semibold mb-3">Couldn't load your profile.</h1>
+        <p className="text-ink/60 mb-8">
+          Your data is safe — we just couldn't reach it. Check your connection and try again.
+        </p>
+        <button
+          onClick={onRetry}
+          className="inline-block rounded-2xl bg-primary text-primary-foreground px-6 py-3 font-medium shadow-md shadow-primary/20"
+        >
+          Try again
+        </button>
+      </div>
     </div>
   );
 }

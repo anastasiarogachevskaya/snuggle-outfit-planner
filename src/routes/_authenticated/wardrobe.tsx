@@ -62,10 +62,7 @@ function WardrobePage() {
       if (!babyQ.data) return;
       const { error } = await supabase
         .from("wardrobe_items")
-        .upsert(
-          { baby_id: babyQ.data.id, slug, owned },
-          { onConflict: "baby_id,slug" },
-        );
+        .upsert({ baby_id: babyQ.data.id, slug, owned }, { onConflict: "baby_id,slug" });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["wardrobe"] }),
@@ -75,12 +72,43 @@ function WardrobePage() {
     },
   });
 
+  if (babyQ.isLoading) {
+    return (
+      <div className="mx-auto min-h-screen w-full max-w-md overflow-x-hidden bg-canvas p-6 font-sans">
+        <Link to="/today" className="text-sm text-ink/60">
+          ← Today
+        </Link>
+        <p className="mt-8 text-sm text-ink/40">Loading…</p>
+      </div>
+    );
+  }
+
   if (!babyQ.data) {
     return (
-        <div className="mx-auto min-h-screen w-full max-w-md overflow-x-hidden bg-canvas p-6 font-sans">
-        <Link to="/today" className="text-sm text-ink/60">← Today</Link>
-        <p className="mt-8 text-ink/60">Set up a baby profile first.</p>
-        <Link to="/baby" className="mt-4 inline-block text-primary font-medium">Baby profile →</Link>
+      <div className="mx-auto min-h-screen w-full max-w-md overflow-x-hidden bg-canvas p-6 font-sans">
+        <Link to="/today" className="text-sm text-ink/60">
+          ← Today
+        </Link>
+        {babyQ.isError ? (
+          <>
+            <p className="mt-8 text-ink/60">
+              Couldn't load your profile. Check your connection and try again.
+            </p>
+            <button
+              onClick={() => babyQ.refetch()}
+              className="mt-4 inline-block font-medium text-primary"
+            >
+              Try again
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="mt-8 text-ink/60">Set up a baby profile first.</p>
+            <Link to="/baby" className="mt-4 inline-block font-medium text-primary">
+              Baby profile →
+            </Link>
+          </>
+        )}
       </div>
     );
   }
@@ -131,7 +159,12 @@ function WardrobePage() {
                       >
                         {owned ? "✓" : ""}
                       </div>
-                      <span className={"inline-flex shrink-0 items-center justify-center " + (owned ? "text-primary" : "text-ink/50")}>
+                      <span
+                        className={
+                          "inline-flex shrink-0 items-center justify-center " +
+                          (owned ? "text-primary" : "text-ink/50")
+                        }
+                      >
                         <ClothingIcon slug={item.slug as WardrobeSlug} size={22} />
                       </span>
                       <span className="min-w-0 break-words text-sm font-medium">{item.label}</span>

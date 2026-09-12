@@ -27,7 +27,9 @@ export async function fetchWeather(lat: number, lon: number): Promise<Weather> {
   url.searchParams.set("forecast_days", "2");
   url.searchParams.set("timezone", "auto");
   url.searchParams.set("wind_speed_unit", "kmh");
-  const res = await fetch(url.toString());
+  // A stalled connection would otherwise leave "Reading the sky…" on screen
+  // indefinitely, through every retry.
+  const res = await fetch(url.toString(), { signal: AbortSignal.timeout(10_000) });
   if (!res.ok) throw new Error("weather fetch failed");
   const json = await res.json();
   const c = json.current;

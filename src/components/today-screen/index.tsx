@@ -174,6 +174,9 @@ export function TodayScreen({
           <WeatherSummary
             weather={weatherQ.data}
             isLoading={weatherQ.isLoading}
+            isError={weatherQ.isError}
+            hasLocation={baby.latitude != null && baby.longitude != null}
+            onRetry={() => weatherQ.refetch()}
             onOpenProfile={onOpenProfile}
           />
         </section>
@@ -194,12 +197,15 @@ export function TodayScreen({
 
         {rec && <OutfitResult rec={rec} owned={owned} onOpenWardrobe={onOpenWardrobe} />}
 
-        <FeedbackPanel
-          babyName={baby.name}
-          feedbackPending={feedbackPending}
-          confirmation={confirmation}
-          onFeedback={(rating) => onFeedback(rating, feedbackCtx)}
-        />
+        {/* Nothing to rate when no outfit could be worked out. */}
+        {rec && (
+          <FeedbackPanel
+            babyName={baby.name}
+            feedbackPending={feedbackPending}
+            confirmation={confirmation}
+            onFeedback={(rating) => onFeedback(rating, feedbackCtx)}
+          />
+        )}
 
         <footer className="mt-10 grid grid-cols-3 items-center gap-2 border-t border-black/5 pt-6 text-sm">
           <button onClick={onOpenWardrobe} className="text-left text-primary font-medium">
