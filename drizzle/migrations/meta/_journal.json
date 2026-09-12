@@ -8,6 +8,13 @@
       "when": 1789196897090,
       "tag": "0000_create_app_events",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789198244266,
+      "tag": "0001_cascade_app_events_on_user_delete",
+      "breakpoints": true
     }
   ]
 }
