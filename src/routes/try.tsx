@@ -26,6 +26,7 @@ import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { SiteFooter } from "@/components/site-footer";
 import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
+import { logEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
@@ -77,6 +78,7 @@ function TryPage() {
               key={o.id}
               disabled={o.comingSoon}
               onClick={() => {
+                logEvent("try_age_selected", { age_band: o.id });
                 const p = createGuestProfile(o.id as GuestAgeBand);
                 writeGuestProfile(p);
                 setProfile(p);
@@ -99,7 +101,8 @@ function TryPage() {
   if (step === "location") {
     return (
       <LocationStep
-        onDone={(lat, lon, label) => {
+        onDone={(lat, lon, label, method) => {
+          logEvent("try_location_set", { method });
           update({ latitude: lat, longitude: lon, locationLabel: label });
           setStep("today");
         }}
