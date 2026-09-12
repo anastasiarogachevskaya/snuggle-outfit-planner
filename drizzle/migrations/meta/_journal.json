@@ -29,6 +29,13 @@
       "when": 1789206297090,
       "tag": "0003_tighten_app_events_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789206500000,
+      "tag": "0004_schedule_app_events_retention",
+      "breakpoints": true
     }
   ]
 }
