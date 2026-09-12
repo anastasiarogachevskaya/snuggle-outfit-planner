@@ -126,17 +126,29 @@ function AuthPage() {
     storeAuthNext("/today");
 
     const native = isNativeApp();
+    const method: AuthMethod = provider;
+    const surface: AuthSurface = native ? "native" : "web";
     logAuthAttempt(provider, native);
+    logEvent(mode === "signup" ? "auth_signup_attempt" : "auth_signin_attempt", {
+      method,
+      surface,
+    });
 
     if (native) {
       const result =
         provider === "apple" ? await signInWithAppleNative() : await signInWithGoogleNative();
 
       if (result.status === "cancelled") {
+        logEvent("auth_cancelled", { method, surface, at: "native_sheet" });
         setBusy(false);
         return;
       }
       if (result.status === "error") {
+        logEvent("auth_failed", {
+          method,
+          surface,
+          reason: classifyAuthError(result.message),
+        });
         toast.error(result.message);
         setBusy(false);
         return;
@@ -147,12 +159,15 @@ function AuthPage() {
         stopBrowserWatch();
         browserWatchRef.current = onAuthBrowserFinished(() => {
           stopBrowserWatch();
+          // No deep link arrived, so the parent backed out of the browser.
+          logEvent("auth_cancelled", { method, surface, at: "system_browser" });
           setBusy(false);
         });
         return;
       }
 
       stopBrowserWatch();
+      logEvent("auth_succeeded", { method, surface });
       clearStoredAuthNext();
       navigate({ to: "/today", replace: true });
       return;
@@ -162,6 +177,13 @@ function AuthPage() {
       redirect_uri: authCallbackUrl(),
     });
     if (result.error) {
+      logEvent("auth_failed", {
+        method,
+        surface,
+        reason: classifyAuthError(
+          result.error instanceof Error ? result.error.message : undefined,
+        ),
+      });
       toast.error(
         result.error instanceof Error
           ? result.error.message
@@ -171,6 +193,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
+    logEvent("auth_succeeded", { method, surface });
     clearStoredAuthNext();
     navigate({ to: "/today", replace: true });
   };
