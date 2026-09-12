@@ -257,8 +257,8 @@ function AccountPage() {
             <DialogTitle>Delete account permanently</DialogTitle>
             <DialogDescription>
               This deletes your Layerly account — sign-in, baby profile, wardrobe, and all
-              feedback. You won't be able to sign back in with this email afterward. This cannot
-              be undone.
+              feedback and account-linked analytics. You won't be able to sign back in with this
+              email afterward. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
