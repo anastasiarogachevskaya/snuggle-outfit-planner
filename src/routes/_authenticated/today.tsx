@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { successHaptic, warningHaptic } from "@/lib/haptics";
 import { TodayScreen, type FeedbackContext } from "@/components/today-screen";
 import { clearGuestProfile, readGuestProfile, GUEST_DEFAULT_WARDROBE } from "@/lib/guest-profile";
+import { logEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({
