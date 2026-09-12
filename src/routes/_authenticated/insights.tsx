@@ -3,7 +3,13 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
-import { getFunnelReport, type BreakdownRow, type FunnelStep } from "@/lib/funnel.functions";
+import {
+  getFunnelReport,
+  type AuthPathRow,
+  type BreakdownRow,
+  type FunnelStep,
+  type Metric,
+} from "@/lib/funnel.functions";
 
 export const Route = createFileRoute("/_authenticated/insights")({
   head: () => ({
@@ -37,9 +43,7 @@ function InsightsPage() {
       <div className="mx-auto max-w-md px-5 pb-16 pt-[calc(var(--safe-area-top)+1.5rem)]">
         <p className="text-xs font-medium uppercase tracking-widest text-primary/70">Layerly</p>
         <h1 className="mt-1 font-serif text-3xl font-semibold">Insights</h1>
-        <p className="mt-2 text-sm text-ink/50">
-          Where people drop off, and how they try to sign in.
-        </p>
+        <p className="mt-2 text-sm text-ink/50">The complete path from first visit to daily use.</p>
 
         <div className="mt-5 flex gap-2">
           {RANGES.map((r) => (
@@ -69,11 +73,18 @@ function InsightsPage() {
 
         {q.data && (
           <div className="mt-8 space-y-8">
-            <div className="grid grid-cols-2 gap-3">
-              <Stat label="Events" value={q.data.totalEvents} />
-              <Stat label="Sessions" value={q.data.totalSessions} />
-            </div>
+            <section>
+              <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">Overview</h2>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                {q.data.metrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}
+              </div>
+              <p className="mt-3 text-xs text-ink/40">
+                {q.data.totalEvents} events across {q.data.totalSessions} sessions
+              </p>
+            </section>
 
+            <Funnel title="Full journey" steps={q.data.fullJourney} />
+            <AuthPaths rows={q.data.authPaths} />
             <Funnel title="Guest journey" steps={q.data.guestFunnel} />
             <Funnel title="After sign-up" steps={q.data.signedInFunnel} />
 
@@ -90,17 +101,45 @@ function InsightsPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function MetricCard({ metric }: { metric: Metric }) {
+  const isRate = metric.label.toLowerCase().includes("rate") || metric.label.includes("completion");
   return (
     <div className="min-w-0 rounded-2xl border border-border bg-surface p-4">
-      <p className="text-2xl font-semibold">{value}</p>
-      <p className="mt-1 text-xs uppercase tracking-widest text-ink/40">{label}</p>
+      <p className="text-2xl font-semibold tabular-nums">{metric.value}{isRate ? "%" : ""}</p>
+      <p className="mt-1 text-xs font-medium text-ink/70">{metric.label}</p>
+      <p className="mt-1 break-words text-[11px] leading-snug text-ink/40">{metric.detail}</p>
     </div>
   );
 }
 
+function AuthPaths({ rows }: { rows: AuthPathRow[] }) {
+  return (
+    <section>
+      <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">Sign-in paths</h2>
+      {rows.length === 0 ? (
+        <p className="mt-2 text-sm text-ink/40">Nothing yet.</p>
+      ) : (
+        <div className="mt-3 overflow-hidden rounded-2xl border border-border bg-surface">
+          <div className="grid grid-cols-[minmax(0,1fr)_repeat(4,2.5rem)] gap-1 border-b border-border px-3 py-2 text-center text-[10px] text-ink/40">
+            <span className="text-left">Path</span><span>Start</span><span>Done</span><span>Exit</span><span>Fail</span>
+          </div>
+          <div className="divide-y divide-border">
+            {rows.map((row) => (
+              <div key={row.label} className="grid grid-cols-[minmax(0,1fr)_repeat(4,2.5rem)] items-center gap-1 px-3 py-3 text-center text-xs tabular-nums">
+                <span className="min-w-0 break-words text-left text-sm text-ink/70">{row.label}</span>
+                <span>{row.attempts}</span><span className="font-semibold text-primary">{row.successes}</span>
+                <span>{row.cancelled}</span><span>{row.failed}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function Funnel({ title, steps }: { title: string; steps: FunnelStep[] }) {
-  const top = steps[0]?.sessions ?? 0;
+  const top = Math.max(...steps.map((step) => step.sessions), 0);
   return (
     <section>
       <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">{title}</h2>
@@ -108,7 +147,9 @@ function Funnel({ title, steps }: { title: string; steps: FunnelStep[] }) {
         {steps.map((s, i) => {
           const prev = i > 0 ? steps[i - 1].sessions : null;
           const width = top > 0 ? Math.min(Math.max((s.sessions / top) * 100, 2), 100) : 2;
-          const drop = prev && prev > 0 ? Math.round(((prev - s.sessions) / prev) * 100) : null;
+           const drop = prev && prev > 0 && s.sessions <= prev
+             ? Math.round(((prev - s.sessions) / prev) * 100)
+             : null;
           return (
             <div key={s.key} className="min-w-0 rounded-2xl border border-border bg-surface p-3">
               <div className="flex min-w-0 items-baseline justify-between gap-3">
