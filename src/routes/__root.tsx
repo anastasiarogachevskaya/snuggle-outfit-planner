@@ -126,7 +126,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             "Layerly helps parents decide what their baby should wear based on today's weather, your baby's age, and the clothes you already own.",
           url: "https://layerly.online",
           applicationCategory: "HealthApplication",
-          operatingSystem: "Web, iOS, Android",
+          operatingSystem: "Web, iOS",
           browserRequirements: "Requires JavaScript",
           logo: "https://layerly.online/icon-512.png",
           image: "https://layerly.online/icon-512.png",

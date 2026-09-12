@@ -17,6 +17,7 @@ import { CitySearch } from "@/components/city-search";
 import { reverseGeocodeLabel, coordinateLabel } from "@/lib/reverse-geocode";
 import { SiteFooter } from "@/components/site-footer";
 import { lightHaptic, selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
+import { isNativeApp } from "@/lib/platform";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 
 export const Route = createFileRoute("/_authenticated/baby")({
@@ -287,16 +288,22 @@ function BabyPage() {
                 </span>
               }
             />
-            <NavCard
-              href="https://buymeacoffee.com/nastasija"
-              title="Support Layerly"
-              desc="Help support independent development"
-              icon={
-                <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center text-primary">
-                  <HeartIcon size={22} />
-                </span>
-              }
-            />
+            {/* Apple requires In-App Purchase for any donation reachable from
+                inside the iOS app (guideline 3.1.1), so this stays web-only —
+                Android and browser users keep it, the iOS binary doesn't
+                carry an external payment link at all. */}
+            {!isNativeApp() && (
+              <NavCard
+                href="https://buymeacoffee.com/nastasija"
+                title="Support Layerly"
+                desc="Help support independent development"
+                icon={
+                  <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center text-primary">
+                    <HeartIcon size={22} />
+                  </span>
+                }
+              />
+            )}
           </div>
         )}
 

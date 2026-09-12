@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { isNativeApp } from "@/lib/platform";
 
 const LINKS = [
   { to: "/", label: "Home" },
@@ -21,7 +22,12 @@ export function SiteFooter({
   variant?: "full" | "compact";
   className?: string;
 }) {
-  const links = variant === "compact" ? LINKS.filter((l) => (COMPACT as readonly string[]).includes(l.to)) : LINKS;
+  let links = variant === "compact" ? LINKS.filter((l) => (COMPACT as readonly string[]).includes(l.to)) : LINKS;
+  // Apple guideline 2.3.10: no third-party platform references reachable from
+  // inside the iOS app. The web/Android pages themselves stay live for
+  // browser and Android visitors — only the native build's footer drops the
+  // link into them.
+  if (isNativeApp()) links = links.filter((l) => l.to !== "/android");
 
   return (
     <footer className={`${className} border-t border-black/5 pt-6`}>
