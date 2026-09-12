@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -10,6 +10,7 @@ import {
   type FunnelStep,
   type Metric,
 } from "@/lib/funnel.functions";
+import { NotFoundComponent } from "@/routes/__root";
 
 export const Route = createFileRoute("/_authenticated/insights")({
   head: () => ({
@@ -38,6 +39,13 @@ function InsightsPage() {
     retry: false,
   });
 
+  // Non-owners get the server's notFound() thrown as a query error. Render
+  // the same not-found page a genuinely unmatched route would show, so
+  // there's no hint this page exists at all.
+  if (q.isError) {
+    return <NotFoundComponent />;
+  }
+
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
       <div className="mx-auto max-w-md px-5 pb-16 pt-[calc(var(--safe-area-top)+1.5rem)]">
@@ -61,15 +69,6 @@ function InsightsPage() {
         </div>
 
         {q.isPending && <p className="mt-8 text-sm text-ink/40">Loading…</p>}
-
-        {q.isError && (
-          <div className="mt-8 rounded-2xl border border-border bg-surface p-4">
-            <p className="text-sm text-ink/70">This page isn’t available for this account.</p>
-            <Link to="/today" className="mt-3 inline-block text-sm font-medium text-primary">
-              Back to today
-            </Link>
-          </div>
-        )}
 
         {q.data && (
           <div className="mt-8 space-y-8">

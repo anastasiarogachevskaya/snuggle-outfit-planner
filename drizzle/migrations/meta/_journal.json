@@ -22,6 +22,13 @@
       "when": 1789198410263,
       "tag": "0002_anonymize_and_retain_app_events",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789206297090,
+      "tag": "0003_tighten_app_events_rls",
+      "breakpoints": true
     }
   ]
 }

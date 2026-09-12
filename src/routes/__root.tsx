@@ -29,7 +29,7 @@ import { closeAuthBrowser } from "@/lib/native-social-auth";
 
 import { PlatformDebugBadge } from "@/components/platform-debug-badge";
 
-function NotFoundComponent() {
+export function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
       <div className="max-w-md text-center">
