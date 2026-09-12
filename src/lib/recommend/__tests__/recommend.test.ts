@@ -462,6 +462,36 @@ describe("recommendation engine", () => {
     expect(r.safetyAdvice.join(" ")).toMatch(/harness/i);
   });
 
+  it("car seat never substitutes a jacket in for a sweater the parent lacks", () => {
+    // The outer slot is empty for car trips by design, which is exactly the
+    // condition the jacket stand-in looks for — it must not fire here.
+    const set = new Set<WardrobeSlug>(["long_sleeve_bodysuit", "pants", "jacket"]);
+    const r = recommend({
+      feelsLikeC: 8,
+      tempPref: 3,
+      situation: "car",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: set,
+    });
+    expect(slugs(r.babyClothing)).not.toContain("jacket");
+    expect(r.babyClothing.every((l) => l.slot !== "outer")).toBe(true);
+  });
+
+  it("still substitutes a jacket for a missing sweater on a walk", () => {
+    const set = new Set<WardrobeSlug>(["long_sleeve_bodysuit", "pants", "jacket"]);
+    const r = recommend({
+      feelsLikeC: 12,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: set,
+    });
+    expect(slugs(r.babyClothing)).toContain("jacket");
+  });
+
   it("cold car trip suggests the over-harness blanket even on a short drive", () => {
     const r = recommend({
       feelsLikeC: 0,

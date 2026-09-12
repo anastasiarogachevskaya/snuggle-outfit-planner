@@ -125,6 +125,13 @@ export function mapWardrobe(
   layers: LayerNeed,
   accessories: AccessoryNeed,
   owned: Set<WardrobeSlug>,
+  /**
+   * True for car trips. pickOutdoor already stripped the outer layer because
+   * bulk under a harness is a crash hazard, and `layers.outer === "none"` is
+   * exactly the state the jacket substitution below looks for — without this
+   * flag it would put a jacket straight back on.
+   */
+  harnessed = false,
 ): MappedOutput {
   const baby: Layer[] = [];
   const accs: Accessory[] = [];
@@ -160,6 +167,7 @@ export function mapWardrobe(
 
   const midOwnsRealMatch = MID_MAP[layers.mid]?.slugs.some((s) => owned.has(s)) ?? false;
   const jacketForSweater =
+    !harnessed &&
     layers.mid === "sweater" &&
     !midOwnsRealMatch &&
     layers.outer === "none" &&

@@ -90,7 +90,12 @@ export function recommend(input: RecommendInput): Recommendation {
     feelsLikeAtEndC: input.feelsLikeAtEndC,
   };
   const out = pickOutdoor(ctx);
-  const mapped = mapWardrobe(out.layers, out.accessories, input.owned);
+  const mapped = mapWardrobe(
+    out.layers,
+    out.accessories,
+    input.owned,
+    input.situation === "car",
+  );
 
   const transportExtras: Accessory[] = [];
   const missingHelpfulItems: Accessory[] = [];
