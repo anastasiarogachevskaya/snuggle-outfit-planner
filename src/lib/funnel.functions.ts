@@ -21,12 +21,29 @@ export type BreakdownRow = {
   count: number;
 };
 
+export type Metric = {
+  label: string;
+  value: number;
+  detail: string;
+};
+
+export type AuthPathRow = {
+  label: string;
+  attempts: number;
+  successes: number;
+  cancelled: number;
+  failed: number;
+};
+
 export type FunnelReport = {
   days: number;
   totalEvents: number;
   totalSessions: number;
+  metrics: Metric[];
+  fullJourney: FunnelStep[];
   guestFunnel: FunnelStep[];
   signedInFunnel: FunnelStep[];
+  authPaths: AuthPathRow[];
   authAttempts: BreakdownRow[];
   authOutcomes: BreakdownRow[];
   authFailureReasons: BreakdownRow[];
@@ -63,6 +80,19 @@ const SIGNED_IN_STEPS: Array<[string, string]> = [
   ["today_feedback_submitted", "Gave comfort feedback"],
 ];
 
+const FULL_JOURNEY_STEPS: Array<[string, string]> = [
+  ["landing_viewed", "Viewed landing page"],
+  ["landing_try_clicked", "Started guest try-on"],
+  ["try_recommendation_viewed", "Saw guest recommendation"],
+  ["try_create_account_clicked", "Chose to create an account"],
+  ["auth_signup_attempt", "Started account creation"],
+  ["auth_succeeded", "Completed sign-in"],
+  ["wardrobe_chooser_viewed", "Opened wardrobe setup"],
+  ["wardrobe_saved", "Saved wardrobe"],
+  ["today_viewed", "Opened Today"],
+  ["today_feedback_submitted", "Rated an outfit"],
+];
+
 function countSessions(rows: EventRow[], name: string): number {
   const seen = new Set<string>();
   let anonymous = 0;
@@ -85,6 +115,29 @@ function tally(pairs: string[]): BreakdownRow[] {
 function prop(row: EventRow, key: string): string | null {
   const v = row.props?.[key];
   return typeof v === "string" || typeof v === "number" ? String(v) : null;
+}
+
+function percent(part: number, whole: number): number {
+  return whole > 0 ? Math.round((part / whole) * 100) : 0;
+}
+
+function authPathKey(row: EventRow): string {
+  return `${prop(row, "method") ?? "unknown"} · ${prop(row, "surface") ?? "unknown"}`;
+}
+
+function buildAuthPaths(events: EventRow[]): AuthPathRow[] {
+  const paths = new Map<string, AuthPathRow>();
+  for (const event of events) {
+    if (!event.name.startsWith("auth_")) continue;
+    const label = authPathKey(event);
+    const row = paths.get(label) ?? { label, attempts: 0, successes: 0, cancelled: 0, failed: 0 };
+    if (event.name === "auth_signin_attempt" || event.name === "auth_signup_attempt") row.attempts += 1;
+    if (event.name === "auth_succeeded") row.successes += 1;
+    if (event.name === "auth_cancelled") row.cancelled += 1;
+    if (event.name === "auth_failed") row.failed += 1;
+    paths.set(label, row);
+  }
+  return [...paths.values()].sort((a, b) => b.attempts - a.attempts || b.successes - a.successes);
 }
 
 export const getFunnelReport = createServerFn({ method: "GET" })
@@ -116,11 +169,40 @@ export const getFunnelReport = createServerFn({ method: "GET" })
     const attempts = events.filter(
       (e) => e.name === "auth_signin_attempt" || e.name === "auth_signup_attempt",
     );
+    const landingSessions = countSessions(events, "landing_viewed");
+    const signinStartedSessions = new Set(
+      attempts.map((event) => event.session_id).filter(Boolean) as string[],
+    ).size;
+    const signinSuccessSessions = countSessions(events, "auth_succeeded");
+    const todaySessions = countSessions(events, "today_viewed");
 
     return {
       days: data.days,
       totalEvents: events.length,
       totalSessions: sessions.size,
+      metrics: [
+        { label: "Landing views", value: landingSessions, detail: "unique sessions" },
+        {
+          label: "Sign-in start rate",
+          value: percent(signinStartedSessions, landingSessions),
+          detail: `${signinStartedSessions} of ${landingSessions} landing sessions`,
+        },
+        {
+          label: "Sign-in completion",
+          value: percent(signinSuccessSessions, signinStartedSessions),
+          detail: `${signinSuccessSessions} of ${signinStartedSessions} started sessions`,
+        },
+        {
+          label: "Today open rate",
+          value: percent(todaySessions, signinSuccessSessions),
+          detail: `${todaySessions} of ${signinSuccessSessions} successful sign-in sessions`,
+        },
+      ],
+      fullJourney: FULL_JOURNEY_STEPS.map(([key, label]) => ({
+        key,
+        label,
+        sessions: countSessions(events, key),
+      })),
       guestFunnel: GUEST_STEPS.map(([key, label]) => ({
         key,
         label,
@@ -131,6 +213,7 @@ export const getFunnelReport = createServerFn({ method: "GET" })
         label,
         sessions: countSessions(events, key),
       })),
+      authPaths: buildAuthPaths(events),
       authAttempts: tally(
         attempts.map((e) => {
           const method = prop(e, "method") ?? "unknown";
