@@ -29,6 +29,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedBabyRouteImport } from './routes/_authenticated/baby'
+import { Route as AuthenticatedInsightsRouteImport } from './routes/_authenticated/insights'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedWardrobeRouteImport } from './routes/_authenticated/wardrobe'
 import { Route as GuideBabyLayeringRouteImport } from './routes/guide.baby-layering'
@@ -140,6 +141,11 @@ const AuthenticatedBabyRoute = AuthenticatedBabyRouteImport.update({
   path: '/baby',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInsightsRoute = AuthenticatedInsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
   id: '/today',
   path: '/today',
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
   '/baby': typeof AuthenticatedBabyRoute
+  '/insights': typeof AuthenticatedInsightsRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
@@ -238,6 +245,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
   '/baby': typeof AuthenticatedBabyRoute
+  '/insights': typeof AuthenticatedInsightsRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/baby': typeof AuthenticatedBabyRoute
+  '/_authenticated/insights': typeof AuthenticatedInsightsRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/wardrobe': typeof AuthenticatedWardrobeRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account'
     | '/baby'
+    | '/insights'
     | '/today'
     | '/wardrobe'
     | '/guide/baby-layering'
@@ -332,6 +342,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account'
     | '/baby'
+    | '/insights'
     | '/today'
     | '/wardrobe'
     | '/guide/baby-layering'
@@ -363,6 +374,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/account'
     | '/_authenticated/baby'
+    | '/_authenticated/insights'
     | '/_authenticated/today'
     | '/_authenticated/wardrobe'
     | '/guide/baby-layering'
@@ -543,6 +555,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBabyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/insights': {
+      id: '/_authenticated/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof AuthenticatedInsightsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/today': {
       id: '/_authenticated/today'
       path: '/today'
@@ -612,6 +631,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedBabyRoute: typeof AuthenticatedBabyRoute
+  AuthenticatedInsightsRoute: typeof AuthenticatedInsightsRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
   AuthenticatedWardrobeRoute: typeof AuthenticatedWardrobeRoute
   AuthenticatedOnboardingWardrobeRoute: typeof AuthenticatedOnboardingWardrobeRoute
@@ -620,6 +640,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedBabyRoute: AuthenticatedBabyRoute,
+  AuthenticatedInsightsRoute: AuthenticatedInsightsRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
   AuthenticatedWardrobeRoute: AuthenticatedWardrobeRoute,
   AuthenticatedOnboardingWardrobeRoute: AuthenticatedOnboardingWardrobeRoute,
