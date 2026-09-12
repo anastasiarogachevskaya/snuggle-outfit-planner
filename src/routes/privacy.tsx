@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 const TITLE = "Privacy Policy — Layerly";
 const DESCRIPTION =
   "What Layerly collects, why, and how to delete it: baby profile, wardrobe, comfort feedback, and location used only to fetch the weather.";
-const LAST_UPDATED = "September 5, 2026";
+const LAST_UPDATED = "September 12, 2026";
 
 export const Route = createFileRoute("/privacy")({
   head: () => pageMeta({ title: TITLE, description: DESCRIPTION, path: "/privacy" }),
@@ -35,8 +35,8 @@ function Privacy() {
 
           <p>
             Layerly recommends baby outfits from the weather, your baby's age, and the clothes you
-            own. This page explains what we collect to do that, and nothing more — there are no
-            ads and no tracking.
+            own. This page explains what we collect to do that. There are no ads or third-party
+            trackers.
           </p>
 
           <section>
@@ -62,6 +62,11 @@ function Privacy() {
                 <strong>Location:</strong> your city or GPS coordinates, sent to our weather
                 provider (Open-Meteo) to read the current temperature and conditions. We store your
                 last-used location so we don't have to ask every time.
+              </li>
+              <li>
+                <strong>Usage analytics:</strong> basic actions and page journeys, linked to your
+                account after sign-in, used to understand where Layerly can be improved. We don't
+                collect advertising identifiers or device fingerprints.
               </li>
             </ul>
           </section>
@@ -89,8 +94,8 @@ function Privacy() {
             <h2 className="mb-2 font-medium text-ink">Your choices</h2>
             <p>
               From your account page you can reset your baby's comfort history or delete your
-              baby's profile and wardrobe entirely. To delete your account itself, email us at the
-              address below and we'll remove it.
+              baby's profile and wardrobe entirely. You can also permanently delete your account
+              there; this removes your account-linked analytics together with your other data.
             </p>
           </section>
 
