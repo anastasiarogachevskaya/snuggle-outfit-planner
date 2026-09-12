@@ -66,7 +66,8 @@ function Privacy() {
               <li>
                 <strong>Usage analytics:</strong> basic actions and page journeys, linked to your
                 account after sign-in, used to understand where Layerly can be improved. We don't
-                collect advertising identifiers or device fingerprints.
+                collect advertising identifiers or device fingerprints. Events are automatically
+                deleted after 90 days.
               </li>
             </ul>
           </section>
@@ -95,7 +96,8 @@ function Privacy() {
             <p>
               From your account page you can reset your baby's comfort history or delete your
               baby's profile and wardrobe entirely. You can also permanently delete your account
-              there; this removes your account-linked analytics together with your other data.
+               there; this immediately removes your identity from past usage events. Those
+               anonymous events remain only until the automatic 90-day deletion date.
             </p>
           </section>
 
