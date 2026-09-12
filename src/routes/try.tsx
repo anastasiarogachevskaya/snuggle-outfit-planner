@@ -26,6 +26,7 @@ import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { SiteFooter } from "@/components/site-footer";
 import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
+import { logEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
@@ -66,6 +67,10 @@ function TryPage() {
     else if (profile) setStep("location");
   }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (step === "today") logEvent("try_recommendation_viewed");
+  }, [step]);
+
   if (!loaded) return <div className="min-h-screen bg-canvas" />;
 
   if (step === "age") {
@@ -77,6 +82,7 @@ function TryPage() {
               key={o.id}
               disabled={o.comingSoon}
               onClick={() => {
+                logEvent("try_age_selected", { age_band: o.id });
                 const p = createGuestProfile(o.id as GuestAgeBand);
                 writeGuestProfile(p);
                 setProfile(p);
@@ -99,7 +105,8 @@ function TryPage() {
   if (step === "location") {
     return (
       <LocationStep
-        onDone={(lat, lon, label) => {
+        onDone={(lat, lon, label, method) => {
+          logEvent("try_location_set", { method });
           update({ latitude: lat, longitude: lon, locationLabel: label });
           setStep("today");
         }}
@@ -125,6 +132,7 @@ function TryPage() {
         owned={GUEST_OWNED}
         confirmation={confirmation}
         onFeedback={(rating) => {
+          logEvent("try_feedback_submitted", { rating });
           setConfirmation(rating);
           setPrompt("feedback");
         }}
@@ -136,7 +144,13 @@ function TryPage() {
           lightHaptic();
           setPrompt("wardrobe");
         }}
-        secondaryAction={{ label: "Create account", onClick: () => navigate({ to: "/auth" }) }}
+        secondaryAction={{
+          label: "Create account",
+          onClick: () => {
+            logEvent("try_create_account_clicked");
+            navigate({ to: "/auth" });
+          },
+        }}
       />
       <SavePromptSheet kind={prompt} onClose={() => setPrompt(null)} />
     </>
@@ -146,7 +160,7 @@ function TryPage() {
 function LocationStep({
   onDone,
 }: {
-  onDone: (lat: number, lon: number, label: string | null) => void;
+  onDone: (lat: number, lon: number, label: string | null, method: "gps" | "city") => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [manual, setManual] = useState("");
@@ -172,7 +186,7 @@ function LocationStep({
     const label = await reverseGeocodeLabel(res.latitude, res.longitude);
     setBusy(false);
     successHaptic();
-    onDone(res.latitude, res.longitude, label);
+    onDone(res.latitude, res.longitude, label, "gps");
   };
 
   return (
@@ -208,7 +222,7 @@ function LocationStep({
         onChange={setManual}
         autoFocus={gpsFailed}
         placeholder="Start typing a city"
-        onSelect={(place) => onDone(place.latitude, place.longitude, place.label)}
+        onSelect={(place) => onDone(place.latitude, place.longitude, place.label, "city")}
       />
       <p className="mt-6 text-center text-xs text-ink/40">
         Not sure? You can change this later.

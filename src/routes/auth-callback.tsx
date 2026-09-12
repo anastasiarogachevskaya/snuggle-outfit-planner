@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { clearStoredAuthNext, getStoredAuthNext, takeAuthReturnUrl } from "@/lib/auth-redirect";
 import { AUTH_LINK_EXPIRED_MESSAGE } from "@/lib/native-auth-link";
+import { logEvent } from "@/lib/analytics";
+import { isNativeApp } from "@/lib/platform";
 
 export const Route = createFileRoute("/auth-callback")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -29,7 +31,20 @@ function AuthCallbackPage() {
     let cancelled = false;
     let retryTimer: number | undefined;
 
+    // The redirect flow leaves /auth entirely, so success is recorded here.
+    // "redirect" covers web OAuth and confirmation links alike.
+    let recorded = false;
+    const recordSuccess = () => {
+      if (recorded) return;
+      recorded = true;
+      logEvent("auth_succeeded", {
+        method: "redirect",
+        surface: isNativeApp() ? "native" : "web",
+      });
+    };
+
     const goNext = () => {
+      recordSuccess();
       const returnUrl = takeAuthReturnUrl();
       if (returnUrl) {
         clearStoredAuthNext();

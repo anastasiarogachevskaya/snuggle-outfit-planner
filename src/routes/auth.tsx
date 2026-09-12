@@ -18,6 +18,7 @@ import {
   signInWithAppleNative,
   signInWithGoogleNative,
 } from "@/lib/native-social-auth";
+import { logEvent, type AuthMethod, type AuthSurface } from "@/lib/analytics";
 
 
 export const Route = createFileRoute("/auth")({
@@ -74,6 +75,11 @@ function AuthPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
+    const surface: AuthSurface = isNativeApp() ? "native" : "web";
+    logEvent(mode === "signup" ? "auth_signup_attempt" : "auth_signin_attempt", {
+      method: "email",
+      surface,
+    });
     try {
       if (mode === "signup") {
         storeAuthNext("/today");
@@ -84,6 +90,8 @@ function AuthPage() {
         });
         if (error) throw error;
         if (!data.session) {
+          // Confirmation email sent; the account exists but no session yet.
+          logEvent("auth_succeeded", { method: "email", surface, pending_confirmation: true });
           toast.success("Account created. Check your email to finish signing in.");
           return;
         }
@@ -92,6 +100,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
+      logEvent("auth_succeeded", { method: "email", surface });
       clearStoredAuthNext();
       const returnUrl = takeAuthReturnUrl();
       if (returnUrl) {
@@ -100,6 +109,12 @@ function AuthPage() {
       }
       navigate({ to: "/today", replace: true });
     } catch (err: any) {
+      // Record that it failed and roughly why, never the raw message.
+      logEvent("auth_failed", {
+        method: "email",
+        surface,
+        reason: classifyAuthError(err?.message),
+      });
       toast.error(err.message ?? "Something went wrong");
     } finally {
       setBusy(false);
@@ -111,17 +126,29 @@ function AuthPage() {
     storeAuthNext("/today");
 
     const native = isNativeApp();
+    const method: AuthMethod = provider;
+    const surface: AuthSurface = native ? "native" : "web";
     logAuthAttempt(provider, native);
+    logEvent(mode === "signup" ? "auth_signup_attempt" : "auth_signin_attempt", {
+      method,
+      surface,
+    });
 
     if (native) {
       const result =
         provider === "apple" ? await signInWithAppleNative() : await signInWithGoogleNative();
 
       if (result.status === "cancelled") {
+        logEvent("auth_cancelled", { method, surface, at: "native_sheet" });
         setBusy(false);
         return;
       }
       if (result.status === "error") {
+        logEvent("auth_failed", {
+          method,
+          surface,
+          reason: classifyAuthError(result.message),
+        });
         toast.error(result.message);
         setBusy(false);
         return;
@@ -132,12 +159,15 @@ function AuthPage() {
         stopBrowserWatch();
         browserWatchRef.current = onAuthBrowserFinished(() => {
           stopBrowserWatch();
+          // No deep link arrived, so the parent backed out of the browser.
+          logEvent("auth_cancelled", { method, surface, at: "system_browser" });
           setBusy(false);
         });
         return;
       }
 
       stopBrowserWatch();
+      logEvent("auth_succeeded", { method, surface });
       clearStoredAuthNext();
       navigate({ to: "/today", replace: true });
       return;
@@ -147,6 +177,13 @@ function AuthPage() {
       redirect_uri: authCallbackUrl(),
     });
     if (result.error) {
+      logEvent("auth_failed", {
+        method,
+        surface,
+        reason: classifyAuthError(
+          result.error instanceof Error ? result.error.message : undefined,
+        ),
+      });
       toast.error(
         result.error instanceof Error
           ? result.error.message
@@ -156,6 +193,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
+    logEvent("auth_succeeded", { method, surface });
     clearStoredAuthNext();
     navigate({ to: "/today", replace: true });
   };
@@ -255,4 +293,22 @@ function AuthPage() {
       </div>
     </div>
   );
+}
+
+/**
+ * Reduces an auth error to a coarse category so the funnel can show *why*
+ * sign-ins fail without ever storing the raw message, which can contain the
+ * email address or other details we deliberately keep out of analytics.
+ */
+function classifyAuthError(message?: string): string {
+  const m = (message ?? "").toLowerCase();
+  if (!m) return "unknown";
+  if (m.includes("invalid login") || m.includes("invalid credentials")) return "bad_credentials";
+  if (m.includes("already registered") || m.includes("already exists")) return "already_registered";
+  if (m.includes("confirm")) return "email_unconfirmed";
+  if (m.includes("password")) return "password_rejected";
+  if (m.includes("rate") || m.includes("too many")) return "rate_limited";
+  if (m.includes("network") || m.includes("fetch")) return "network";
+  if (m.includes("provider") || m.includes("oauth") || m.includes("audience")) return "provider_config";
+  return "other";
 }

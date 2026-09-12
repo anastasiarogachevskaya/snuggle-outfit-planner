@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { SiteFooter } from "@/components/site-footer";
+import { logEvent } from "@/lib/analytics";
 
 const TITLE = "Layerly – Baby Outfit Recommendations Based on Weather";
 const DESCRIPTION =
@@ -32,6 +33,10 @@ function Landing() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    logEvent("landing_viewed");
+  }, []);
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/today", replace: true });
     });
@@ -51,7 +56,11 @@ function Landing() {
             <Link to="/faq" className="font-medium text-ink/70">
               FAQ
             </Link>
-            <Link to="/auth" className="font-medium text-primary">
+            <Link
+              to="/auth"
+              onClick={() => logEvent("landing_signin_clicked", { placement: "header" })}
+              className="font-medium text-primary"
+            >
               Sign in
             </Link>
           </nav>
@@ -87,6 +96,7 @@ function Landing() {
 
           <Link
             to="/try"
+            onClick={() => logEvent("landing_try_clicked")}
             className="block w-full rounded-2xl bg-primary py-4 text-center font-medium text-primary-foreground shadow-md shadow-primary/20"
           >
             Try Layerly — no account needed
@@ -96,6 +106,7 @@ function Landing() {
           </p>
           <Link
             to="/auth"
+            onClick={() => logEvent("landing_signin_clicked", { placement: "main" })}
             className="mt-6 block w-full rounded-2xl border border-primary/25 py-3.5 text-center text-sm font-medium text-primary"
           >
             I already have an account
