@@ -31,3 +31,8 @@ dist-ssr
 *.sln
 *.sw?
 
+
+# Playwright output
+test-results/
+playwright-report/
+blob-report/

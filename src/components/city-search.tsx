@@ -54,7 +54,18 @@ export function CitySearch({
   // The saved location arrives after this mounts (and GPS can replace it
   // later), so seeding `query` only at mount left the field looking empty
   // while a location was in fact set.
+  //
+  // Only adopt a `value` the parent originated: echoes of our own onChange
+  // must not touch `skipNext`, or the flag stays set and swallows the next
+  // real search.
+  const lastEmitted = useRef(value);
+  const emit = (next: string) => {
+    lastEmitted.current = next;
+    onChange(next);
+  };
   useEffect(() => {
+    if (value === lastEmitted.current) return;
+    lastEmitted.current = value;
     skipNext.current = true;
     setQuery(value);
   }, [value]);
@@ -102,7 +113,7 @@ export function CitySearch({
     const label = cityLabel(hit);
     skipNext.current = true;
     setQuery(label);
-    onChange(label);
+    emit(label);
     setHits([]);
     setOpen(false);
     setStatus("idle");
@@ -131,7 +142,7 @@ export function CitySearch({
         placeholder={placeholder}
         onChange={(e) => {
           setQuery(e.target.value);
-          onChange(e.target.value);
+          emit(e.target.value);
         }}
         onFocus={() => {
           if (hits.length) setOpen(true);
