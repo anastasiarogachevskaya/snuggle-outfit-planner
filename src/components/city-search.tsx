@@ -51,6 +51,14 @@ export function CitySearch({
     if (autoFocus) inputRef.current?.focus();
   }, [autoFocus]);
 
+  // The saved location arrives after this mounts (and GPS can replace it
+  // later), so seeding `query` only at mount left the field looking empty
+  // while a location was in fact set.
+  useEffect(() => {
+    skipNext.current = true;
+    setQuery(value);
+  }, [value]);
+
   useEffect(() => {
     if (skipNext.current) {
       skipNext.current = false;

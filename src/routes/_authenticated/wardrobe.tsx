@@ -57,6 +57,9 @@ function WardrobePage() {
     return m;
   }, [wardrobeQ.data]);
 
+  const wardrobeKey = ["wardrobe", babyQ.data?.id];
+  type WardrobeRow = { slug: string; owned: boolean };
+
   const toggle = useMutation({
     mutationFn: async ({ slug, owned }: { slug: WardrobeSlug; owned: boolean }) => {
       if (!babyQ.data) return;
@@ -65,11 +68,25 @@ function WardrobePage() {
         .upsert({ baby_id: babyQ.data.id, slug, owned }, { onConflict: "baby_id,slug" });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["wardrobe"] }),
-    onError: (e: any) => {
+    // Tick the box straight away. Over a slow connection the old version sat
+    // unchanged until the round trip finished, which read as a dead button
+    // and invited a second tap.
+    onMutate: async ({ slug, owned }) => {
+      await qc.cancelQueries({ queryKey: wardrobeKey });
+      const previous = qc.getQueryData<WardrobeRow[]>(wardrobeKey);
+      qc.setQueryData<WardrobeRow[]>(wardrobeKey, (rows = []) =>
+        rows.some((r) => r.slug === slug)
+          ? rows.map((r) => (r.slug === slug ? { ...r, owned } : r))
+          : [...rows, { slug, owned }],
+      );
+      return { previous };
+    },
+    onError: (e: any, _vars, context) => {
+      if (context?.previous) qc.setQueryData(wardrobeKey, context.previous);
       warningHaptic();
       toast.error(e.message ?? "Update failed");
     },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["wardrobe"] }),
   });
 
   if (babyQ.isLoading) {
@@ -142,6 +159,7 @@ function WardrobePage() {
                         selectionHaptic();
                         toggle.mutate({ slug: item.slug as WardrobeSlug, owned: !owned });
                       }}
+                      aria-pressed={owned}
                       className={
                         "w-full min-w-0 flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left " +
                         (owned

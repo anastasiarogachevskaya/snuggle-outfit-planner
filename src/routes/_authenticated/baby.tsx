@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -10,7 +10,6 @@ import {
   canOpenAppSettings,
   openAppSettings,
   shouldOfferAppSettings,
-
   type LocationFailureStatus,
 } from "@/lib/location-service";
 import { CitySearch } from "@/components/city-search";
@@ -66,15 +65,19 @@ function BabyPage() {
     useCallback(() => setLocError(null), []),
   );
 
+  // Seed the form once. React Query refetches on window focus, and phones
+  // background apps constantly — re-seeding on every refetch threw away
+  // whatever the parent had typed but not yet saved.
+  const seededForm = useRef(false);
   useEffect(() => {
-    if (babyQ.data) {
-      setName(babyQ.data.name);
-      setDob(babyQ.data.dob);
-      setPref(babyQ.data.temperature_pref);
-      setLocLabel(babyQ.data.location_label ?? "");
-      setLat(babyQ.data.latitude);
-      setLon(babyQ.data.longitude);
-    }
+    if (!babyQ.data || seededForm.current) return;
+    seededForm.current = true;
+    setName(babyQ.data.name);
+    setDob(babyQ.data.dob);
+    setPref(babyQ.data.temperature_pref);
+    setLocLabel(babyQ.data.location_label ?? "");
+    setLat(babyQ.data.latitude);
+    setLon(babyQ.data.longitude);
   }, [babyQ.data]);
 
   const useGPS = async () => {
@@ -99,11 +102,9 @@ function BabyPage() {
     const label = await reverseGeocodeLabel(latitude, longitude);
     setLocLabel(label ?? coordinateLabel(latitude, longitude));
     successHaptic();
-    toast.success("Location saved");
+    // Nothing is written until the form is saved, so don't claim otherwise.
+    toast.success("Location found — tap Save to keep it");
   };
-
-
-
 
   const save = useMutation({
     mutationFn: async () => {
@@ -245,7 +246,6 @@ function BabyPage() {
                       Open Settings
                     </button>
                   )}
-
                 </div>
               </div>
             )}
@@ -255,7 +255,6 @@ function BabyPage() {
               </p>
             )}
           </Field>
-
 
           <button
             type="submit"
@@ -307,9 +306,7 @@ function BabyPage() {
           </div>
         )}
 
-        <p className="mt-6 text-center text-xs text-ink/40">
-          Not sure? You can change this later.
-        </p>
+        <p className="mt-6 text-center text-xs text-ink/40">Not sure? You can change this later.</p>
 
         <SiteFooter className="mt-14" />
       </div>
@@ -344,10 +341,13 @@ function NavCard({
   desc: string;
   icon: React.ReactNode;
 }) {
-  const className = "flex items-center gap-3 p-4 rounded-2xl bg-surface border border-black/5 hover:border-primary/30 transition-colors";
+  const className =
+    "flex items-center gap-3 p-4 rounded-2xl bg-surface border border-black/5 hover:border-primary/30 transition-colors";
   const children = (
     <>
-      <span className="inline-flex items-center justify-center" aria-hidden>{icon}</span>
+      <span className="inline-flex items-center justify-center" aria-hidden>
+        {icon}
+      </span>
       <div className="flex-1">
         <p className="text-sm font-medium">{title}</p>
         <p className="text-xs text-ink/50">{desc}</p>

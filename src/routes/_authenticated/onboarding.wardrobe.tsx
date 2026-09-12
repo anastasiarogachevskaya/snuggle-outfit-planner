@@ -2,11 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  WARDROBE_STEPS,
-  QUICK_SETUP_OWNED,
-  type WardrobeSlug,
-} from "@/lib/wardrobe-catalog";
+import { WARDROBE_STEPS, QUICK_SETUP_OWNED, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import { selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { ClothingIcon } from "@/components/icons";
@@ -79,13 +75,21 @@ function OnboardingWardrobe() {
     }
     setSaving(true);
     try {
-      const rows = slugs.map((slug) => ({ baby_id: babyQ.data!.id, slug, owned: true }));
-      if (rows.length > 0) {
-        const { error } = await supabase
-          .from("wardrobe_items")
-          .upsert(rows, { onConflict: "baby_id,slug" });
-        if (error) throw error;
-      }
+      // Write the whole catalog, not just the ticked items. A guest who
+      // converts already has default rows marked owned, so upserting only
+      // the selection left anything they un-ticked still marked as owned.
+      const selected = new Set<string>(slugs);
+      const rows = WARDROBE_STEPS.flatMap((step) =>
+        step.items.map((item) => ({
+          baby_id: babyQ.data!.id,
+          slug: item.slug,
+          owned: selected.has(item.slug),
+        })),
+      );
+      const { error } = await supabase
+        .from("wardrobe_items")
+        .upsert(rows, { onConflict: "baby_id,slug" });
+      if (error) throw error;
       qc.invalidateQueries({ queryKey: ["wardrobe"] });
       logEvent("wardrobe_saved", { mode, items: slugs.length });
       successHaptic();
@@ -159,7 +163,10 @@ function OnboardingWardrobe() {
           ))}
         </div>
         <FooterNote />
-        <div data-native-bottom-bar className="mt-6 sticky bottom-[calc(var(--safe-area-bottom)+1rem)]">
+        <div
+          data-native-bottom-bar
+          className="mt-6 sticky bottom-[calc(var(--safe-area-bottom)+1rem)]"
+        >
           <button
             onClick={() => persist(Array.from(selected))}
             disabled={saving}
@@ -183,10 +190,7 @@ function OnboardingWardrobe() {
         {WARDROBE_STEPS.map((_, i) => (
           <div
             key={i}
-            className={
-              "h-1 flex-1 rounded-full " +
-              (i <= step ? "bg-primary" : "bg-black/10")
-            }
+            className={"h-1 flex-1 rounded-full " + (i <= step ? "bg-primary" : "bg-black/10")}
           />
         ))}
       </div>
@@ -329,9 +333,7 @@ function Tile({
       <div className={(compact ? "mb-1 " : "mb-2 ") + (selected ? "text-primary" : "text-ink/60")}>
         <ClothingIcon slug={slug} size={compact ? 28 : 34} />
       </div>
-      <p className={"font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>
-        {label}
-      </p>
+      <p className={"font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>{label}</p>
       <p className="text-[10px] text-ink/40 mt-0.5">{hint}</p>
     </button>
   );
@@ -339,8 +341,6 @@ function Tile({
 
 function FooterNote() {
   return (
-    <p className="mt-8 text-center text-xs text-ink/40">
-      Not sure? You can change this later.
-    </p>
+    <p className="mt-8 text-center text-xs text-ink/40">Not sure? You can change this later.</p>
   );
 }

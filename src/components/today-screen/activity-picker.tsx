@@ -55,6 +55,7 @@ export function ActivityPicker({
             <button
               key={s.id}
               onClick={() => onSituationChange(s.id)}
+              aria-pressed={situation === s.id}
               className={
                 "flex flex-col items-center gap-1.5 py-5 px-2 rounded-2xl transition-all " +
                 (situation === s.id
@@ -95,8 +96,9 @@ export function ActivityPicker({
                   <button
                     key={a}
                     onClick={() => onHomeActivityChange(a)}
+                    aria-pressed={homeActivity === a}
                     className={
-                      "py-2 rounded-xl text-sm capitalize inline-flex items-center justify-center gap-2 " +
+                      "min-h-11 py-2 rounded-xl text-sm capitalize inline-flex items-center justify-center gap-2 " +
                       (homeActivity === a
                         ? "bg-primary/15 text-primary font-medium"
                         : "bg-canvas text-ink/70")
@@ -139,8 +141,9 @@ export function ActivityPicker({
                   <button
                     key={m.id}
                     onClick={() => onTransportModeChange(m.id)}
+                    aria-pressed={transportMode === m.id}
                     className={
-                      "py-2 rounded-xl text-sm " +
+                      "min-h-11 py-2 rounded-xl text-sm " +
                       (transportMode === m.id
                         ? "bg-primary/15 text-primary font-medium"
                         : "bg-canvas text-ink/70")
@@ -158,8 +161,9 @@ export function ActivityPicker({
                   <button
                     key={d}
                     onClick={() => onDurationChange(d as 30 | 60 | 90)}
+                    aria-pressed={duration === d}
                     className={
-                      "py-2 rounded-xl text-sm " +
+                      "min-h-11 py-2 rounded-xl text-sm " +
                       (duration === d
                         ? "bg-primary/15 text-primary font-medium"
                         : "bg-canvas text-ink/70")
@@ -181,8 +185,9 @@ export function ActivityPicker({
                 <button
                   key={d}
                   onClick={() => onDurationChange(d as 30 | 60 | 90)}
+                  aria-pressed={duration === d}
                   className={
-                    "py-2 rounded-xl text-sm " +
+                    "min-h-11 py-2 rounded-xl text-sm " +
                     (duration === d
                       ? "bg-primary/15 text-primary font-medium"
                       : "bg-canvas text-ink/70")
