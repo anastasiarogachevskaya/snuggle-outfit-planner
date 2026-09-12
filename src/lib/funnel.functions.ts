@@ -54,6 +54,7 @@ export type FunnelReport = {
 
 type EventRow = {
   name: string;
+  user_id: string | null;
   session_id: string | null;
   props: Record<string, unknown> | null;
   platform: string;
@@ -156,7 +157,7 @@ export const getFunnelReport = createServerFn({ method: "GET" })
     const since = new Date(Date.now() - data.days * 24 * 60 * 60 * 1000).toISOString();
     const { data: rows, error } = await supabaseAdmin
       .from("app_events")
-      .select("name, session_id, props, platform, created_at")
+      .select("name, user_id, session_id, props, platform, created_at")
       .gte("created_at", since)
       .order("created_at", { ascending: false })
       .limit(20000);
@@ -175,6 +176,9 @@ export const getFunnelReport = createServerFn({ method: "GET" })
     ).size;
     const signinSuccessSessions = countSessions(events, "auth_succeeded");
     const todaySessions = countSessions(events, "today_viewed");
+    const signedInActiveSessions = new Set(
+      events.filter((event) => event.user_id).map((event) => event.session_id).filter(Boolean) as string[],
+    ).size;
 
     return {
       days: data.days,
@@ -194,8 +198,8 @@ export const getFunnelReport = createServerFn({ method: "GET" })
         },
         {
           label: "Today open rate",
-          value: percent(todaySessions, signinSuccessSessions),
-          detail: `${todaySessions} of ${signinSuccessSessions} successful sign-in sessions`,
+          value: percent(todaySessions, signedInActiveSessions),
+          detail: `${todaySessions} of ${signedInActiveSessions} signed-in active sessions`,
         },
       ],
       fullJourney: FULL_JOURNEY_STEPS.map(([key, label]) => ({
