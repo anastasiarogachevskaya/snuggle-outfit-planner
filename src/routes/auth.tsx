@@ -18,6 +18,7 @@ import {
   signInWithAppleNative,
   signInWithGoogleNative,
 } from "@/lib/native-social-auth";
+import { logEvent, type AuthMethod, type AuthSurface } from "@/lib/analytics";
 
 
 export const Route = createFileRoute("/auth")({
@@ -74,6 +75,11 @@ function AuthPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
+    const surface: AuthSurface = isNativeApp() ? "native" : "web";
+    logEvent(mode === "signup" ? "auth_signup_attempt" : "auth_signin_attempt", {
+      method: "email",
+      surface,
+    });
     try {
       if (mode === "signup") {
         storeAuthNext("/today");
@@ -84,6 +90,8 @@ function AuthPage() {
         });
         if (error) throw error;
         if (!data.session) {
+          // Confirmation email sent; the account exists but no session yet.
+          logEvent("auth_succeeded", { method: "email", surface, pending_confirmation: true });
           toast.success("Account created. Check your email to finish signing in.");
           return;
         }
@@ -92,6 +100,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
+      logEvent("auth_succeeded", { method: "email", surface });
       clearStoredAuthNext();
       const returnUrl = takeAuthReturnUrl();
       if (returnUrl) {
@@ -100,6 +109,12 @@ function AuthPage() {
       }
       navigate({ to: "/today", replace: true });
     } catch (err: any) {
+      // Record that it failed and roughly why, never the raw message.
+      logEvent("auth_failed", {
+        method: "email",
+        surface,
+        reason: classifyAuthError(err?.message),
+      });
       toast.error(err.message ?? "Something went wrong");
     } finally {
       setBusy(false);
