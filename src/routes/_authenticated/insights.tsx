@@ -139,7 +139,7 @@ function AuthPaths({ rows }: { rows: AuthPathRow[] }) {
 }
 
 function Funnel({ title, steps }: { title: string; steps: FunnelStep[] }) {
-  const top = steps[0]?.sessions ?? 0;
+  const top = Math.max(...steps.map((step) => step.sessions), 0);
   return (
     <section>
       <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">{title}</h2>
@@ -147,7 +147,9 @@ function Funnel({ title, steps }: { title: string; steps: FunnelStep[] }) {
         {steps.map((s, i) => {
           const prev = i > 0 ? steps[i - 1].sessions : null;
           const width = top > 0 ? Math.min(Math.max((s.sessions / top) * 100, 2), 100) : 2;
-          const drop = prev && prev > 0 ? Math.round(((prev - s.sessions) / prev) * 100) : null;
+           const drop = prev && prev > 0 && s.sessions <= prev
+             ? Math.round(((prev - s.sessions) / prev) * 100)
+             : null;
           return (
             <div key={s.key} className="min-w-0 rounded-2xl border border-border bg-surface p-3">
               <div className="flex min-w-0 items-baseline justify-between gap-3">

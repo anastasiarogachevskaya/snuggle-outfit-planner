@@ -171,6 +171,7 @@ export const getFunnelReport = createServerFn({ method: "GET" })
       (e) => e.name === "auth_signin_attempt" || e.name === "auth_signup_attempt",
     );
     const landingSessions = countSessions(events, "landing_viewed");
+    const landingViews = events.filter((event) => event.name === "landing_viewed").length;
     const signinStartedSessions = new Set(
       attempts.map((event) => event.session_id).filter(Boolean) as string[],
     ).size;
@@ -185,7 +186,7 @@ export const getFunnelReport = createServerFn({ method: "GET" })
       totalEvents: events.length,
       totalSessions: sessions.size,
       metrics: [
-        { label: "Landing views", value: landingSessions, detail: "unique sessions" },
+        { label: "Landing views", value: landingViews, detail: `${landingSessions} unique sessions` },
         {
           label: "Sign-in start rate",
           value: percent(signinStartedSessions, landingSessions),
