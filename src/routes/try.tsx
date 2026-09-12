@@ -67,6 +67,10 @@ function TryPage() {
     else if (profile) setStep("location");
   }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (step === "today") logEvent("try_recommendation_viewed");
+  }, [step]);
+
   if (!loaded) return <div className="min-h-screen bg-canvas" />;
 
   if (step === "age") {
