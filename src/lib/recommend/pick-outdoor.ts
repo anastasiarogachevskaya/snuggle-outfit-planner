@@ -114,8 +114,6 @@ function pickAccessories(effectiveC: number, ctx: OutdoorContext): AccessoryNeed
   else if (effectiveC < OUTDOOR_SHORT_SLEEVE_FROM) socks = "cotton";
   // At 22°C and above → bare feet / no socks outdoors.
 
-
-
   const mittens = effectiveC < TEMP.COLD;
 
   return { hat, socks, mittens };
@@ -130,8 +128,10 @@ function pickExtras(effectiveC: number, ctx: OutdoorContext) {
   if (ctx.situation === "walk") {
     const stroller = ctx.transportMode === "pram" || ctx.transportMode === "sitting-stroller";
     if (stroller) {
-      if (ctx.isRaining) extras.push({ slug: "rain_cover", label: "Rain cover", ownedRequired: true });
-      if (effectiveC < TEMP.COOL) extras.push({ slug: "footmuff", label: "Footmuff", ownedRequired: true });
+      if (ctx.isRaining)
+        extras.push({ slug: "rain_cover", label: "Rain cover", ownedRequired: true });
+      if (effectiveC < TEMP.COOL)
+        extras.push({ slug: "footmuff", label: "Footmuff", ownedRequired: true });
       else if (effectiveC < TEMP.MILD)
         extras.push({ slug: "blanket", label: "Blanket", ownedRequired: true });
     } else if (ctx.transportMode === "carrier") {
@@ -184,7 +184,7 @@ function buildForecastShiftNote(
     ctx.situation !== "walk" ||
     !ctx.durationMin ||
     ctx.feelsLikeAtEndC === undefined ||
-    ctx.feelsLikeAtEndC <= ctx.feelsLikeC
+    ctx.feelsLikeAtEndC === ctx.feelsLikeC
   ) {
     return null;
   }
@@ -193,6 +193,12 @@ function buildForecastShiftNote(
   const laterEffectiveC = computeEffectiveTemp(laterCtx);
   const laterAccessories = pickAccessories(laterEffectiveC, laterCtx);
   const laterOuter = pickLayers(laterEffectiveC).outer;
+
+  // Getting colder is the more dangerous direction, and the fix has to be
+  // packed before leaving — you cannot put on a layer you didn't bring.
+  if (ctx.feelsLikeAtEndC < ctx.feelsLikeC) {
+    return buildCoolingNote(ctx, layers, accessories, laterOuter, laterAccessories);
+  }
 
   const removable: string[] = [];
   if (layers.outer === "winter_overall" && laterOuter === "none") {
@@ -218,6 +224,37 @@ function buildForecastShiftNote(
   const nowRounded = Math.round(ctx.feelsLikeC);
   const laterRounded = Math.round(ctx.feelsLikeAtEndC);
   return `It's ${nowRounded}°C now but expected to warm up to about ${laterRounded}°C by the time you're back — plan to ${joinWithAnd(actions)} partway through.`;
+}
+
+/**
+ * Mirror of the warm-up note: names what the later, colder outfit has that
+ * the current one doesn't, so it can be packed rather than wished for.
+ */
+function buildCoolingNote(
+  ctx: OutdoorContext,
+  layers: LayerNeed,
+  accessories: AccessoryNeed,
+  laterOuter: LayerNeed["outer"],
+  laterAccessories: AccessoryNeed,
+): string | null {
+  const toBring: string[] = [];
+  if (layers.outer === "none" && laterOuter !== "none") {
+    toBring.push("an extra outer layer");
+  }
+  if (!accessories.mittens && laterAccessories.mittens) {
+    toBring.push("mittens");
+  }
+  if (accessories.hat === "none" && laterAccessories.hat !== "none") {
+    toBring.push(`a ${HAT_LABEL[laterAccessories.hat]}`);
+  } else if (accessories.hat === "thin" && laterAccessories.hat === "warm") {
+    toBring.push("a warm hat");
+  }
+
+  if (toBring.length === 0) return null;
+
+  const nowRounded = Math.round(ctx.feelsLikeC);
+  const laterRounded = Math.round(ctx.feelsLikeAtEndC!);
+  return `It's ${nowRounded}°C now but expected to drop to about ${laterRounded}°C by the time you're back — take ${joinWithAnd(toBring)} along.`;
 }
 
 function buildNotes(
@@ -247,7 +284,9 @@ function buildNotes(
       );
     else if (effectiveC < TEMP.COOL)
       notes.push(
-        long ? "Long cold walk — outfit adjusted a bit warmer." : "Cool weather — outfit adjusted slightly warmer.",
+        long
+          ? "Long cold walk — outfit adjusted a bit warmer."
+          : "Cool weather — outfit adjusted slightly warmer.",
       );
   }
 
@@ -287,7 +326,9 @@ function buildSafety(ctx: OutdoorContext, effectiveC: number): string[] {
       advice.push(
         "☀️ Use a sun hat, seek shade whenever possible, and apply broad-spectrum SPF 30+ to exposed skin before going outside.",
       );
-      advice.push("☀️ Reapply sunscreen per product instructions, especially after sweating or getting wet.");
+      advice.push(
+        "☀️ Reapply sunscreen per product instructions, especially after sweating or getting wet.",
+      );
     }
   }
   if (uv !== undefined) {

@@ -215,7 +215,6 @@ describe("recommendation engine", () => {
     expect(all).toContain("cotton_socks");
   });
 
-
   it("home sleeping 21°C with no sack owned → pajamas + ideal 1.0 TOG suggested", () => {
     const set = new Set<WardrobeSlug>(["long_sleeve_bodysuit", "pajamas"]);
     const r = recommend({
@@ -305,6 +304,37 @@ describe("recommendation engine", () => {
       owned: owned(),
     });
     expect(r.notes.join(" ")).not.toMatch(/warm up/i);
+  });
+
+  it("9°C dropping to -2°C over a long walk tells the parent what to take along", () => {
+    const r = recommend({
+      feelsLikeC: 9,
+      feelsLikeAtEndC: -2,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 90,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    const note = r.notes.join(" ");
+    expect(note).toMatch(/drop to about -2/i);
+    expect(note).toMatch(/take .*along/i);
+    expect(note).toMatch(/mittens/i);
+  });
+
+  it("a one-degree drop that changes nothing practical gets no note", () => {
+    const r = recommend({
+      feelsLikeC: 6,
+      feelsLikeAtEndC: 5,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 60,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.notes.join(" ")).not.toMatch(/drop to about/i);
   });
 
   it("carrier at 22°C is not dressed warmer than pram at 22°C", () => {
