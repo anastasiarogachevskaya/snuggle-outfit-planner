@@ -3,9 +3,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**
  * Deletes the caller's own Supabase auth account outright — not just their
- * baby/wardrobe/feedback/analytics rows. The related user-owned rows cascade
- * on delete, and analytics are also removed explicitly before the auth user
- * is deleted as a defense-in-depth safeguard.
+ * baby/wardrobe/feedback rows. Before deletion, account-linked analytics are
+ * anonymized so aggregate funnel history remains without identifying the user.
  *
  * Required by App Store guideline 5.1.1(v): an app that supports account
  * creation must also support real account deletion, not just clearing the
@@ -18,7 +17,7 @@ export const deleteAccount = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error: analyticsError } = await supabaseAdmin
       .from("app_events")
-      .delete()
+      .update({ user_id: null })
       .eq("user_id", context.userId);
     if (analyticsError) throw new Error(analyticsError.message);
 
