@@ -10,6 +10,8 @@ let setSession: (args: {
   refresh_token: string;
 }) => Promise<{ error: AuthError }>;
 let verifyOtp: (args: { type: string; token_hash: string }) => Promise<{ error: AuthError }>;
+let sessionEmail: string | null;
+let signOutCalls: number;
 
 mock.module("@/integrations/supabase/client", () => ({
   supabase: {
@@ -17,18 +19,29 @@ mock.module("@/integrations/supabase/client", () => ({
       exchangeCodeForSession: (code: string) => exchangeCodeForSession(code),
       setSession: (args: { access_token: string; refresh_token: string }) => setSession(args),
       verifyOtp: (args: { type: string; token_hash: string }) => verifyOtp(args),
+      getSession: async () => ({
+        data: { session: sessionEmail ? { user: { email: sessionEmail } } : null },
+      }),
+      signOut: async () => {
+        signOutCalls += 1;
+        return { error: null };
+      },
     },
   },
 }));
 
 const { processAuthDeepLink, resetAuthDeepLinkState, AUTH_LINK_EXPIRED_MESSAGE } =
   await import("../native-auth-link");
+const { markEmailAuthFlow, markOAuthFlow, clearAuthFlow } = await import("../auth-flow-guard");
 
 beforeEach(() => {
   resetAuthDeepLinkState();
+  clearAuthFlow();
   exchangeCodeForSession = async () => ({ error: null });
   setSession = async () => ({ error: null });
   verifyOtp = async () => ({ error: null });
+  sessionEmail = "parent@example.com";
+  signOutCalls = 0;
 });
 
 describe("processAuthDeepLink", () => {
@@ -68,6 +81,7 @@ describe("processAuthDeepLink", () => {
   });
 
   it("sets the session from access/refresh tokens on the callback link", async () => {
+    markOAuthFlow();
     let received: { access_token: string; refresh_token: string } | undefined;
     setSession = async (args) => {
       received = args;
@@ -81,6 +95,7 @@ describe("processAuthDeepLink", () => {
   });
 
   it("verifies a token_hash + type on the reset-password link", async () => {
+    markEmailAuthFlow("parent@example.com");
     let received: { type: string; token_hash: string } | undefined;
     verifyOtp = async (args) => {
       received = args;
@@ -91,6 +106,48 @@ describe("processAuthDeepLink", () => {
     );
     expect(res).toEqual({ status: "success", kind: "reset" });
     expect(received).toEqual({ type: "recovery", token_hash: "th_123" });
+  });
+
+  // A custom URL scheme can be opened by any web page or app on the device.
+  it("refuses tokens from a link when no auth flow was started", async () => {
+    let called = false;
+    setSession = async () => {
+      called = true;
+      return { error: null };
+    };
+    const res = await processAuthDeepLink(
+      "layerly://auth/callback#access_token=attacker&refresh_token=attacker",
+    );
+    expect(res).toEqual({ status: "error", kind: "callback", message: AUTH_LINK_EXPIRED_MESSAGE });
+    expect(called).toBe(false);
+  });
+
+  it("refuses an unsolicited token_hash when no auth flow was started", async () => {
+    let called = false;
+    verifyOtp = async () => {
+      called = true;
+      return { error: null };
+    };
+    const res = await processAuthDeepLink(
+      "layerly://auth/reset-password?token_hash=attacker&type=recovery",
+    );
+    expect(res.status).toBe("error");
+    expect(called).toBe(false);
+  });
+
+  it("signs out when the session that comes back isn't the email the user asked for", async () => {
+    markEmailAuthFlow("parent@example.com");
+    sessionEmail = "attacker@evil.test";
+    const res = await processAuthDeepLink(
+      "layerly://auth/callback#access_token=attacker&refresh_token=attacker",
+    );
+    expect(res.status).toBe("error");
+    expect(signOutCalls).toBe(1);
+  });
+
+  it("still accepts a PKCE code without a pending flow, since the verifier is local", async () => {
+    const res = await processAuthDeepLink("layerly://auth/callback?code=abc123");
+    expect(res).toEqual({ status: "success", kind: "callback" });
   });
 
   it("errors when the link has none of the recognised parameter shapes", async () => {

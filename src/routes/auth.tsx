@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import { SiteFooter } from "@/components/site-footer";
 import { authCallbackUrl } from "@/lib/auth-urls";
+import { markEmailAuthFlow } from "@/lib/auth-flow-guard";
 import { isNativeApp } from "@/lib/platform";
 import {
   logAuthAttempt,
@@ -19,7 +20,6 @@ import {
   signInWithGoogleNative,
 } from "@/lib/native-social-auth";
 import { logEvent, type AuthMethod, type AuthSurface } from "@/lib/analytics";
-
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -55,7 +55,6 @@ function AuthPage() {
   // sign-in screen would stay disabled until the app restarts.
   useEffect(() => stopBrowserWatch, []);
 
-
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
@@ -83,6 +82,7 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         storeAuthNext("/today");
+        markEmailAuthFlow(email);
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -180,9 +180,7 @@ function AuthPage() {
       logEvent("auth_failed", {
         method,
         surface,
-        reason: classifyAuthError(
-          result.error instanceof Error ? result.error.message : undefined,
-        ),
+        reason: classifyAuthError(result.error instanceof Error ? result.error.message : undefined),
       });
       toast.error(
         result.error instanceof Error
@@ -197,7 +195,6 @@ function AuthPage() {
     clearStoredAuthNext();
     navigate({ to: "/today", replace: true });
   };
-
 
   return (
     <div className="min-h-screen bg-canvas font-sans">
@@ -234,7 +231,8 @@ function AuthPage() {
           </div>
 
           <div className="my-5 flex items-center gap-3 text-xs text-ink/40">
-            <span className="flex-1 h-px bg-black/10" /> or <span className="flex-1 h-px bg-black/10" />
+            <span className="flex-1 h-px bg-black/10" /> or{" "}
+            <span className="flex-1 h-px bg-black/10" />
           </div>
 
           <form onSubmit={submit} className="space-y-3">
@@ -309,6 +307,7 @@ function classifyAuthError(message?: string): string {
   if (m.includes("password")) return "password_rejected";
   if (m.includes("rate") || m.includes("too many")) return "rate_limited";
   if (m.includes("network") || m.includes("fetch")) return "network";
-  if (m.includes("provider") || m.includes("oauth") || m.includes("audience")) return "provider_config";
+  if (m.includes("provider") || m.includes("oauth") || m.includes("audience"))
+    return "provider_config";
   return "other";
 }

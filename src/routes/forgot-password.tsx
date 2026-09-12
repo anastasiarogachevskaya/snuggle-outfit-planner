@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { passwordResetUrl } from "@/lib/auth-urls";
+import { markEmailAuthFlow } from "@/lib/auth-flow-guard";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
@@ -10,8 +11,7 @@ export const Route = createFileRoute("/forgot-password")({
       { title: "Reset password — Layerly" },
       {
         name: "description",
-        content:
-          "Forgot your Layerly password? Enter your email and we'll send you a reset link.",
+        content: "Forgot your Layerly password? Enter your email and we'll send you a reset link.",
       },
       { name: "robots", content: "noindex" },
       { property: "og:title", content: "Reset password — Layerly" },
@@ -33,6 +33,7 @@ function ForgotPasswordPage() {
     setErrorMsg(null);
     setBusy(true);
     try {
+      markEmailAuthFlow(email);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: passwordResetUrl(),
       });
@@ -47,7 +48,6 @@ function ForgotPasswordPage() {
       setBusy(false);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-canvas font-sans">
@@ -75,10 +75,7 @@ function ForgotPasswordPage() {
               <p className="text-xs text-ink/50">
                 Check your inbox (and spam folder). The link expires in 1 hour.
               </p>
-              <button
-                onClick={() => setSent(false)}
-                className="text-primary font-medium text-sm"
-              >
+              <button onClick={() => setSent(false)} className="text-primary font-medium text-sm">
                 Use a different email
               </button>
             </div>
@@ -110,7 +107,6 @@ function ForgotPasswordPage() {
                 {busy ? "Sending…" : "Send reset link"}
               </button>
             </form>
-
           )}
         </div>
       </div>

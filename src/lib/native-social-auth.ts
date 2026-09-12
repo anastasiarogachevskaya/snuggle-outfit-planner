@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { registerPlugin } from "@capacitor/core";
 import { isNativeApp, getPlatform } from "@/lib/platform";
 import { NATIVE_AUTH_CALLBACK_URL } from "@/lib/auth-urls";
+import { markOAuthFlow } from "@/lib/auth-flow-guard";
 
 /**
  * These two Capacitor packages must stay dynamically imported, not static:
@@ -59,7 +60,6 @@ export function preloadNativeSocialAuth(): void {
   void loadBrowser();
   void ensureGoogleAuthInitialized();
 }
-
 
 /**
  * Native (Capacitor/iOS) social sign-in.
@@ -214,6 +214,7 @@ async function signInWithGoogleBrowser(): Promise<NativeSocialResult> {
   if (error) return { status: "error", message: error.message };
   if (!data?.url) return { status: "error", message: "Could not start Google sign-in." };
 
+  markOAuthFlow();
   const { Browser } = await loadBrowser();
   await Browser.open({ url: data.url, presentationStyle: "popover" });
   return { status: "pending" };

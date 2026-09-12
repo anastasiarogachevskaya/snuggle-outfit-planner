@@ -1,5 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
 import { NATIVE_SCHEME } from "@/lib/auth-urls";
+import {
+  clearAuthFlow,
+  hasPendingAuthFlow,
+  sessionMatchesPendingFlow,
+} from "@/lib/auth-flow-guard";
 
 /**
  * Handling of `layerly://auth/...` deep links.
@@ -20,8 +25,7 @@ export type AuthDeepLinkResult =
   | { status: "success"; kind: AuthDeepLinkKind }
   | { status: "error"; kind: AuthDeepLinkKind; message: string };
 
-const EXPIRED_MESSAGE =
-  "This link has expired or is no longer valid. Please request a new one.";
+const EXPIRED_MESSAGE = "This link has expired or is no longer valid. Please request a new one.";
 
 type ParsedAuthLink = {
   kind: AuthDeepLinkKind;
@@ -105,31 +109,58 @@ async function consume(parsed: ParsedAuthLink): Promise<AuthDeepLinkResult> {
 
   if (params.get("error") || params.get("error_code")) return fail();
 
+  /**
+   * Anyone can open a `layerly://` URL, so a link that hands us ready-made
+   * credentials is only trustworthy if this app started the flow it claims to
+   * finish — and, for email flows, if it comes back as the address the user
+   * actually typed. Otherwise a stranger's link would sign the parent into
+   * the stranger's account.
+   */
+  const adoptSession = async (
+    establish: () => Promise<{ error: unknown }>,
+  ): Promise<AuthDeepLinkResult> => {
+    if (!hasPendingAuthFlow()) return fail();
+    const { error } = await establish();
+    if (error) return fail();
+
+    const { data } = await supabase.auth.getSession();
+    if (!sessionMatchesPendingFlow(data.session?.user.email)) {
+      await supabase.auth.signOut();
+      clearAuthFlow();
+      return fail();
+    }
+    clearAuthFlow();
+    return { status: "success", kind };
+  };
+
   try {
+    // PKCE needs the verifier this app stored locally, so a stranger's code
+    // simply fails the exchange — no pending-flow check required.
     const code = params.get("code");
     if (code) {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
-      return error ? fail() : { status: "success", kind };
+      if (error) return fail();
+      clearAuthFlow();
+      return { status: "success", kind };
     }
 
     const accessToken = params.get("access_token");
     const refreshToken = params.get("refresh_token");
     if (accessToken && refreshToken) {
-      const { error } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
-      return error ? fail() : { status: "success", kind };
+      return await adoptSession(() =>
+        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }),
+      );
     }
 
     const tokenHash = params.get("token_hash");
     const type = params.get("type");
     if (tokenHash && type) {
-      const { error } = await supabase.auth.verifyOtp({
-        type: type as "signup" | "recovery" | "email" | "magiclink" | "invite",
-        token_hash: tokenHash,
-      });
-      return error ? fail() : { status: "success", kind };
+      return await adoptSession(() =>
+        supabase.auth.verifyOtp({
+          type: type as "signup" | "recovery" | "email" | "magiclink" | "invite",
+          token_hash: tokenHash,
+        }),
+      );
     }
   } catch {
     return fail();
