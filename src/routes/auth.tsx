@@ -294,3 +294,21 @@ function AuthPage() {
     </div>
   );
 }
+
+/**
+ * Reduces an auth error to a coarse category so the funnel can show *why*
+ * sign-ins fail without ever storing the raw message, which can contain the
+ * email address or other details we deliberately keep out of analytics.
+ */
+function classifyAuthError(message?: string): string {
+  const m = (message ?? "").toLowerCase();
+  if (!m) return "unknown";
+  if (m.includes("invalid login") || m.includes("invalid credentials")) return "bad_credentials";
+  if (m.includes("already registered") || m.includes("already exists")) return "already_registered";
+  if (m.includes("confirm")) return "email_unconfirmed";
+  if (m.includes("password")) return "password_rejected";
+  if (m.includes("rate") || m.includes("too many")) return "rate_limited";
+  if (m.includes("network") || m.includes("fetch")) return "network";
+  if (m.includes("provider") || m.includes("oauth") || m.includes("audience")) return "provider_config";
+  return "other";
+}
