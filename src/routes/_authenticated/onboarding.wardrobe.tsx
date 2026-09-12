@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 import { selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { ClothingIcon } from "@/components/icons";
+import { logEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/_authenticated/onboarding/wardrobe")({
   head: () => ({
@@ -53,6 +54,14 @@ function OnboardingWardrobe() {
     if (mode === "quick") setSelected(new Set(QUICK_SETUP_OWNED));
   }, [mode]);
 
+  useEffect(() => {
+    logEvent("wardrobe_chooser_viewed");
+  }, []);
+
+  useEffect(() => {
+    if (mode === "detailed") logEvent("wardrobe_step_viewed", { step: step + 1 });
+  }, [mode, step]);
+
   const toggle = (slug: WardrobeSlug) => {
     selectionHaptic();
     setSelected((prev) => {
@@ -78,6 +87,7 @@ function OnboardingWardrobe() {
         if (error) throw error;
       }
       qc.invalidateQueries({ queryKey: ["wardrobe"] });
+      logEvent("wardrobe_saved", { mode, items: slugs.length });
       successHaptic();
       toast.success("Wardrobe saved");
       navigate({ to: "/today" });
@@ -89,7 +99,15 @@ function OnboardingWardrobe() {
     }
   };
 
-  const skip = () => navigate({ to: "/today" });
+  const skip = () => {
+    logEvent("wardrobe_mode_chosen", { mode: "skip" });
+    navigate({ to: "/today" });
+  };
+
+  const chooseMode = (next: Exclude<Mode, "chooser">) => {
+    logEvent("wardrobe_mode_chosen", { mode: next });
+    setMode(next);
+  };
 
   // Chooser
   if (mode === "chooser") {
@@ -99,12 +117,12 @@ function OnboardingWardrobe() {
           <ChoiceCard
             title="Quick setup"
             desc="We'll preselect common basics. Edit from there."
-            onClick={() => setMode("quick")}
+            onClick={() => chooseMode("quick")}
           />
           <ChoiceCard
             title="Detailed setup"
             desc="Go category by category. About 2 minutes."
-            onClick={() => setMode("detailed")}
+            onClick={() => chooseMode("detailed")}
           />
           <ChoiceCard title="Skip for now" desc="You can set this up later." onClick={skip} muted />
         </div>
