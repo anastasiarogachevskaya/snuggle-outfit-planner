@@ -128,6 +128,7 @@ function TryPage() {
         owned={GUEST_OWNED}
         confirmation={confirmation}
         onFeedback={(rating) => {
+          logEvent("try_feedback_submitted", { rating });
           setConfirmation(rating);
           setPrompt("feedback");
         }}
@@ -139,7 +140,13 @@ function TryPage() {
           lightHaptic();
           setPrompt("wardrobe");
         }}
-        secondaryAction={{ label: "Create account", onClick: () => navigate({ to: "/auth" }) }}
+        secondaryAction={{
+          label: "Create account",
+          onClick: () => {
+            logEvent("try_create_account_clicked");
+            navigate({ to: "/auth" });
+          },
+        }}
       />
       <SavePromptSheet kind={prompt} onClose={() => setPrompt(null)} />
     </>
@@ -149,7 +156,7 @@ function TryPage() {
 function LocationStep({
   onDone,
 }: {
-  onDone: (lat: number, lon: number, label: string | null) => void;
+  onDone: (lat: number, lon: number, label: string | null, method: "gps" | "city") => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [manual, setManual] = useState("");
@@ -175,7 +182,7 @@ function LocationStep({
     const label = await reverseGeocodeLabel(res.latitude, res.longitude);
     setBusy(false);
     successHaptic();
-    onDone(res.latitude, res.longitude, label);
+    onDone(res.latitude, res.longitude, label, "gps");
   };
 
   return (
@@ -211,7 +218,7 @@ function LocationStep({
         onChange={setManual}
         autoFocus={gpsFailed}
         placeholder="Start typing a city"
-        onSelect={(place) => onDone(place.latitude, place.longitude, place.label)}
+        onSelect={(place) => onDone(place.latitude, place.longitude, place.label, "city")}
       />
       <p className="mt-6 text-center text-xs text-ink/40">
         Not sure? You can change this later.
