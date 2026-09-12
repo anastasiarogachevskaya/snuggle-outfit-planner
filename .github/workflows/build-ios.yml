@@ -1,8 +1,10 @@
 name: Build iOS
 
+# Lived in ios-app/.github/workflows/ until now, where GitHub never looked at
+# it, so it had never once run. Manual-only on purpose: it burns macOS runner
+# minutes, Xcode Cloud already builds the real archives, and its own steps are
+# still unproven — run it deliberately rather than having it surprise main.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:

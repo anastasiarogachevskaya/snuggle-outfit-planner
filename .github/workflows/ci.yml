@@ -18,12 +18,32 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # A service-role key would grant full read/write over every account, so
+      # catch one before it is ever pushed. (.env is committed on purpose, but
+      # it must never hold anything beyond the publishable/anon key.)
+      # Matches a real key *value* (a JWT, or Supabase's secret-key prefix),
+      # not `process.env.SUPABASE_SERVICE_ROLE_KEY` which is a legitimate read.
+      - name: Check no secret keys are committed
+        run: |
+          if git grep -nIE 'sb_secret_[A-Za-z0-9_-]{10,}|SERVICE_ROLE_KEY[[:space:]]*[=:][[:space:]]*.{0,3}eyJ' -- . ':!.github/workflows/ci.yml'; then
+            echo "::error::A secret-looking key is committed. Move it to the deploy environment."
+            exit 1
+          fi
+
       # Fails the build if any TypeScript error (including preview type errors) reappears.
       - name: Typecheck
         run: bun run typecheck
 
       - name: Unit tests
         run: bun run test
+
+      # Typecheck passing does not mean the SSR bundle actually builds, and a
+      # broken build reaches production without this.
+      - name: Production build
+        run: bun run build
+
+      - name: Capacitor version drift
+        run: bun run check:capacitor
 
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
