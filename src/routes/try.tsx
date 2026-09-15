@@ -412,6 +412,11 @@ function LocationStep({
         placeholder="Start typing a city"
         onSelect={(place) => onDone(place.latitude, place.longitude, place.label, "city")}
       />
+      {onSkip && (
+        <button onClick={onSkip} className="mt-6 w-full text-center text-sm text-ink/50">
+          Skip for now
+        </button>
+      )}
       <p className="mt-6 text-center text-xs text-ink/40">
         Not sure? You can change this later.
       </p>
@@ -423,6 +428,8 @@ function LocalProfile({
   profile,
   onSave,
   onBack,
+  onOpenWardrobe,
+  onOpenAccount,
 }: {
   profile: GuestProfile;
   onSave: (patch: Partial<GuestProfile>) => void;
