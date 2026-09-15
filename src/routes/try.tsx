@@ -485,6 +485,25 @@ function LocalProfile({
         </div>
         <button className="mt-8 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20">Save</button>
         <p className="mt-3 text-center text-xs text-ink/40">Saved privately on this device.</p>
+
+        <div className="mt-8 space-y-2">
+          <button
+            type="button"
+            onClick={onOpenWardrobe}
+            className="w-full rounded-2xl border border-black/5 bg-surface px-5 py-4 text-left"
+          >
+            <p className="font-medium">Wardrobe</p>
+            <p className="mt-1 text-xs text-ink/50">What's in the drawer right now.</p>
+          </button>
+          <button
+            type="button"
+            onClick={onOpenAccount}
+            className="w-full rounded-2xl border border-black/5 bg-surface px-5 py-4 text-left"
+          >
+            <p className="font-medium">Create an account</p>
+            <p className="mt-1 text-xs text-ink/50">Back everything up and use other devices.</p>
+          </button>
+        </div>
       </form>
     </div>
   );
