@@ -345,8 +345,10 @@ function LocalAccount({
 
 function LocationStep({
   onDone,
+  onSkip,
 }: {
   onDone: (lat: number, lon: number, label: string | null, method: "gps" | "city") => void;
+  onSkip?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [manual, setManual] = useState("");
