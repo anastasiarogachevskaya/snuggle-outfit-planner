@@ -5,11 +5,13 @@ import {
   GUEST_AGE_OPTIONS,
   GUEST_DEFAULT_WARDROBE,
   createGuestProfile,
+  createLocalProfile,
   useGuestProfile,
   writeGuestProfile,
   type GuestAgeBand,
   type GuestProfile,
 } from "@/lib/guest-profile";
+import { WardrobeSetup } from "@/components/wardrobe-setup";
 import {
   getCurrentLocation,
   locationErrorMessage,
