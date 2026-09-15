@@ -6,8 +6,11 @@ export const GUEST_STORAGE_KEY = "layerly:guest";
 export type GuestAgeBand = "newborn" | "1-3m" | "3-6m" | "6-12m" | "1y+";
 
 export type GuestProfile = {
-  ageBand: GuestAgeBand;
-  dob: string; // ISO date, derived from the age band midpoint
+  /** Only the quick web trial picks an age band; the app asks for a real date. */
+  ageBand?: GuestAgeBand;
+  /** True once the on-device setup (baby, location, wardrobe) has been finished. */
+  setupComplete?: boolean;
+  dob: string; // ISO date — picked directly, or derived from the age band midpoint
   name: string;
   temperaturePref: number;
   latitude: number | null;
@@ -62,6 +65,25 @@ export function createGuestProfile(band: GuestAgeBand): GuestProfile {
     ageBand: band,
     dob: dobFromAgeBand(band),
     name: "Baby",
+    temperaturePref: 3,
+    latitude: null,
+    longitude: null,
+    locationLabel: null,
+    wardrobe: [...GUEST_DEFAULT_WARDROBE],
+    feedback: [],
+    createdAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * A profile started from the app's own setup, where the parent types the
+ * baby's name and picks a real date of birth instead of an age band.
+ */
+export function createLocalProfile(name: string, dob: string): GuestProfile {
+  return {
+    setupComplete: false,
+    dob,
+    name: name.trim() || "Baby",
     temperaturePref: 3,
     latitude: null,
     longitude: null,
