@@ -434,6 +434,8 @@ function LocalProfile({
   profile: GuestProfile;
   onSave: (patch: Partial<GuestProfile>) => void;
   onBack: () => void;
+  onOpenWardrobe: () => void;
+  onOpenAccount: () => void;
 }) {
   const [name, setName] = useState(profile.name);
   const [dob, setDob] = useState(profile.dob);
