@@ -263,6 +263,86 @@ function TryPage() {
   );
 }
 
+function BabyStep({ onDone }: { onDone: (name: string, dob: string) => void }) {
+  const [name, setName] = useState("");
+  const [dob, setDob] = useState("");
+  const today = new Date().toISOString().slice(0, 10);
+
+  return (
+    <Shell title="Tell us about your baby" subtitle="This shapes the layers we suggest.">
+      <form
+        className="space-y-6"
+        onSubmit={(event) => {
+          event.preventDefault();
+          successHaptic();
+          onDone(name, dob);
+        }}
+      >
+        <label className="block text-sm font-medium">
+          Name
+          <input
+            className="input mt-2"
+            required
+            autoCapitalize="words"
+            autoComplete="given-name"
+            enterKeyHint="next"
+            placeholder="Leo"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+        <label className="block text-sm font-medium">
+          Date of birth
+          <input
+            type="date"
+            className="input mt-2"
+            required
+            max={today}
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
+          />
+        </label>
+        <button className="w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20">
+          Continue
+        </button>
+      </form>
+      <p className="mt-6 text-center text-xs text-ink/40">
+        No email or password needed. Everything stays on this device.
+      </p>
+    </Shell>
+  );
+}
+
+function LocalAccount({
+  onBack,
+  onCreateAccount,
+}: {
+  onBack: () => void;
+  onCreateAccount: () => void;
+}) {
+  return (
+    <div className="min-h-screen bg-canvas font-sans text-ink">
+      <div className="mx-auto max-w-md px-6 py-8">
+        <button onClick={onBack} className="text-sm text-ink/60">
+          ← Profile
+        </button>
+        <h1 className="mt-6 font-serif text-3xl font-semibold">Create an account</h1>
+        <p className="mt-4 text-sm leading-relaxed text-ink/70">
+          Right now your baby's profile, wardrobe and comfort ratings live only on this iPhone, and
+          disappear if you delete the app. Creating an account backs them up and lets you open
+          Layerly on another device. Everything you've already filled in comes with you.
+        </p>
+        <button
+          onClick={onCreateAccount}
+          className="mt-8 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20"
+        >
+          Create an account
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function LocationStep({
   onDone,
 }: {
