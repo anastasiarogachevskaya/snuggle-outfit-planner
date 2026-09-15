@@ -1,44 +1,49 @@
-# Layerly: what I'd improve next
+# Local-first setup on iPhone — no email, no password
 
-I went through the code and the live data. Three things stand out — one is a real gap between what the app promises and what it does.
+Anyone who installs the app gets a full setup on the device: baby name, date of birth, location, and wardrobe. No sign-up asked for. Everything is kept on the iPhone until they choose to create an account.
 
-## 1. Comfort feedback is collected but never used (highest value)
+## Setup flow (iPhone only)
 
-14 comfort ratings are stored, and the save prompt tells guests an account will "personalize future recommendations". But nothing in the recommendation code reads past feedback — I searched the whole engine and there is no personalization value anywhere. Today's suggestion for a baby who was rated "too cold" three times is identical to everyone else's.
+```text
+Get Started
+   |
+1. Baby        name + date of birth (same date picker as on the website)
+   |
+2. Location    use my location  /  search a city  /  skip
+   |
+3. Wardrobe    Quick setup  /  Detailed setup  /  Skip for now
+   |
+Today          full recommendation, ready to use
+```
 
-Fix: turn stored ratings into a small per-baby warmth adjustment.
+Returning users skip straight to Today. Anyone part-way through resumes at the step they left off. The website keeps its current quick "age band" trial — nothing there changes.
 
-- Load that baby's recent ratings when the daily screen opens.
-- Nudge the effective temperature used by the engine: consistent "too cold" makes it dress warmer, consistent "too warm" makes it dress lighter.
-- Cap the adjustment (about 2.5 degrees either way) and only apply it after two or three consistent ratings, so one odd day cannot swing it.
-- Show a short line on screen ("Adjusted slightly warmer based on your feedback") so it's visible, not magic.
+## Baby step
 
-## 2. Guests see a recommendation and then stop
+Name field plus the same calendar date picker used on the signed-in profile page, so the age is exact instead of a rough band. A baby older than a year is accepted; the recommendation still uses the same rules as today.
 
-Last 14 days: 78 people picked an age, 49 saw a recommendation — and zero rated it, zero tapped "create account". Every guest leaves at the result screen. Signed-in use is almost nil too: 1 daily-screen open in 14 days against 28 baby profiles.
+## Wardrobe step
 
-Fix on the guest result screen:
+Both options from the website:
+- Quick setup: one screen, common items already ticked, tap to adjust.
+- Detailed setup: the same six category screens with the progress bar.
+- Skip for now: a sensible starter set is used and can be edited any time.
 
-- Make the comfort rating the obvious next step rather than a quiet row.
-- Show what's missing from the plan in a concrete way and tie the account offer to keeping it.
-- Bring back people who already signed up: nothing currently reminds them the app exists in the morning.
+## Profile page
 
-## 3. Smaller cleanups
+The local profile page keeps the same links as the signed-in one: Baby profile, Wardrobe, and one new entry — **Create an account**. That page explains in one short paragraph that an account backs the data up and makes it available on other devices, with a Create account button. Nothing else on it.
 
-- The daily screen is one 625-line file mixing weather, activity choices, the outfit result and feedback; splitting it makes future changes safer.
-- The homepage and guest flow describe the app but never show a finished outfit — a sample result would sell it faster.
-- Two iOS items still open from the roadmap: the real-iPhone Apple/Google sign-in walkthrough, and confirming the Apple client ID in the backend.
+Creating an account carries over the name, birthday, location and wardrobe automatically, then clears the local copy — same as the existing hand-over does today.
 
-## Suggested order
+## What stays local
 
-1. Feedback-driven personalization (makes the product's core claim true).
-2. Guest result screen conversion.
-3. Re-engagement for existing accounts.
-4. Code split and homepage sample.
+Baby profile, wardrobe, room temperature and comfort ratings live only on the iPhone. Deleting the app removes them. This is spelled out under the setup steps and on the Create an account page.
 
 ## Technical notes
 
-- New helper reads `feedback` rows per baby (last ~10, weighted recent-first) through an authenticated server function, returns an offset in degrees C.
-- Offset is applied to `effectiveTempC` inputs in `src/lib/recommend.ts` / `recommend/temperature.ts`, not inside individual pickers, so all situations inherit it.
-- Guests have no stored history, so the offset is zero for them — no change to `/try` behaviour.
-- Unit tests alongside the existing `src/lib/recommend/__tests__` cover: no feedback, mixed feedback, and clamping at the cap.
+- `src/lib/guest-profile.ts`: add an `onboardingStep` marker and an explicit `dob` set by the picker; keep `ageBand` optional for the web trial and existing stored profiles. Wardrobe stays the stored `WardrobeSlug[]`.
+- `src/routes/try.tsx`: when `isIOSApp()` is true, replace the age-band step with a baby step (name + shadcn date picker, `pointer-events-auto` on the calendar) and insert a wardrobe step before Today. The web branch is untouched.
+- Extract the quick/detailed wardrobe UI out of `src/routes/_authenticated/onboarding.wardrobe.tsx` into a shared component that takes `owned` + `onSave`, so the local flow and the signed-in onboarding stay identical; the authenticated route keeps its Supabase write.
+- Add a local "Create an account" screen in the same local step machine as `LocalProfile`/`LocalWardrobe`, reachable from the local profile page; its button navigates to `/auth`.
+- The existing guest→account seeding in `src/routes/_authenticated/today.tsx` already reads name, dob, location and wardrobe, so no change is needed there.
+- Analytics: log the new local setup steps through the existing `logEvent` so the funnel on `/insights` shows iPhone setup drop-off.
