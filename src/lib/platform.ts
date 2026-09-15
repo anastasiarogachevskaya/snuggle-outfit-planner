@@ -24,6 +24,12 @@ export function getPlatform(): AppPlatform {
 
 /** True only inside the Capacitor iOS app. */
 export function isIOSApp(): boolean {
+  if (import.meta.env.DEV && typeof window !== "undefined") {
+    const requested = new URLSearchParams(window.location.search).get("previewPlatform");
+    if (requested === "ios") window.sessionStorage.setItem("layerly:previewPlatform", "ios");
+    if (requested === "web") window.sessionStorage.removeItem("layerly:previewPlatform");
+    if (window.sessionStorage.getItem("layerly:previewPlatform") === "ios") return true;
+  }
   return isNativeApp() && getPlatform() === "ios";
 }
 
@@ -93,4 +99,3 @@ export function initPlatform(): void {
     console.info(`Layerly platform: ${platform}`);
   }
 }
-

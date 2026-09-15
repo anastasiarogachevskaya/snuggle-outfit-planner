@@ -13,6 +13,11 @@ export type GuestProfile = {
   latitude: number | null;
   longitude: number | null;
   locationLabel: string | null;
+  wardrobe: WardrobeSlug[];
+  feedback: Array<{
+    rating: "cold" | "comfortable" | "warm";
+    createdAt: string;
+  }>;
   createdAt: string;
 };
 
@@ -61,6 +66,8 @@ export function createGuestProfile(band: GuestAgeBand): GuestProfile {
     latitude: null,
     longitude: null,
     locationLabel: null,
+    wardrobe: [...GUEST_DEFAULT_WARDROBE],
+    feedback: [],
     createdAt: new Date().toISOString(),
   };
 }
@@ -72,7 +79,16 @@ export function readGuestProfile(): GuestProfile | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as GuestProfile;
     if (!parsed?.dob) return null;
-    return parsed;
+    return {
+      ...parsed,
+      // Profiles created by older versions used the starter wardrobe without
+      // storing it explicitly. Preserve that choice during the local-first
+      // migration instead of making every item appear unchecked.
+      wardrobe: Array.isArray(parsed.wardrobe)
+        ? (parsed.wardrobe.filter((slug) => typeof slug === "string") as WardrobeSlug[])
+        : [...GUEST_DEFAULT_WARDROBE],
+      feedback: Array.isArray(parsed.feedback) ? parsed.feedback : [],
+    };
   } catch {
     return null;
   }

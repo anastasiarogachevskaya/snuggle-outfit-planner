@@ -75,10 +75,13 @@ function TodayPage() {
         .select("id")
         .single();
       if (error) throw error;
-      const { error: wErr } = await supabase
-        .from("wardrobe_items")
-        .insert(GUEST_DEFAULT_WARDROBE.map((slug) => ({ baby_id: baby.id, slug, owned: true })));
-      if (wErr) throw wErr;
+      const localWardrobe = guest.wardrobe ?? GUEST_DEFAULT_WARDROBE;
+      if (localWardrobe.length > 0) {
+        const { error: wErr } = await supabase
+          .from("wardrobe_items")
+          .insert(localWardrobe.map((slug) => ({ baby_id: baby.id, slug, owned: true })));
+        if (wErr) throw wErr;
+      }
       clearGuestProfile();
       return true;
     },

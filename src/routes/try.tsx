@@ -8,6 +8,7 @@ import {
   useGuestProfile,
   writeGuestProfile,
   type GuestAgeBand,
+  type GuestProfile,
 } from "@/lib/guest-profile";
 import {
   getCurrentLocation,
@@ -22,11 +23,13 @@ import { TodayScreen } from "@/components/today-screen";
 import { SavePromptSheet, type SavePromptKind } from "@/components/save-prompt-sheet";
 import { CitySearch } from "@/components/city-search";
 import { reverseGeocodeLabel } from "@/lib/reverse-geocode";
-import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { WARDROBE_CATALOG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { ClothingIcon } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
 import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 import { logEvent } from "@/lib/analytics";
+import { isIOSApp } from "@/lib/platform";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
@@ -52,14 +55,17 @@ export const Route = createFileRoute("/try")({
   component: TryPage,
 });
 
-const GUEST_OWNED = new Set<WardrobeSlug>(GUEST_DEFAULT_WARDROBE);
-
 function TryPage() {
   const navigate = useNavigate();
   const { profile, loaded, setProfile, update } = useGuestProfile();
-  const [step, setStep] = useState<"age" | "location" | "today">("age");
+  const [step, setStep] = useState<"age" | "location" | "today" | "profile" | "wardrobe">("age");
+  const [localFirst, setLocalFirst] = useState(false);
   const [prompt, setPrompt] = useState<SavePromptKind>(null);
   const [confirmation, setConfirmation] = useState<null | "cold" | "comfortable" | "warm">(null);
+
+  useEffect(() => {
+    setLocalFirst(isIOSApp());
+  }, []);
 
   useEffect(() => {
     if (!loaded) return;
@@ -116,10 +122,33 @@ function TryPage() {
 
   if (!profile) return <div className="min-h-screen bg-canvas" />;
 
+  if (localFirst && step === "profile") {
+    return (
+      <LocalProfile
+        profile={profile}
+        onSave={(patch) => {
+          update(patch);
+          setStep("today");
+        }}
+        onBack={() => setStep("today")}
+      />
+    );
+  }
+
+  if (localFirst && step === "wardrobe") {
+    return (
+      <LocalWardrobe
+        owned={new Set(profile.wardrobe)}
+        onChange={(wardrobe) => update({ wardrobe })}
+        onBack={() => setStep("today")}
+      />
+    );
+  }
+
   return (
     <>
       <TodayScreen
-        guest
+        guest={!localFirst}
         baby={{
           id: "guest",
           name: profile.name,
@@ -129,23 +158,29 @@ function TryPage() {
           longitude: profile.longitude,
           location_label: profile.locationLabel,
         }}
-        owned={GUEST_OWNED}
+        owned={new Set(localFirst ? profile.wardrobe : GUEST_DEFAULT_WARDROBE)}
         confirmation={confirmation}
         onFeedback={(rating) => {
           logEvent("try_feedback_submitted", { rating });
           setConfirmation(rating);
-          setPrompt("feedback");
+          if (localFirst) {
+            update({
+              feedback: [...profile.feedback, { rating, createdAt: new Date().toISOString() }],
+            });
+          } else {
+            setPrompt("feedback");
+          }
         }}
         onOpenProfile={() => {
           lightHaptic();
-          setPrompt("profile");
+          localFirst ? setStep("profile") : setPrompt("profile");
         }}
         onOpenWardrobe={() => {
           lightHaptic();
-          setPrompt("wardrobe");
+          localFirst ? setStep("wardrobe") : setPrompt("wardrobe");
         }}
         secondaryAction={{
-          label: "Create account",
+          label: localFirst ? "Sync" : "Create account",
           onClick: () => {
             logEvent("try_create_account_clicked");
             navigate({ to: "/auth" });
@@ -228,6 +263,118 @@ function LocationStep({
         Not sure? You can change this later.
       </p>
     </Shell>
+  );
+}
+
+function LocalProfile({
+  profile,
+  onSave,
+  onBack,
+}: {
+  profile: GuestProfile;
+  onSave: (patch: Partial<GuestProfile>) => void;
+  onBack: () => void;
+}) {
+  const [name, setName] = useState(profile.name);
+  const [dob, setDob] = useState(profile.dob);
+  const [temperaturePref, setTemperaturePref] = useState(profile.temperaturePref);
+  const [locationLabel, setLocationLabel] = useState(profile.locationLabel ?? "");
+  const [latitude, setLatitude] = useState(profile.latitude);
+  const [longitude, setLongitude] = useState(profile.longitude);
+
+  return (
+    <div className="min-h-screen bg-canvas font-sans text-ink">
+      <form
+        className="mx-auto max-w-md px-6 py-8"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSave({ name: name.trim(), dob, temperaturePref, locationLabel, latitude, longitude });
+          successHaptic();
+          toast.success("Saved on this device");
+        }}
+      >
+        <button type="button" onClick={onBack} className="text-sm text-ink/60">← Today</button>
+        <h1 className="mt-6 font-serif text-3xl font-semibold">Baby profile</h1>
+        <div className="mt-8 space-y-6">
+          <label className="block text-sm font-medium">Name
+            <input className="input mt-2" required value={name} onChange={(e) => setName(e.target.value)} />
+          </label>
+          <label className="block text-sm font-medium">Date of birth
+            <input type="date" className="input mt-2" required value={dob} onChange={(e) => setDob(e.target.value)} />
+          </label>
+          <label className="block text-sm font-medium">Temperature preference
+            <input type="range" min={1} max={5} className="mt-3 w-full accent-primary" value={temperaturePref} onChange={(e) => setTemperaturePref(Number(e.target.value))} />
+            <span className="mt-1 flex justify-between text-xs font-normal text-ink/40"><span>Runs warm</span><span>Average</span><span>Runs cold</span></span>
+          </label>
+          <div>
+            <p className="mb-2 text-sm font-medium">Location</p>
+            <CitySearch
+              value={locationLabel}
+              onChange={setLocationLabel}
+              inputClassName="input w-full"
+              placeholder="Start typing a city"
+              onSelect={(place) => {
+                setLocationLabel(place.label);
+                setLatitude(place.latitude);
+                setLongitude(place.longitude);
+              }}
+            />
+          </div>
+        </div>
+        <button className="mt-8 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20">Save</button>
+        <p className="mt-3 text-center text-xs text-ink/40">Saved privately on this device.</p>
+      </form>
+    </div>
+  );
+}
+
+function LocalWardrobe({
+  owned,
+  onChange,
+  onBack,
+}: {
+  owned: Set<WardrobeSlug>;
+  onChange: (owned: WardrobeSlug[]) => void;
+  onBack: () => void;
+}) {
+  const groups = Array.from(new Set(WARDROBE_CATALOG.map((item) => item.group)));
+  return (
+    <div className="min-h-screen bg-canvas font-sans text-ink">
+      <div className="mx-auto max-w-md px-6 py-8">
+        <button onClick={onBack} className="text-sm text-ink/60">← Today</button>
+        <h1 className="mt-6 font-serif text-3xl font-semibold">Wardrobe</h1>
+        <p className="mt-2 text-sm text-ink/60">Tick everything you own. Changes are saved on this device.</p>
+        <div className="mt-8 space-y-8">
+          {groups.map((group) => (
+            <section key={group}>
+              <p className="mb-3 text-xs font-medium uppercase tracking-widest text-primary/60">{group}</p>
+              <div className="space-y-2">
+                {WARDROBE_CATALOG.filter((item) => item.group === group).map((item) => {
+                  const selected = owned.has(item.slug);
+                  return (
+                    <button
+                      key={item.slug}
+                      aria-pressed={selected}
+                      onClick={() => {
+                        const next = new Set(owned);
+                        selected ? next.delete(item.slug) : next.add(item.slug);
+                        onChange([...next]);
+                        lightHaptic();
+                      }}
+                      className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left ${selected ? "border-primary/30 bg-surface" : "border-black/5 opacity-60"}`}
+                    >
+                      <span className={`flex size-6 items-center justify-center rounded-full text-xs ${selected ? "bg-primary text-primary-foreground" : "border border-black/10 bg-white"}`}>{selected ? "✓" : ""}</span>
+                      <span className={selected ? "text-primary" : "text-ink/50"}><ClothingIcon slug={item.slug} size={22} /></span>
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 

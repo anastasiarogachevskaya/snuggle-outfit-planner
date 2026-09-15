@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { SiteFooter } from "@/components/site-footer";
 import { logEvent } from "@/lib/analytics";
+import { isIOSApp } from "@/lib/platform";
 
 const TITLE = "Layerly – Baby Outfit Recommendations Based on Weather";
 const DESCRIPTION =
@@ -31,6 +32,11 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const navigate = useNavigate();
+  const [iosApp, setIOSApp] = useState(false);
+
+  useEffect(() => {
+    setIOSApp(isIOSApp());
+  }, []);
 
   useEffect(() => {
     logEvent("landing_viewed");
@@ -99,17 +105,19 @@ function Landing() {
             onClick={() => logEvent("landing_try_clicked")}
             className="block w-full rounded-2xl bg-primary py-4 text-center font-medium text-primary-foreground shadow-md shadow-primary/20"
           >
-            Try Layerly — no account needed
+            {iosApp ? "Get Started" : "Try Layerly — no account needed"}
           </Link>
           <p className="mt-3 text-center text-xs text-ink/50">
-            Takes 20 seconds. Nothing is saved until you want it to be.
+            {iosApp
+              ? "No account needed. Your data stays on this device until you choose to sync."
+              : "Takes 20 seconds. Nothing is saved until you want it to be."}
           </p>
           <Link
             to="/auth"
             onClick={() => logEvent("landing_signin_clicked", { placement: "main" })}
             className="mt-6 block w-full rounded-2xl border border-primary/25 py-3.5 text-center text-sm font-medium text-primary"
           >
-            I already have an account
+            {iosApp ? "Sign in to sync" : "I already have an account"}
           </Link>
 
           <p className="mt-10 text-center text-xs leading-relaxed text-ink/50">
