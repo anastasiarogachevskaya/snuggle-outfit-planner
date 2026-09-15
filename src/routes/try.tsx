@@ -57,22 +57,37 @@ export const Route = createFileRoute("/try")({
   component: TryPage,
 });
 
+type Step =
+  | "age"
+  | "baby"
+  | "location"
+  | "wardrobe-setup"
+  | "today"
+  | "profile"
+  | "wardrobe"
+  | "account";
+
 function TryPage() {
   const navigate = useNavigate();
   const { profile, loaded, setProfile, update } = useGuestProfile();
-  const [step, setStep] = useState<"age" | "location" | "today" | "profile" | "wardrobe">("age");
+  const [step, setStep] = useState<Step>("age");
   const [localFirst, setLocalFirst] = useState(false);
   const [prompt, setPrompt] = useState<SavePromptKind>(null);
   const [confirmation, setConfirmation] = useState<null | "cold" | "comfortable" | "warm">(null);
 
-  useEffect(() => {
-    setLocalFirst(isIOSApp());
-  }, []);
-
+  // Platform and stored profile are both only knowable in the browser, so the
+  // opening step is decided once, after hydration, from the two together.
   useEffect(() => {
     if (!loaded) return;
-    if (profile?.latitude != null) setStep("today");
-    else if (profile) setStep("location");
+    const ios = isIOSApp();
+    setLocalFirst(ios);
+    if (!profile) {
+      setStep(ios ? "baby" : "age");
+      return;
+    }
+    if (profile.latitude == null && !(ios && profile.setupComplete)) setStep("location");
+    else if (ios && !profile.setupComplete) setStep("wardrobe-setup");
+    else setStep("today");
   }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -80,6 +95,39 @@ function TryPage() {
   }, [step]);
 
   if (!loaded) return <div className="min-h-screen bg-canvas" />;
+
+  if (step === "baby") {
+    return (
+      <BabyStep
+        onDone={(name, dob) => {
+          logEvent("try_age_selected", { input: "date_of_birth" });
+          const p = createLocalProfile(name, dob);
+          writeGuestProfile(p);
+          setProfile(p);
+          setStep("location");
+        }}
+      />
+    );
+  }
+
+  if (step === "wardrobe-setup" && profile) {
+    const finish = (wardrobe?: WardrobeSlug[]) => {
+      update({ setupComplete: true, ...(wardrobe ? { wardrobe } : {}) });
+      if (wardrobe) {
+        logEvent("wardrobe_saved", { items: wardrobe.length });
+        successHaptic();
+        toast.success("Saved on this device");
+      }
+      setStep("today");
+    };
+    return (
+      <WardrobeSetup
+        initialSelected={profile.wardrobe}
+        onSave={(slugs) => finish(slugs)}
+        onSkip={() => finish()}
+      />
+    );
+  }
 
   if (step === "age") {
     return (
