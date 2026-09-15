@@ -5,11 +5,13 @@ import {
   GUEST_AGE_OPTIONS,
   GUEST_DEFAULT_WARDROBE,
   createGuestProfile,
+  createLocalProfile,
   useGuestProfile,
   writeGuestProfile,
   type GuestAgeBand,
   type GuestProfile,
 } from "@/lib/guest-profile";
+import { WardrobeSetup } from "@/components/wardrobe-setup";
 import {
   getCurrentLocation,
   locationErrorMessage,
@@ -55,22 +57,37 @@ export const Route = createFileRoute("/try")({
   component: TryPage,
 });
 
+type Step =
+  | "age"
+  | "baby"
+  | "location"
+  | "wardrobe-setup"
+  | "today"
+  | "profile"
+  | "wardrobe"
+  | "account";
+
 function TryPage() {
   const navigate = useNavigate();
   const { profile, loaded, setProfile, update } = useGuestProfile();
-  const [step, setStep] = useState<"age" | "location" | "today" | "profile" | "wardrobe">("age");
+  const [step, setStep] = useState<Step>("age");
   const [localFirst, setLocalFirst] = useState(false);
   const [prompt, setPrompt] = useState<SavePromptKind>(null);
   const [confirmation, setConfirmation] = useState<null | "cold" | "comfortable" | "warm">(null);
 
-  useEffect(() => {
-    setLocalFirst(isIOSApp());
-  }, []);
-
+  // Platform and stored profile are both only knowable in the browser, so the
+  // opening step is decided once, after hydration, from the two together.
   useEffect(() => {
     if (!loaded) return;
-    if (profile?.latitude != null) setStep("today");
-    else if (profile) setStep("location");
+    const ios = isIOSApp();
+    setLocalFirst(ios);
+    if (!profile) {
+      setStep(ios ? "baby" : "age");
+      return;
+    }
+    if (profile.latitude == null && !(ios && profile.setupComplete)) setStep("location");
+    else if (ios && !profile.setupComplete) setStep("wardrobe-setup");
+    else setStep("today");
   }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -78,6 +95,39 @@ function TryPage() {
   }, [step]);
 
   if (!loaded) return <div className="min-h-screen bg-canvas" />;
+
+  if (step === "baby") {
+    return (
+      <BabyStep
+        onDone={(name, dob) => {
+          logEvent("try_age_selected", { input: "date_of_birth" });
+          const p = createLocalProfile(name, dob);
+          writeGuestProfile(p);
+          setProfile(p);
+          setStep("location");
+        }}
+      />
+    );
+  }
+
+  if (step === "wardrobe-setup" && profile) {
+    const finish = (wardrobe?: WardrobeSlug[]) => {
+      update({ setupComplete: true, ...(wardrobe ? { wardrobe } : {}) });
+      if (wardrobe) {
+        logEvent("wardrobe_saved", { items: wardrobe.length });
+        successHaptic();
+        toast.success("Saved on this device");
+      }
+      setStep("today");
+    };
+    return (
+      <WardrobeSetup
+        initialSelected={profile.wardrobe}
+        onSave={(slugs) => finish(slugs)}
+        onSkip={() => finish()}
+      />
+    );
+  }
 
   if (step === "age") {
     return (
@@ -109,12 +159,14 @@ function TryPage() {
   }
 
   if (step === "location") {
+    const setupPending = localFirst && !profile?.setupComplete;
     return (
       <LocationStep
+        onSkip={setupPending ? () => setStep("wardrobe-setup") : undefined}
         onDone={(lat, lon, label, method) => {
           logEvent("try_location_set", { method });
           update({ latitude: lat, longitude: lon, locationLabel: label });
-          setStep("today");
+          setStep(setupPending ? "wardrobe-setup" : "today");
         }}
       />
     );
@@ -131,6 +183,20 @@ function TryPage() {
           setStep("today");
         }}
         onBack={() => setStep("today")}
+        onOpenWardrobe={() => setStep("wardrobe")}
+        onOpenAccount={() => setStep("account")}
+      />
+    );
+  }
+
+  if (localFirst && step === "account") {
+    return (
+      <LocalAccount
+        onBack={() => setStep("profile")}
+        onCreateAccount={() => {
+          logEvent("try_create_account_clicked");
+          navigate({ to: "/auth" });
+        }}
       />
     );
   }
@@ -144,6 +210,7 @@ function TryPage() {
       />
     );
   }
+
 
   return (
     <>
@@ -180,8 +247,12 @@ function TryPage() {
           localFirst ? setStep("wardrobe") : setPrompt("wardrobe");
         }}
         secondaryAction={{
-          label: localFirst ? "Sync" : "Create account",
+          label: "Create account",
           onClick: () => {
+            if (localFirst) {
+              setStep("account");
+              return;
+            }
             logEvent("try_create_account_clicked");
             navigate({ to: "/auth" });
           },
@@ -192,10 +263,92 @@ function TryPage() {
   );
 }
 
+function BabyStep({ onDone }: { onDone: (name: string, dob: string) => void }) {
+  const [name, setName] = useState("");
+  const [dob, setDob] = useState("");
+  const today = new Date().toISOString().slice(0, 10);
+
+  return (
+    <Shell title="Tell us about your baby" subtitle="This shapes the layers we suggest.">
+      <form
+        className="space-y-6"
+        onSubmit={(event) => {
+          event.preventDefault();
+          successHaptic();
+          onDone(name, dob);
+        }}
+      >
+        <label className="block text-sm font-medium">
+          Name
+          <input
+            className="input mt-2"
+            required
+            autoCapitalize="words"
+            autoComplete="given-name"
+            enterKeyHint="next"
+            placeholder="Leo"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+        <label className="block text-sm font-medium">
+          Date of birth
+          <input
+            type="date"
+            className="input mt-2"
+            required
+            max={today}
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
+          />
+        </label>
+        <button className="w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20">
+          Continue
+        </button>
+      </form>
+      <p className="mt-6 text-center text-xs text-ink/40">
+        No email or password needed. Everything stays on this device.
+      </p>
+    </Shell>
+  );
+}
+
+function LocalAccount({
+  onBack,
+  onCreateAccount,
+}: {
+  onBack: () => void;
+  onCreateAccount: () => void;
+}) {
+  return (
+    <div className="min-h-screen bg-canvas font-sans text-ink">
+      <div className="mx-auto max-w-md px-6 py-8">
+        <button onClick={onBack} className="text-sm text-ink/60">
+          ← Profile
+        </button>
+        <h1 className="mt-6 font-serif text-3xl font-semibold">Create an account</h1>
+        <p className="mt-4 text-sm leading-relaxed text-ink/70">
+          Right now your baby's profile, wardrobe and comfort ratings live only on this iPhone, and
+          disappear if you delete the app. Creating an account backs them up and lets you open
+          Layerly on another device. Everything you've already filled in comes with you.
+        </p>
+        <button
+          onClick={onCreateAccount}
+          className="mt-8 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20"
+        >
+          Create an account
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function LocationStep({
   onDone,
+  onSkip,
 }: {
   onDone: (lat: number, lon: number, label: string | null, method: "gps" | "city") => void;
+  onSkip?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [manual, setManual] = useState("");
@@ -259,6 +412,11 @@ function LocationStep({
         placeholder="Start typing a city"
         onSelect={(place) => onDone(place.latitude, place.longitude, place.label, "city")}
       />
+      {onSkip && (
+        <button onClick={onSkip} className="mt-6 w-full text-center text-sm text-ink/50">
+          Skip for now
+        </button>
+      )}
       <p className="mt-6 text-center text-xs text-ink/40">
         Not sure? You can change this later.
       </p>
@@ -270,10 +428,14 @@ function LocalProfile({
   profile,
   onSave,
   onBack,
+  onOpenWardrobe,
+  onOpenAccount,
 }: {
   profile: GuestProfile;
   onSave: (patch: Partial<GuestProfile>) => void;
   onBack: () => void;
+  onOpenWardrobe: () => void;
+  onOpenAccount: () => void;
 }) {
   const [name, setName] = useState(profile.name);
   const [dob, setDob] = useState(profile.dob);
@@ -323,6 +485,25 @@ function LocalProfile({
         </div>
         <button className="mt-8 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20">Save</button>
         <p className="mt-3 text-center text-xs text-ink/40">Saved privately on this device.</p>
+
+        <div className="mt-8 space-y-2">
+          <button
+            type="button"
+            onClick={onOpenWardrobe}
+            className="w-full rounded-2xl border border-black/5 bg-surface px-5 py-4 text-left"
+          >
+            <p className="font-medium">Wardrobe</p>
+            <p className="mt-1 text-xs text-ink/50">What's in the drawer right now.</p>
+          </button>
+          <button
+            type="button"
+            onClick={onOpenAccount}
+            className="w-full rounded-2xl border border-black/5 bg-surface px-5 py-4 text-left"
+          >
+            <p className="font-medium">Create an account</p>
+            <p className="mt-1 text-xs text-ink/50">Back everything up and use other devices.</p>
+          </button>
+        </div>
       </form>
     </div>
   );
