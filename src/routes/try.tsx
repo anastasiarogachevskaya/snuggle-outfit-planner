@@ -247,7 +247,7 @@ function TryPage() {
           localFirst ? setStep("wardrobe") : setPrompt("wardrobe");
         }}
         secondaryAction={{
-          label: localFirst ? "Create an account" : "Create account",
+          label: "Create account",
           onClick: () => {
             if (localFirst) {
               setStep("account");
