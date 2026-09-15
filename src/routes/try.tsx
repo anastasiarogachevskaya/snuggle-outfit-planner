@@ -247,8 +247,12 @@ function TryPage() {
           localFirst ? setStep("wardrobe") : setPrompt("wardrobe");
         }}
         secondaryAction={{
-          label: localFirst ? "Sync" : "Create account",
+          label: localFirst ? "Create an account" : "Create account",
           onClick: () => {
+            if (localFirst) {
+              setStep("account");
+              return;
+            }
             logEvent("try_create_account_clicked");
             navigate({ to: "/auth" });
           },
