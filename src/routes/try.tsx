@@ -159,12 +159,14 @@ function TryPage() {
   }
 
   if (step === "location") {
+    const setupPending = localFirst && !profile?.setupComplete;
     return (
       <LocationStep
+        onSkip={setupPending ? () => setStep("wardrobe-setup") : undefined}
         onDone={(lat, lon, label, method) => {
           logEvent("try_location_set", { method });
           update({ latitude: lat, longitude: lon, locationLabel: label });
-          setStep("today");
+          setStep(setupPending ? "wardrobe-setup" : "today");
         }}
       />
     );
@@ -181,6 +183,20 @@ function TryPage() {
           setStep("today");
         }}
         onBack={() => setStep("today")}
+        onOpenWardrobe={() => setStep("wardrobe")}
+        onOpenAccount={() => setStep("account")}
+      />
+    );
+  }
+
+  if (localFirst && step === "account") {
+    return (
+      <LocalAccount
+        onBack={() => setStep("profile")}
+        onCreateAccount={() => {
+          logEvent("try_create_account_clicked");
+          navigate({ to: "/auth" });
+        }}
       />
     );
   }
@@ -194,6 +210,7 @@ function TryPage() {
       />
     );
   }
+
 
   return (
     <>
