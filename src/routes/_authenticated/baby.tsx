@@ -37,9 +37,15 @@ export const Route = createFileRoute("/_authenticated/baby")({
   component: BabyPage,
 });
 
+// Only this account can see the Insights link; the page itself is gated
+// server-side as well, so this is purely about not showing a dead entry.
+const OWNER_USER_ID = "ac24b320-61a2-4904-9651-5d6ff5e31e1f";
+
 function BabyPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { user } = Route.useRouteContext();
+  const isOwner = user?.id === OWNER_USER_ID;
 
   const babyQ = useQuery({
     queryKey: ["baby"],
