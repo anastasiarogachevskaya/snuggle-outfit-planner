@@ -231,6 +231,15 @@ export const getFunnelReport = createServerFn({ method: "GET" })
     const iosRecommendation = countSessions(iosEvents, "try_recommendation_viewed");
     const iosAccountTaps = countSessions(iosEvents, "try_create_account_clicked");
     const iosAccounts = countSessions(iosEvents, "auth_succeeded");
+    // Reaching Today on iPhone means the local-first setup finished: it is the
+    // first screen where a recommendation appears.
+    const iosReachedToday = new Set(
+      iosEvents
+        .filter((e) => e.name === "try_recommendation_viewed" || e.name === "today_viewed")
+        .map((e) => e.session_id)
+        .filter(Boolean) as string[],
+    ).size;
+    const iosSetupStalled = Math.max(iosStarted - iosReachedToday, 0);
 
     return {
       days: data.days,
