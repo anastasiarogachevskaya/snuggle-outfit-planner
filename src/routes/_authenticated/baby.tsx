@@ -347,7 +347,7 @@ function NavCard({
   desc,
   icon,
 }: {
-  to?: "/wardrobe" | "/account";
+  to?: "/wardrobe" | "/account" | "/insights";
   href?: string;
   title: string;
   desc: string;
