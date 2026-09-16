@@ -2,7 +2,7 @@ import { TEMP } from "./temperature";
 import type { LayerNeed, AccessoryNeed } from "./layers";
 import type { HomeActivity } from "../recommend";
 import type { WardrobeSlug } from "../wardrobe-catalog";
-import { pickSleep, SLEEP_ROOM_TEMP } from "./pick-sleep";
+import { pickSleep, stepBaseDown, SLEEP_ROOM_TEMP } from "./pick-sleep";
 
 export type HomeContext = {
   roomTempC: number;
@@ -51,21 +51,45 @@ export function pickHome(ctx: HomeContext): HomePick {
       out.safetyAdvice.push("🌡️ Warm room — use a low-TOG sleep sack (around 0.5).");
     }
 
-    // Newborns in a swaddle: swaddle replaces the sleep sack entirely.
-    const newborn = ageMonths !== null && ageMonths < 4;
-    if (newborn && owned.has("swaddle") && roomTempC < SLEEP_ROOM_TEMP.NO_SACK) {
+    // 0–6 months is the age range where SIDS risk is highest and overheating
+    // is one of its documented risk factors, independent of room temperature
+    // — so this is additional to, not a replacement for, the checks above.
+    // See docs/research-sleep-dressing-by-age.md.
+    if (ageMonths !== null && ageMonths < 6 && roomTempC < TEMP.VERY_HOT + 1) {
+      out.safetyAdvice.push(
+        "🌡️ Under 6 months is the highest-risk age for overheating during sleep — check baby's neck or chest regularly, even if the room feels comfortable.",
+      );
+    }
+
+    // Newborns in a swaddle: swaddle replaces the sleep sack entirely. Capped
+    // at 3 months, not 4 — babies can start showing signs of rolling as
+    // early as 2 months, and a swaddled baby who rolls onto their front can't
+    // free their arms to reposition. The cutoff is a default, not a
+    // guarantee: swaddling must stop the moment a baby shows any sign of
+    // rolling, whatever their age.
+    const swaddleEligible = ageMonths !== null && ageMonths < 3;
+    if (swaddleEligible && owned.has("swaddle") && roomTempC < SLEEP_ROOM_TEMP.NO_SACK) {
       // Baseline pajamas by room temp, no TOG suggestion — but read off the
       // same boundaries the sleep-sack path uses, so the two agree.
-      if (roomTempC >= SLEEP_ROOM_TEMP.LIGHTEST) out.layers.base = "short_sleeve";
-      else if (roomTempC >= SLEEP_ROOM_TEMP.LIGHT) out.layers.base = "pajamas_light";
-      else out.layers.base = "pajamas";
+      let swaddleBase: LayerNeed["base"];
+      if (roomTempC >= SLEEP_ROOM_TEMP.LIGHTEST) swaddleBase = "short_sleeve";
+      else if (roomTempC >= SLEEP_ROOM_TEMP.LIGHT) swaddleBase = "pajamas_light";
+      else swaddleBase = "pajamas";
+      // Swaddled newborns are exactly who the under-1-month "dress a layer
+      // lighter" guidance targets, so this needs the same adjustment as the
+      // TOG path below, not a separately-derived base layer.
+      const isNewborn = ageMonths !== null && ageMonths < 1;
+      out.layers.base = isNewborn ? stepBaseDown(swaddleBase) : swaddleBase;
       out.sleepAccessories.push({ slug: "swaddle", label: "Swaddle", owned: true });
+      out.safetyAdvice.push(
+        "🚼 Stop swaddling the moment baby shows any sign of rolling over — even before this age.",
+      );
       out.reason = `Room is ~${round}°C — swaddle with sleepwear underneath.`;
       return out;
     }
 
     // TOG-driven sleep pick
-    const sleep = pickSleep(roomTempC, owned);
+    const sleep = pickSleep(roomTempC, owned, ageMonths);
     out.layers.base = sleep.base;
     out.accessories.socks = sleep.socks;
 

@@ -141,9 +141,43 @@ function togLabel(t: TogValue): string {
   return `${t.toFixed(1)} TOG`;
 }
 
-export function pickSleep(roomTempC: number, owned: Set<WardrobeSlug>): SleepPick {
+/**
+ * One notch less insulation, for the newborn adjustment below. The sleep
+ * paths never use "long_sleeve" or go warmer than "pajamas", so this only
+ * needs to know the five base kinds actually reachable here.
+ */
+export function stepBaseDown(base: BaseKind): BaseKind {
+  switch (base) {
+    case "pajamas":
+      return "pajamas_light";
+    case "pajamas_light":
+      return "short_sleeve";
+    case "short_sleeve":
+      return "sleeveless";
+    default:
+      return base;
+  }
+}
+
+/**
+ * TOG-by-room-temperature is the standard sleep guidance and is explicitly
+ * NOT age-dependent (Lullaby Trust, HALO, ergopouch all key it to room temp
+ * alone — a newborn and a toddler in the same room get the same TOG). The one
+ * documented exception is newborns under 1 month, who should start a layer
+ * *lighter* than the chart suggests rather than warmer, because overheating
+ * is the bigger risk for that age and they can't remove a layer or complain.
+ * See docs/research-sleep-dressing-by-age.md.
+ */
+export function pickSleep(
+  roomTempC: number,
+  owned: Set<WardrobeSlug>,
+  ageMonths: number | null = null,
+): SleepPick {
   const { chosen, ideal, suggestion } = chooseSleepSack(roomTempC, owned);
-  const { base, socks: rawSocks } = sleepwearFor(roomTempC, chosen, ideal);
+  const { base: rawBase, socks: rawSocks } = sleepwearFor(roomTempC, chosen, ideal);
+  const newborn = ageMonths !== null && ageMonths < 1;
+  const base = newborn ? stepBaseDown(rawBase) : rawBase;
+
   // Socks are not part of a normal sleep outfit — warmth comes from sleepwear,
   // the sleep sack and the room. Only keep them for a genuinely cold room
   // without a suitable sack.
@@ -161,6 +195,9 @@ export function pickSleep(roomTempC: number, owned: Set<WardrobeSlug>): SleepPic
     explanation = `Using your ${togLabel(chosen.tog)} sleep sack — warmer sleepwear underneath compensates for the lower TOG. A ${togLabel(ideal)} sack would be ideal.`;
   } else {
     explanation = `A ${togLabel(ideal)} sleep sack would be ideal for this room temperature.`;
+  }
+  if (newborn && base !== rawBase) {
+    explanation += " Dressed a layer lighter underneath — safest for a baby under 1 month.";
   }
 
   return { chosen, ideal, suggestion, base, socks, explanation };

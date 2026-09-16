@@ -244,6 +244,115 @@ describe("recommendation engine", () => {
     expect(r.babyClothing[0].slug).toBe("diaper_only");
   });
 
+  it("newborn under 1 month sleeps in one layer lighter than an older baby, same room", () => {
+    const set = new Set<WardrobeSlug>(["short_sleeve_bodysuit", "pajamas", "sleep_sack_10"]);
+    const base = {
+      feelsLikeC: 20,
+      tempPref: 3 as const,
+      situation: "home" as const,
+      homeActivity: "sleeping" as const,
+      roomTempC: 21,
+      owned: set,
+    };
+    const newborn = recommend({ ...base, ageMonths: 0.5 });
+    const older = recommend({ ...base, ageMonths: 8 });
+    // The TOG choice itself does not change with age...
+    expect(slugs(newborn.sleepAccessories)).toEqual(slugs(older.sleepAccessories));
+    // ...only the sleepwear underneath does. Both "pajamas_light" and
+    // "pajamas" map to the same wardrobe item and differ only in label.
+    expect(newborn.babyClothing[0].slug).toBe("short_sleeve_bodysuit");
+    expect(older.babyClothing[0].label).toMatch(/lightweight pajamas/i);
+    expect(newborn.reason).toMatch(/layer lighter/i);
+  });
+
+  it("the newborn adjustment applies to a swaddled baby too, not just the TOG path", () => {
+    const set = new Set<WardrobeSlug>(["short_sleeve_bodysuit", "pajamas", "swaddle"]);
+    const r = recommend({
+      feelsLikeC: 20,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 21,
+      ageMonths: 0.5,
+      owned: set,
+    });
+    expect(slugs(r.sleepAccessories)).toContain("swaddle");
+    expect(r.babyClothing[0].slug).toBe("short_sleeve_bodysuit");
+  });
+
+  it("stops recommending a swaddle once the age-based cutoff is passed, even with one owned", () => {
+    const set = new Set<WardrobeSlug>([
+      "long_sleeve_bodysuit",
+      "pajamas",
+      "swaddle",
+      "sleep_sack_10",
+    ]);
+    const base = {
+      feelsLikeC: 20,
+      tempPref: 3 as const,
+      situation: "home" as const,
+      homeActivity: "sleeping" as const,
+      roomTempC: 21,
+      owned: set,
+    };
+    expect(slugs(recommend({ ...base, ageMonths: 2 }).sleepAccessories)).toContain("swaddle");
+    expect(slugs(recommend({ ...base, ageMonths: 3.5 }).sleepAccessories)).not.toContain("swaddle");
+  });
+
+  it("warns to stop swaddling on rolling whenever a swaddle is actually recommended", () => {
+    const set = new Set<WardrobeSlug>(["long_sleeve_bodysuit", "pajamas", "swaddle"]);
+    const r = recommend({
+      feelsLikeC: 20,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 21,
+      ageMonths: 2,
+      owned: set,
+    });
+    expect(r.safetyAdvice.join(" ")).toMatch(/rolling/i);
+  });
+
+  it("flags the highest-risk overheating age (under 6 months) at an otherwise unremarkable room temperature", () => {
+    const r = recommend({
+      feelsLikeC: 20,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 21,
+      ageMonths: 5,
+      owned: owned(),
+    });
+    expect(r.safetyAdvice.join(" ")).toMatch(/6 months/i);
+  });
+
+  it("does not flag the under-6-months overheating note for an older baby", () => {
+    const r = recommend({
+      feelsLikeC: 20,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 21,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.safetyAdvice.join(" ")).not.toMatch(/6 months/i);
+  });
+
+  it("does not duplicate the overheating check when the room is already very hot", () => {
+    const r = recommend({
+      feelsLikeC: 28,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 28,
+      ageMonths: 3,
+      owned: owned(),
+    });
+    const neckChestMentions = r.safetyAdvice.filter((s) => /neck or chest/i.test(s));
+    expect(neckChestMentions.length).toBe(1);
+  });
+
   it("long 90-min walk at 24°C → adds a heat safety note, no mid layer", () => {
     const r = recommend({
       feelsLikeC: 24,
