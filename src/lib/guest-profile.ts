@@ -6,6 +6,33 @@ export const GUEST_STORAGE_KEY = "layerly:guest";
 export type GuestAgeBand = "newborn" | "1-3m" | "3-6m" | "6-12m" | "1y+";
 export type LocalOnboardingStep = "baby" | "location" | "wardrobe" | "complete";
 
+/**
+ * A comfort rating tapped before the parent has an account. `details` keeps the
+ * weather and recommendation the rating referred to, so the rating can be moved
+ * into the saved profile — and keep influencing advice — once they sign up.
+ */
+export type GuestFeedbackEntry = {
+  rating: "cold" | "comfortable" | "warm";
+  createdAt: string;
+  details?: {
+    situation: string;
+    home_activity: string | null;
+    transport_mode: string | null;
+    duration_min: number | null;
+    room_temp_c: number | null;
+    temp_c: number | null;
+    feels_like_c: number | null;
+    weather_condition: string | null;
+    uv_index: number | null;
+    wind_kph: number | null;
+    baby_age_months: number | null;
+    temperature_pref: number | null;
+    recommendation: unknown;
+    recommended_clothing: unknown;
+    recommended_transport_extras: unknown;
+  };
+};
+
 export type GuestProfile = {
   /** Only the quick web trial picks an age band; the app asks for a real date. */
   ageBand?: GuestAgeBand;
@@ -20,10 +47,7 @@ export type GuestProfile = {
   longitude: number | null;
   locationLabel: string | null;
   wardrobe: WardrobeSlug[];
-  feedback: Array<{
-    rating: "cold" | "comfortable" | "warm";
-    createdAt: string;
-  }>;
+  feedback: GuestFeedbackEntry[];
   createdAt: string;
 };
 
