@@ -54,6 +54,7 @@ export type FunnelReport = {
   iosWardrobeModes: BreakdownRow[];
   iosAuthPaths: AuthPathRow[];
   iosEventCounts: BreakdownRow[];
+  iosDropoff: BreakdownRow[];
   eventCounts: BreakdownRow[];
 };
 
