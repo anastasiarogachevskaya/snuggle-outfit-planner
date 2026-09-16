@@ -5,6 +5,7 @@ import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { SiteFooter } from "@/components/site-footer";
 import { logEvent } from "@/lib/analytics";
 import { isIOSApp } from "@/lib/platform";
+import { readGuestProfile } from "@/lib/guest-profile";
 
 const TITLE = "Layerly – Baby Outfit Recommendations Based on Weather";
 const DESCRIPTION =
@@ -35,8 +36,13 @@ function Landing() {
   const [iosApp, setIOSApp] = useState(false);
 
   useEffect(() => {
-    setIOSApp(isIOSApp());
-  }, []);
+    const ios = isIOSApp();
+    setIOSApp(ios);
+    // On the phone the on-device profile is the account: once setup has been
+    // started, relaunching the app must land straight back in it instead of
+    // showing the marketing page and a "Get Started" tap.
+    if (ios && readGuestProfile()) navigate({ to: "/try", replace: true });
+  }, [navigate]);
 
   useEffect(() => {
     logEvent("landing_viewed");
