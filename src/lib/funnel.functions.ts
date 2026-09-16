@@ -311,6 +311,11 @@ export const getFunnelReport = createServerFn({ method: "GET" })
           detail: `${iosWardrobeSaved} of ${iosStarted} sessions that started setup`,
         },
         {
+          label: "Reached Today",
+          value: percent(iosReachedToday, iosStarted),
+          detail: `${iosReachedToday} of ${iosStarted} reached Today · ${iosSetupStalled} stopped during setup`,
+        },
+        {
           label: "Saw a recommendation",
           value: percent(iosRecommendation, iosSessions),
           detail: `${iosRecommendation} of ${iosSessions} app sessions`,
@@ -318,7 +323,7 @@ export const getFunnelReport = createServerFn({ method: "GET" })
         {
           label: "Created an account",
           value: iosAccounts,
-          detail: `${iosAccountTaps} tapped “Create account”`,
+          detail: `${iosAccountTaps} of ${iosReachedToday} on Today tapped “Create account”`,
         },
       ],
       iosFunnel: IOS_STEPS.map(([key, label]) => ({
