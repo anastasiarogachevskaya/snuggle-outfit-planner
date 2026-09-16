@@ -102,6 +102,7 @@ function InsightsPage() {
               </div>
             </section>
             <Funnel title="iPhone app journey" steps={q.data.iosFunnel} />
+            <Breakdown title="Where iPhone sessions stopped" rows={q.data.iosDropoff} />
             <AuthPaths title="iPhone sign-in paths" rows={q.data.iosAuthPaths} />
             <Breakdown title="iPhone wardrobe setup choice" rows={q.data.iosWardrobeModes} />
             <Breakdown title="iPhone app events" rows={q.data.iosEventCounts} />
