@@ -49,6 +49,11 @@ export type FunnelReport = {
   authFailureReasons: BreakdownRow[];
   wardrobeModes: BreakdownRow[];
   platforms: BreakdownRow[];
+  iosMetrics: Metric[];
+  iosFunnel: FunnelStep[];
+  iosWardrobeModes: BreakdownRow[];
+  iosAuthPaths: AuthPathRow[];
+  iosEventCounts: BreakdownRow[];
   eventCounts: BreakdownRow[];
 };
 
