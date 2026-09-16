@@ -265,6 +265,36 @@ export const getFunnelReport = createServerFn({ method: "GET" })
           .map((e) => prop(e, "mode") ?? "unknown"),
       ),
       platforms: tally(events.map((e) => e.platform)),
+      iosMetrics: [
+        { label: "App sessions", value: iosSessions, detail: `${iosEvents.length} interactions in the app` },
+        {
+          label: "Setup completion",
+          value: percent(iosWardrobeSaved, iosStarted),
+          detail: `${iosWardrobeSaved} of ${iosStarted} sessions that started setup`,
+        },
+        {
+          label: "Saw a recommendation",
+          value: percent(iosRecommendation, iosSessions),
+          detail: `${iosRecommendation} of ${iosSessions} app sessions`,
+        },
+        {
+          label: "Created an account",
+          value: iosAccounts,
+          detail: `${iosAccountTaps} tapped “Create account”`,
+        },
+      ],
+      iosFunnel: IOS_STEPS.map(([key, label]) => ({
+        key,
+        label,
+        sessions: countSessions(iosEvents, key),
+      })),
+      iosWardrobeModes: tally(
+        iosEvents
+          .filter((e) => e.name === "wardrobe_mode_chosen")
+          .map((e) => prop(e, "mode") ?? "unknown"),
+      ),
+      iosAuthPaths: buildAuthPaths(iosEvents),
+      iosEventCounts: tally(iosEvents.map((e) => e.name)),
       eventCounts: tally(events.map((e) => e.name)),
     };
   });
