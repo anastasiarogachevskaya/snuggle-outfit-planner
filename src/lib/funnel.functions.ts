@@ -99,6 +99,23 @@ const FULL_JOURNEY_STEPS: Array<[string, string]> = [
   ["today_feedback_submitted", "Rated an outfit"],
 ];
 
+/**
+ * The iPhone app sets up a baby on the device before any account exists, so its
+ * path runs through the guest screens rather than the sign-up ones.
+ */
+const IOS_STEPS: Array<[string, string]> = [
+  ["landing_viewed", "Opened the app"],
+  ["landing_try_clicked", "Started setup"],
+  ["try_age_selected", "Entered baby details"],
+  ["try_location_set", "Set location"],
+  ["wardrobe_chooser_viewed", "Reached wardrobe setup"],
+  ["wardrobe_saved", "Saved a wardrobe"],
+  ["try_recommendation_viewed", "Saw a recommendation"],
+  ["try_feedback_submitted", "Rated an outfit"],
+  ["try_create_account_clicked", "Tapped “Create account”"],
+  ["auth_succeeded", "Created an account"],
+];
+
 function countSessions(rows: EventRow[], name: string): number {
   const seen = new Set<string>();
   let anonymous = 0;
