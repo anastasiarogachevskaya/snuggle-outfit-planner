@@ -203,6 +203,14 @@ export const getFunnelReport = createServerFn({ method: "GET" })
       events.filter((event) => event.user_id).map((event) => event.session_id).filter(Boolean) as string[],
     ).size;
 
+    const iosEvents = events.filter((event) => event.platform === "ios");
+    const iosSessions = new Set(iosEvents.map((e) => e.session_id).filter(Boolean) as string[]).size;
+    const iosStarted = countSessions(iosEvents, "landing_try_clicked");
+    const iosWardrobeSaved = countSessions(iosEvents, "wardrobe_saved");
+    const iosRecommendation = countSessions(iosEvents, "try_recommendation_viewed");
+    const iosAccountTaps = countSessions(iosEvents, "try_create_account_clicked");
+    const iosAccounts = countSessions(iosEvents, "auth_succeeded");
+
     return {
       days: data.days,
       totalEvents: events.length,
