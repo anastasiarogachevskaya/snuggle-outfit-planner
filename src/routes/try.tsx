@@ -10,6 +10,7 @@ import {
   useGuestProfile,
   writeGuestProfile,
   type GuestAgeBand,
+  type GuestFeedbackEntry,
   type GuestProfile,
 } from "@/lib/guest-profile";
 import { WardrobeSetup } from "@/components/wardrobe-setup";
