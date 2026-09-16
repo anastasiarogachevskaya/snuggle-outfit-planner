@@ -49,6 +49,11 @@ export type FunnelReport = {
   authFailureReasons: BreakdownRow[];
   wardrobeModes: BreakdownRow[];
   platforms: BreakdownRow[];
+  iosMetrics: Metric[];
+  iosFunnel: FunnelStep[];
+  iosWardrobeModes: BreakdownRow[];
+  iosAuthPaths: AuthPathRow[];
+  iosEventCounts: BreakdownRow[];
   eventCounts: BreakdownRow[];
 };
 
@@ -92,6 +97,23 @@ const FULL_JOURNEY_STEPS: Array<[string, string]> = [
   ["wardrobe_saved", "Saved wardrobe"],
   ["today_viewed", "Opened Today"],
   ["today_feedback_submitted", "Rated an outfit"],
+];
+
+/**
+ * The iPhone app sets up a baby on the device before any account exists, so its
+ * path runs through the guest screens rather than the sign-up ones.
+ */
+const IOS_STEPS: Array<[string, string]> = [
+  ["landing_viewed", "Opened the app"],
+  ["landing_try_clicked", "Started setup"],
+  ["try_age_selected", "Entered baby details"],
+  ["try_location_set", "Set location"],
+  ["wardrobe_chooser_viewed", "Reached wardrobe setup"],
+  ["wardrobe_saved", "Saved a wardrobe"],
+  ["try_recommendation_viewed", "Saw a recommendation"],
+  ["try_feedback_submitted", "Rated an outfit"],
+  ["try_create_account_clicked", "Tapped “Create account”"],
+  ["auth_succeeded", "Created an account"],
 ];
 
 function countSessions(rows: EventRow[], name: string): number {
@@ -181,6 +203,14 @@ export const getFunnelReport = createServerFn({ method: "GET" })
       events.filter((event) => event.user_id).map((event) => event.session_id).filter(Boolean) as string[],
     ).size;
 
+    const iosEvents = events.filter((event) => event.platform === "ios");
+    const iosSessions = new Set(iosEvents.map((e) => e.session_id).filter(Boolean) as string[]).size;
+    const iosStarted = countSessions(iosEvents, "landing_try_clicked");
+    const iosWardrobeSaved = countSessions(iosEvents, "wardrobe_saved");
+    const iosRecommendation = countSessions(iosEvents, "try_recommendation_viewed");
+    const iosAccountTaps = countSessions(iosEvents, "try_create_account_clicked");
+    const iosAccounts = countSessions(iosEvents, "auth_succeeded");
+
     return {
       days: data.days,
       totalEvents: events.length,
@@ -243,6 +273,36 @@ export const getFunnelReport = createServerFn({ method: "GET" })
           .map((e) => prop(e, "mode") ?? "unknown"),
       ),
       platforms: tally(events.map((e) => e.platform)),
+      iosMetrics: [
+        { label: "App sessions", value: iosSessions, detail: `${iosEvents.length} interactions in the app` },
+        {
+          label: "Setup completion",
+          value: percent(iosWardrobeSaved, iosStarted),
+          detail: `${iosWardrobeSaved} of ${iosStarted} sessions that started setup`,
+        },
+        {
+          label: "Saw a recommendation",
+          value: percent(iosRecommendation, iosSessions),
+          detail: `${iosRecommendation} of ${iosSessions} app sessions`,
+        },
+        {
+          label: "Created an account",
+          value: iosAccounts,
+          detail: `${iosAccountTaps} tapped “Create account”`,
+        },
+      ],
+      iosFunnel: IOS_STEPS.map(([key, label]) => ({
+        key,
+        label,
+        sessions: countSessions(iosEvents, key),
+      })),
+      iosWardrobeModes: tally(
+        iosEvents
+          .filter((e) => e.name === "wardrobe_mode_chosen")
+          .map((e) => prop(e, "mode") ?? "unknown"),
+      ),
+      iosAuthPaths: buildAuthPaths(iosEvents),
+      iosEventCounts: tally(iosEvents.map((e) => e.name)),
       eventCounts: tally(events.map((e) => e.name)),
     };
   });

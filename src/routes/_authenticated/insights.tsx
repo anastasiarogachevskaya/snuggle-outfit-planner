@@ -92,6 +92,20 @@ function InsightsPage() {
             <Breakdown title="Why sign-ins failed" rows={q.data.authFailureReasons} />
             <Breakdown title="Wardrobe setup choice" rows={q.data.wardrobeModes} />
             <Breakdown title="Web vs app" rows={q.data.platforms} />
+
+            <section>
+              <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">
+                iPhone app
+              </h2>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                {q.data.iosMetrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}
+              </div>
+            </section>
+            <Funnel title="iPhone app journey" steps={q.data.iosFunnel} />
+            <AuthPaths title="iPhone sign-in paths" rows={q.data.iosAuthPaths} />
+            <Breakdown title="iPhone wardrobe setup choice" rows={q.data.iosWardrobeModes} />
+            <Breakdown title="iPhone app events" rows={q.data.iosEventCounts} />
+
             <Breakdown title="All events" rows={q.data.eventCounts} />
           </div>
         )}
@@ -111,10 +125,10 @@ function MetricCard({ metric }: { metric: Metric }) {
   );
 }
 
-function AuthPaths({ rows }: { rows: AuthPathRow[] }) {
+function AuthPaths({ rows, title = "Sign-in paths" }: { rows: AuthPathRow[]; title?: string }) {
   return (
     <section>
-      <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">Sign-in paths</h2>
+      <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">{title}</h2>
       {rows.length === 0 ? (
         <p className="mt-2 text-sm text-ink/40">Nothing yet.</p>
       ) : (
