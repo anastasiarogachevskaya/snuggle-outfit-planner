@@ -20,10 +20,7 @@ export type GuestProfile = {
   longitude: number | null;
   locationLabel: string | null;
   wardrobe: WardrobeSlug[];
-  feedback: Array<{
-    rating: "cold" | "comfortable" | "warm";
-    createdAt: string;
-  }>;
+  feedback: GuestFeedbackEntry[];
   createdAt: string;
 };
 
