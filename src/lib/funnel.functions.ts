@@ -8,7 +8,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * this account only; everyone else gets a not-found, so the page's existence
  * is not even advertised.
  */
-const OWNER_USER_ID = "ac24b320-61a2-4904-9651-5d6ff5e31e1f";
+const OWNER_EMAIL = "nastasija.r@proton.me";
 
 export type FunnelStep = {
   key: string;
@@ -191,7 +191,10 @@ export const getFunnelReport = createServerFn({ method: "GET" })
   }))
   .handler(async ({ data, context }): Promise<FunnelReport> => {
     // Hide the page entirely from anyone who is not the owner.
-    if (context.userId !== OWNER_USER_ID) throw notFound();
+    const email = (context.claims as { email?: string; email_verified?: boolean } | undefined);
+    const ownerEmail =
+      typeof email?.email === "string" && email.email.toLowerCase() === OWNER_EMAIL;
+    if (!ownerEmail) throw notFound();
 
     // app_events has no read policy for normal roles on purpose, so the
     // report reads it with the privileged client — after the owner check.
