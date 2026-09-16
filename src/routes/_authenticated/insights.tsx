@@ -125,10 +125,10 @@ function MetricCard({ metric }: { metric: Metric }) {
   );
 }
 
-function AuthPaths({ rows }: { rows: AuthPathRow[] }) {
+function AuthPaths({ rows, title = "Sign-in paths" }: { rows: AuthPathRow[]; title?: string }) {
   return (
     <section>
-      <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">Sign-in paths</h2>
+      <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">{title}</h2>
       {rows.length === 0 ? (
         <p className="mt-2 text-sm text-ink/40">Nothing yet.</p>
       ) : (
