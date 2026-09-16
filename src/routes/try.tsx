@@ -297,10 +297,10 @@ function BabyStep({ onDone }: { onDone: (name: string, dob: string) => void }) {
           onDone(name, dob);
         }}
       >
-        <label className="block text-sm font-medium">
-          Name
+        <label className="block">
+          <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">Name</span>
           <input
-            className="input mt-2"
+            className="w-full rounded-xl border border-ink/10 bg-surface px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-primary/60 focus:ring-2 focus:ring-primary/10"
             required
             autoCapitalize="words"
             autoComplete="given-name"
@@ -310,11 +310,11 @@ function BabyStep({ onDone }: { onDone: (name: string, dob: string) => void }) {
             onChange={(e) => setName(e.target.value)}
           />
         </label>
-        <label className="block text-sm font-medium">
-          Date of birth
+        <label className="block">
+          <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">Date of birth</span>
           <input
             type="date"
-            className="input mt-2"
+            className="block min-h-12 w-full appearance-none rounded-xl border border-ink/10 bg-surface px-4 py-3 text-base text-ink outline-none transition-colors focus:border-primary/60 focus:ring-2 focus:ring-primary/10"
             required
             max={today}
             value={dob}
