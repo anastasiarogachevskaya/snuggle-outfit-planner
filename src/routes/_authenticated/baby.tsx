@@ -287,6 +287,18 @@ function BabyPage() {
                 </span>
               }
             />
+            {isOwner && (
+              <NavCard
+                to="/insights"
+                title="Insights"
+                desc="Funnel and sign-in analytics"
+                icon={
+                  <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center text-primary">
+                    <SettingsIcon size={22} />
+                  </span>
+                }
+              />
+            )}
             {/* Apple requires In-App Purchase for any donation reachable from
                 inside the iOS app (guideline 3.1.1), so this stays web-only —
                 Android and browser users keep it, the iOS binary doesn't
