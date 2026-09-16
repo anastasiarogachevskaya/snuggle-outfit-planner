@@ -164,6 +164,26 @@ function buildAuthPaths(events: EventRow[]): AuthPathRow[] {
   return [...paths.values()].sort((a, b) => b.attempts - a.attempts || b.successes - a.successes);
 }
 
+/**
+ * Where each app session stopped: the furthest step of the setup journey it
+ * reached. Sessions that reached the last step count as finished.
+ */
+function lastStepReached(rows: EventRow[], steps: Array<[string, string]>): BreakdownRow[] {
+  const order = new Map(steps.map(([key], i) => [key, i]));
+  const furthest = new Map<string, number>();
+  for (const row of rows) {
+    const index = order.get(row.name);
+    if (index === undefined) continue;
+    const key = row.session_id ?? `anon:${row.created_at}`;
+    furthest.set(key, Math.max(furthest.get(key) ?? -1, index));
+  }
+  const counts = new Array(steps.length).fill(0) as number[];
+  for (const index of furthest.values()) counts[index] += 1;
+  return steps
+    .map(([, label], i) => ({ label, count: counts[i] }))
+    .filter((r) => r.count > 0);
+}
+
 export const getFunnelReport = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { days?: number }) => ({
