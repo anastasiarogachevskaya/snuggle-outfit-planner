@@ -246,13 +246,42 @@ function TryPage() {
         }}
         owned={new Set(localFirst ? profile.wardrobe : GUEST_DEFAULT_WARDROBE)}
         confirmation={confirmation}
-        onFeedback={(rating) => {
+        onFeedback={(rating, ctx) => {
           logEvent("try_feedback_submitted", { rating });
           setConfirmation(rating);
           if (localFirst) {
-            update({
-              feedback: [...profile.feedback, { rating, createdAt: new Date().toISOString() }],
-            });
+            const entry: GuestFeedbackEntry = {
+              rating,
+              createdAt: new Date().toISOString(),
+              // Keep the conditions the rating referred to, so it survives the
+              // move into a real account and keeps shaping recommendations.
+              ...(ctx
+                ? {
+                    details: {
+                      situation: ctx.situation,
+                      home_activity: ctx.situation === "home" ? ctx.homeActivity : null,
+                      transport_mode: ctx.situation === "walk" ? ctx.transportMode : null,
+                      duration_min: ctx.situation === "home" ? null : ctx.duration,
+                      room_temp_c: ctx.situation === "home" ? ctx.roomTemp : null,
+                      temp_c: ctx.weather.tempC,
+                      feels_like_c: ctx.weather.feelsLikeC,
+                      weather_condition: ctx.weather.condition,
+                      uv_index: ctx.weather.uvIndex ?? null,
+                      wind_kph: ctx.weather.windKph,
+                      baby_age_months: ctx.ageMonths,
+                      temperature_pref: profile.temperaturePref,
+                      recommendation: ctx.rec,
+                      recommended_clothing: [
+                        ...ctx.rec.babyClothing,
+                        ...ctx.rec.accessories,
+                        ...ctx.rec.sleepAccessories,
+                      ],
+                      recommended_transport_extras: ctx.rec.transportExtras,
+                    },
+                  }
+                : {}),
+            };
+            update({ feedback: [...profile.feedback, entry] });
           } else {
             setPrompt("feedback");
           }
