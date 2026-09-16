@@ -338,6 +338,7 @@ export const getFunnelReport = createServerFn({ method: "GET" })
       ),
       iosAuthPaths: buildAuthPaths(iosEvents),
       iosEventCounts: tally(iosEvents.map((e) => e.name)),
+      iosDropoff: lastStepReached(iosEvents, IOS_STEPS),
       eventCounts: tally(events.map((e) => e.name)),
     };
   });
