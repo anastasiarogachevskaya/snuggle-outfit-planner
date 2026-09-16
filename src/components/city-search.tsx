@@ -45,7 +45,10 @@ export function CitySearch({
   const [status, setStatus] = useState<"idle" | "loading" | "empty" | "error">("idle");
   const [active, setActive] = useState(0);
   const [query, setQuery] = useState(value);
-  const skipNext = useRef(false);
+  // A non-empty initial value is an already-selected saved location, not a
+  // fresh search query. Wait until the parent actually edits it before
+  // looking up suggestions.
+  const skipNext = useRef(value.trim().length > 0);
 
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus();
