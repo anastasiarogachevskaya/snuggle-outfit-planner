@@ -45,10 +45,9 @@ export function CitySearch({
   const [status, setStatus] = useState<"idle" | "loading" | "empty" | "error">("idle");
   const [active, setActive] = useState(0);
   const [query, setQuery] = useState(value);
-  // A non-empty initial value is an already-selected saved location, not a
-  // fresh search query. Wait until the parent actually edits it before
-  // looking up suggestions.
-  const skipNext = useRef(value.trim().length > 0);
+  // Saved/GPS values are selections, not search queries. Suggestions should
+  // only open after the parent types, including under React's double effects.
+  const userEdited = useRef(false);
 
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus();
@@ -59,8 +58,7 @@ export function CitySearch({
   // while a location was in fact set.
   //
   // Only adopt a `value` the parent originated: echoes of our own onChange
-  // must not touch `skipNext`, or the flag stays set and swallows the next
-  // real search.
+  // must not reset the user-edited state and swallow the active search.
   const lastEmitted = useRef(value);
   const emit = (next: string) => {
     lastEmitted.current = next;
@@ -69,13 +67,13 @@ export function CitySearch({
   useEffect(() => {
     if (value === lastEmitted.current) return;
     lastEmitted.current = value;
-    skipNext.current = true;
+    userEdited.current = false;
     setQuery(value);
   }, [value]);
 
   useEffect(() => {
-    if (skipNext.current) {
-      skipNext.current = false;
+    if (!userEdited.current) {
+      setOpen(false);
       return;
     }
     const q = query.trim();
@@ -114,7 +112,7 @@ export function CitySearch({
 
   const pick = (hit: Hit) => {
     const label = cityLabel(hit);
-    skipNext.current = true;
+    userEdited.current = false;
     setQuery(label);
     emit(label);
     setHits([]);
@@ -125,6 +123,7 @@ export function CitySearch({
 
   const retry = () => {
     const q = query;
+    userEdited.current = true;
     setQuery("");
     setTimeout(() => setQuery(q), 0);
   };
@@ -144,6 +143,7 @@ export function CitySearch({
         value={query}
         placeholder={placeholder}
         onChange={(e) => {
+          userEdited.current = true;
           setQuery(e.target.value);
           emit(e.target.value);
         }}
