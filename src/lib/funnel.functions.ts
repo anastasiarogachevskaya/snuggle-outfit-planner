@@ -54,6 +54,7 @@ export type FunnelReport = {
   iosWardrobeModes: BreakdownRow[];
   iosAuthPaths: AuthPathRow[];
   iosEventCounts: BreakdownRow[];
+  iosDropoff: BreakdownRow[];
   eventCounts: BreakdownRow[];
 };
 
@@ -163,6 +164,26 @@ function buildAuthPaths(events: EventRow[]): AuthPathRow[] {
   return [...paths.values()].sort((a, b) => b.attempts - a.attempts || b.successes - a.successes);
 }
 
+/**
+ * Where each app session stopped: the furthest step of the setup journey it
+ * reached. Sessions that reached the last step count as finished.
+ */
+function lastStepReached(rows: EventRow[], steps: Array<[string, string]>): BreakdownRow[] {
+  const order = new Map(steps.map(([key], i) => [key, i]));
+  const furthest = new Map<string, number>();
+  for (const row of rows) {
+    const index = order.get(row.name);
+    if (index === undefined) continue;
+    const key = row.session_id ?? `anon:${row.created_at}`;
+    furthest.set(key, Math.max(furthest.get(key) ?? -1, index));
+  }
+  const counts = new Array(steps.length).fill(0) as number[];
+  for (const index of furthest.values()) counts[index] += 1;
+  return steps
+    .map(([, label], i) => ({ label, count: counts[i] }))
+    .filter((r) => r.count > 0);
+}
+
 export const getFunnelReport = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { days?: number }) => ({
@@ -210,6 +231,15 @@ export const getFunnelReport = createServerFn({ method: "GET" })
     const iosRecommendation = countSessions(iosEvents, "try_recommendation_viewed");
     const iosAccountTaps = countSessions(iosEvents, "try_create_account_clicked");
     const iosAccounts = countSessions(iosEvents, "auth_succeeded");
+    // Reaching Today on iPhone means the local-first setup finished: it is the
+    // first screen where a recommendation appears.
+    const iosReachedToday = new Set(
+      iosEvents
+        .filter((e) => e.name === "try_recommendation_viewed" || e.name === "today_viewed")
+        .map((e) => e.session_id)
+        .filter(Boolean) as string[],
+    ).size;
+    const iosSetupStalled = Math.max(iosStarted - iosReachedToday, 0);
 
     return {
       days: data.days,
@@ -281,6 +311,11 @@ export const getFunnelReport = createServerFn({ method: "GET" })
           detail: `${iosWardrobeSaved} of ${iosStarted} sessions that started setup`,
         },
         {
+          label: "Reached Today",
+          value: percent(iosReachedToday, iosStarted),
+          detail: `${iosReachedToday} of ${iosStarted} reached Today · ${iosSetupStalled} stopped during setup`,
+        },
+        {
           label: "Saw a recommendation",
           value: percent(iosRecommendation, iosSessions),
           detail: `${iosRecommendation} of ${iosSessions} app sessions`,
@@ -288,7 +323,7 @@ export const getFunnelReport = createServerFn({ method: "GET" })
         {
           label: "Created an account",
           value: iosAccounts,
-          detail: `${iosAccountTaps} tapped “Create account”`,
+          detail: `${iosAccountTaps} of ${iosReachedToday} on Today tapped “Create account”`,
         },
       ],
       iosFunnel: IOS_STEPS.map(([key, label]) => ({
@@ -303,6 +338,7 @@ export const getFunnelReport = createServerFn({ method: "GET" })
       ),
       iosAuthPaths: buildAuthPaths(iosEvents),
       iosEventCounts: tally(iosEvents.map((e) => e.name)),
+      iosDropoff: lastStepReached(iosEvents, IOS_STEPS),
       eventCounts: tally(events.map((e) => e.name)),
     };
   });
