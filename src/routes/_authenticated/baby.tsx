@@ -37,9 +37,15 @@ export const Route = createFileRoute("/_authenticated/baby")({
   component: BabyPage,
 });
 
+// Only this account can see the Insights link; the page itself is gated
+// server-side as well, so this is purely about not showing a dead entry.
+const OWNER_USER_ID = "ac24b320-61a2-4904-9651-5d6ff5e31e1f";
+
 function BabyPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { user } = Route.useRouteContext();
+  const isOwner = user?.id === OWNER_USER_ID;
 
   const babyQ = useQuery({
     queryKey: ["baby"],
@@ -287,6 +293,18 @@ function BabyPage() {
                 </span>
               }
             />
+            {isOwner && (
+              <NavCard
+                to="/insights"
+                title="Insights"
+                desc="Funnel and sign-in analytics"
+                icon={
+                  <span className="w-10 h-10 rounded-full bg-primary/15 inline-flex items-center justify-center text-primary">
+                    <SettingsIcon size={22} />
+                  </span>
+                }
+              />
+            )}
             {/* Apple requires In-App Purchase for any donation reachable from
                 inside the iOS app (guideline 3.1.1), so this stays web-only —
                 Android and browser users keep it, the iOS binary doesn't
@@ -335,7 +353,7 @@ function NavCard({
   desc,
   icon,
 }: {
-  to?: "/wardrobe" | "/account";
+  to?: "/wardrobe" | "/account" | "/insights";
   href?: string;
   title: string;
   desc: string;
