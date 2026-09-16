@@ -82,6 +82,21 @@ function TodayPage() {
           .insert(localWardrobe.map((slug) => ({ baby_id: baby.id, slug, owned: true })));
         if (wErr) throw wErr;
       }
+      // Comfort ratings tapped before signing up are part of the profile too —
+      // carry the ones that recorded their conditions into the saved history.
+      const localFeedback = (guest.feedback ?? []).filter((f) => f.details);
+      if (localFeedback.length > 0) {
+        const { error: fErr } = await supabase.from("feedback").insert(
+          localFeedback.map((f) => ({
+            baby_id: baby.id,
+            rating: f.rating,
+            created_at: f.createdAt,
+            activity: f.details!.situation,
+            ...(f.details as any),
+          })),
+        );
+        if (fErr) throw fErr;
+      }
       clearGuestProfile();
       return true;
     },
