@@ -4,12 +4,15 @@ import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 export const GUEST_STORAGE_KEY = "layerly:guest";
 
 export type GuestAgeBand = "newborn" | "1-3m" | "3-6m" | "6-12m" | "1y+";
+export type LocalOnboardingStep = "baby" | "location" | "wardrobe" | "complete";
 
 export type GuestProfile = {
   /** Only the quick web trial picks an age band; the app asks for a real date. */
   ageBand?: GuestAgeBand;
   /** True once the on-device setup (baby, location, wardrobe) has been finished. */
   setupComplete?: boolean;
+  /** Current iPhone setup screen, so interrupted setup resumes in the right place. */
+  onboardingStep?: LocalOnboardingStep;
   dob: string; // ISO date — picked directly, or derived from the age band midpoint
   name: string;
   temperaturePref: number;
@@ -82,6 +85,7 @@ export function createGuestProfile(band: GuestAgeBand): GuestProfile {
 export function createLocalProfile(name: string, dob: string): GuestProfile {
   return {
     setupComplete: false,
+    onboardingStep: "location",
     dob,
     name: name.trim() || "Baby",
     temperaturePref: 3,

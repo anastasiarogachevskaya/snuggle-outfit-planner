@@ -45,6 +45,7 @@ function OnboardingWardrobe() {
       toast.error("Baby profile not found");
       return;
     }
+    const babyId = babyQ.data.id;
     setSaving(true);
     try {
       // Write the whole catalog, not just the ticked items. A guest who
@@ -53,7 +54,7 @@ function OnboardingWardrobe() {
       const selected = new Set<string>(slugs);
       const rows = WARDROBE_STEPS.flatMap((step) =>
         step.items.map((item) => ({
-          baby_id: babyQ.data!.id,
+          baby_id: babyId,
           slug: item.slug,
           owned: selected.has(item.slug),
         })),

@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
+  clearGuestProfile,
   GUEST_AGE_OPTIONS,
   GUEST_DEFAULT_WARDROBE,
   createGuestProfile,
@@ -81,13 +82,16 @@ function TryPage() {
     if (!loaded) return;
     const ios = isIOSApp();
     setLocalFirst(ios);
-    if (!profile) {
-      setStep(ios ? "baby" : "age");
-      return;
+    if (!profile) return setStep(ios ? "baby" : "age");
+    if (ios) {
+      if (profile.setupComplete || profile.onboardingStep === "complete") return setStep("today");
+      if (profile.onboardingStep === "location") return setStep("location");
+      if (profile.onboardingStep === "wardrobe") return setStep("wardrobe-setup");
+      // Profiles saved by an older app release contain an age-band-derived
+      // birthday, not answers supplied by the parent. Start them at Baby.
+      return setStep("baby");
     }
-    if (profile.latitude == null && !(ios && profile.setupComplete)) setStep("location");
-    else if (ios && !profile.setupComplete) setStep("wardrobe-setup");
-    else setStep("today");
+    setStep(profile.latitude == null ? "location" : "today");
   }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -112,7 +116,7 @@ function TryPage() {
 
   if (step === "wardrobe-setup" && profile) {
     const finish = (wardrobe?: WardrobeSlug[]) => {
-      update({ setupComplete: true, ...(wardrobe ? { wardrobe } : {}) });
+      update({ setupComplete: true, onboardingStep: "complete", ...(wardrobe ? { wardrobe } : {}) });
       if (wardrobe) {
         logEvent("wardrobe_saved", { items: wardrobe.length });
         successHaptic();
@@ -162,10 +166,18 @@ function TryPage() {
     const setupPending = localFirst && !profile?.setupComplete;
     return (
       <LocationStep
-        onSkip={setupPending ? () => setStep("wardrobe-setup") : undefined}
+        onSkip={setupPending ? () => {
+          update({ onboardingStep: "wardrobe" });
+          setStep("wardrobe-setup");
+        } : undefined}
         onDone={(lat, lon, label, method) => {
           logEvent("try_location_set", { method });
-          update({ latitude: lat, longitude: lon, locationLabel: label });
+          update({
+            latitude: lat,
+            longitude: lon,
+            locationLabel: label,
+            ...(setupPending ? { onboardingStep: "wardrobe" as const } : {}),
+          });
           setStep(setupPending ? "wardrobe-setup" : "today");
         }}
       />
@@ -185,6 +197,13 @@ function TryPage() {
         onBack={() => setStep("today")}
         onOpenWardrobe={() => setStep("wardrobe")}
         onOpenAccount={() => setStep("account")}
+        onReset={() => {
+          clearGuestProfile();
+          setProfile(null);
+          setConfirmation(null);
+          setStep("baby");
+          toast.success("Local profile reset");
+        }}
       />
     );
   }
@@ -430,12 +449,14 @@ function LocalProfile({
   onBack,
   onOpenWardrobe,
   onOpenAccount,
+  onReset,
 }: {
   profile: GuestProfile;
   onSave: (patch: Partial<GuestProfile>) => void;
   onBack: () => void;
   onOpenWardrobe: () => void;
   onOpenAccount: () => void;
+  onReset: () => void;
 }) {
   const [name, setName] = useState(profile.name);
   const [dob, setDob] = useState(profile.dob);
@@ -443,6 +464,8 @@ function LocalProfile({
   const [locationLabel, setLocationLabel] = useState(profile.locationLabel ?? "");
   const [latitude, setLatitude] = useState(profile.latitude);
   const [longitude, setLongitude] = useState(profile.longitude);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
@@ -458,11 +481,27 @@ function LocalProfile({
         <button type="button" onClick={onBack} className="text-sm text-ink/60">← Today</button>
         <h1 className="mt-6 font-serif text-3xl font-semibold">Baby profile</h1>
         <div className="mt-8 space-y-6">
-          <label className="block text-sm font-medium">Name
-            <input className="input mt-2" required value={name} onChange={(e) => setName(e.target.value)} />
+          <label className="block">
+            <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">Name</span>
+            <input
+              className="w-full rounded-xl border border-ink/10 bg-surface px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-primary/60 focus:ring-2 focus:ring-primary/10"
+              required
+              autoComplete="given-name"
+              autoCapitalize="words"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </label>
-          <label className="block text-sm font-medium">Date of birth
-            <input type="date" className="input mt-2" required value={dob} onChange={(e) => setDob(e.target.value)} />
+          <label className="block">
+            <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">Date of birth</span>
+            <input
+              type="date"
+              className="block min-h-12 w-full appearance-none rounded-xl border border-ink/10 bg-surface px-4 py-3 text-base text-ink outline-none transition-colors focus:border-primary/60 focus:ring-2 focus:ring-primary/10"
+              required
+              max={today}
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
+            />
           </label>
           <label className="block text-sm font-medium">Temperature preference
             <input type="range" min={1} max={5} className="mt-3 w-full accent-primary" value={temperaturePref} onChange={(e) => setTemperaturePref(Number(e.target.value))} />
@@ -503,8 +542,28 @@ function LocalProfile({
             <p className="font-medium">Create an account</p>
             <p className="mt-1 text-xs text-ink/50">Back everything up and use other devices.</p>
           </button>
+          <button
+            type="button"
+            onClick={() => setConfirmReset(true)}
+            className="w-full rounded-2xl border border-destructive/25 bg-surface px-5 py-4 text-left text-destructive"
+          >
+            <p className="font-medium">Reset local profile</p>
+            <p className="mt-1 text-xs text-destructive/70">Erase this device's data and start setup again.</p>
+          </button>
         </div>
       </form>
+      {confirmReset && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/30 px-4 pb-[calc(var(--safe-area-bottom)+1rem)] sm:items-center">
+          <div role="alertdialog" aria-modal="true" aria-labelledby="reset-title" className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl">
+            <h2 id="reset-title" className="font-serif text-2xl font-semibold">Reset local profile?</h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink/60">This permanently erases the baby profile, wardrobe and comfort ratings saved on this iPhone.</p>
+            <div className="mt-6 flex gap-2">
+              <button type="button" onClick={() => setConfirmReset(false)} className="flex-1 rounded-xl border border-ink/10 px-4 py-3 text-sm font-medium">Cancel</button>
+              <button type="button" onClick={onReset} className="flex-1 rounded-xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground">Reset</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
