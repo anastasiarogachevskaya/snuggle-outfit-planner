@@ -489,6 +489,58 @@ describe("recommendation engine", () => {
     expect(slugs(r.accessories)).toContain("warm_hat");
   });
 
+  it("under 2 months and below freezing gets a skip-the-trip safety note", () => {
+    const r = recommend({
+      feelsLikeC: -2,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 1,
+      owned: owned(),
+    });
+    expect(r.safetyAdvice.join(" ")).toMatch(/skip the outdoor trip/i);
+  });
+
+  it("under 2 months in cold (but not freezing) weather gets a duration cap note", () => {
+    const r = recommend({
+      feelsLikeC: 5,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 1,
+      owned: owned(),
+    });
+    expect(r.safetyAdvice.join(" ")).toMatch(/10–15 minutes/i);
+  });
+
+  it("does not add the young-infant cold-exposure note for an older baby", () => {
+    const r = recommend({
+      feelsLikeC: -2,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.safetyAdvice.join(" ")).not.toMatch(/skip the outdoor trip|10–15 minutes/i);
+  });
+
+  it("does not add the young-infant cold-exposure note in mild weather", () => {
+    const r = recommend({
+      feelsLikeC: 15,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      ageMonths: 1,
+      owned: owned(),
+    });
+    expect(r.safetyAdvice.join(" ")).not.toMatch(/skip the outdoor trip|10–15 minutes/i);
+  });
+
   it("a hot sunny day still tells the parent to dress lightly", () => {
     const r = recommend({
       feelsLikeC: 26,

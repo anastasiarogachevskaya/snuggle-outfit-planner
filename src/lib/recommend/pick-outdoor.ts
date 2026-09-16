@@ -318,6 +318,24 @@ function buildSafety(ctx: OutdoorContext, effectiveC: number): string[] {
   }
 
   if (ctx.situation !== "walk") return advice;
+
+  // Under 2 months, a baby generates no body heat of their own outdoors —
+  // they're carried or seated, not moving — so the real age-driven risk in
+  // cold weather is exposure duration, not clothing weight. See
+  // docs/research-outdoor-dressing-by-age.md.
+  const veryYoung = ctx.ageMonths !== null && ctx.ageMonths !== undefined && ctx.ageMonths < 2;
+  if (veryYoung) {
+    if (ctx.feelsLikeC < TEMP.FREEZING) {
+      advice.push(
+        "🥶 Under 2 months and below freezing — skip the outdoor trip if you can, or keep it very brief.",
+      );
+    } else if (ctx.feelsLikeC < TEMP.COOL) {
+      advice.push(
+        "🥶 Under 2 months in cold weather — keep outdoor time to about 10–15 minutes.",
+      );
+    }
+  }
+
   const uv = ctx.uvIndex;
   const sunny = uv !== undefined && uv >= 3;
   const hot = ctx.feelsLikeC >= TEMP.HOT;
