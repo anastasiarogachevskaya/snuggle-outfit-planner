@@ -7,7 +7,15 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * one for exactly one person would be overkill. The report is readable by
  * this account only; everyone else gets a not-found, so the page's existence
  * is not even advertised.
+ *
+ * Both the id and the email must match. An id alone breaks silently if this
+ * account is ever deleted and recreated; an email alone is only as safe as
+ * "this Supabase project always requires email confirmation before issuing a
+ * session" staying true forever, which is a project setting, not something
+ * this code controls. Together, either one drifting fails closed instead of
+ * granting access.
  */
+const OWNER_USER_ID = "ac24b320-61a2-4904-9651-5d6ff5e31e1f";
 const OWNER_EMAIL = "nastasija.r@proton.me";
 
 export type FunnelStep = {
@@ -155,7 +163,8 @@ function buildAuthPaths(events: EventRow[]): AuthPathRow[] {
     if (!event.name.startsWith("auth_")) continue;
     const label = authPathKey(event);
     const row = paths.get(label) ?? { label, attempts: 0, successes: 0, cancelled: 0, failed: 0 };
-    if (event.name === "auth_signin_attempt" || event.name === "auth_signup_attempt") row.attempts += 1;
+    if (event.name === "auth_signin_attempt" || event.name === "auth_signup_attempt")
+      row.attempts += 1;
     if (event.name === "auth_succeeded") row.successes += 1;
     if (event.name === "auth_cancelled") row.cancelled += 1;
     if (event.name === "auth_failed") row.failed += 1;
@@ -179,9 +188,7 @@ function lastStepReached(rows: EventRow[], steps: Array<[string, string]>): Brea
   }
   const counts = new Array(steps.length).fill(0) as number[];
   for (const index of furthest.values()) counts[index] += 1;
-  return steps
-    .map(([, label], i) => ({ label, count: counts[i] }))
-    .filter((r) => r.count > 0);
+  return steps.map(([, label], i) => ({ label, count: counts[i] })).filter((r) => r.count > 0);
 }
 
 export const getFunnelReport = createServerFn({ method: "GET" })
@@ -190,11 +197,15 @@ export const getFunnelReport = createServerFn({ method: "GET" })
     days: Math.min(Math.max(Math.round(input?.days ?? 30), 1), 180),
   }))
   .handler(async ({ data, context }): Promise<FunnelReport> => {
-    // Hide the page entirely from anyone who is not the owner.
-    const email = (context.claims as { email?: string; email_verified?: boolean } | undefined);
-    const ownerEmail =
-      typeof email?.email === "string" && email.email.toLowerCase() === OWNER_EMAIL;
-    if (!ownerEmail) throw notFound();
+    // Hide the page entirely from anyone who is not the owner. This page
+    // reads every user's analytics events, so this must fail closed.
+    const claims = context.claims as { email?: string; email_verified?: boolean } | undefined;
+    const isOwner =
+      context.userId === OWNER_USER_ID &&
+      typeof claims?.email === "string" &&
+      claims.email.toLowerCase() === OWNER_EMAIL &&
+      claims.email_verified === true;
+    if (!isOwner) throw notFound();
 
     // app_events has no read policy for normal roles on purpose, so the
     // report reads it with the privileged client — after the owner check.
@@ -224,11 +235,15 @@ export const getFunnelReport = createServerFn({ method: "GET" })
     const signinSuccessSessions = countSessions(events, "auth_succeeded");
     const todaySessions = countSessions(events, "today_viewed");
     const signedInActiveSessions = new Set(
-      events.filter((event) => event.user_id).map((event) => event.session_id).filter(Boolean) as string[],
+      events
+        .filter((event) => event.user_id)
+        .map((event) => event.session_id)
+        .filter(Boolean) as string[],
     ).size;
 
     const iosEvents = events.filter((event) => event.platform === "ios");
-    const iosSessions = new Set(iosEvents.map((e) => e.session_id).filter(Boolean) as string[]).size;
+    const iosSessions = new Set(iosEvents.map((e) => e.session_id).filter(Boolean) as string[])
+      .size;
     const iosStarted = countSessions(iosEvents, "landing_try_clicked");
     const iosWardrobeSaved = countSessions(iosEvents, "wardrobe_saved");
     const iosRecommendation = countSessions(iosEvents, "try_recommendation_viewed");
@@ -249,7 +264,11 @@ export const getFunnelReport = createServerFn({ method: "GET" })
       totalEvents: events.length,
       totalSessions: sessions.size,
       metrics: [
-        { label: "Landing views", value: landingViews, detail: `${landingSessions} unique sessions` },
+        {
+          label: "Landing views",
+          value: landingViews,
+          detail: `${landingSessions} unique sessions`,
+        },
         {
           label: "Sign-in start rate",
           value: percent(signinStartedSessions, landingSessions),
@@ -307,7 +326,11 @@ export const getFunnelReport = createServerFn({ method: "GET" })
       ),
       platforms: tally(events.map((e) => e.platform)),
       iosMetrics: [
-        { label: "App sessions", value: iosSessions, detail: `${iosEvents.length} interactions in the app` },
+        {
+          label: "App sessions",
+          value: iosSessions,
+          detail: `${iosEvents.length} interactions in the app`,
+        },
         {
           label: "Setup completion",
           value: percent(iosWardrobeSaved, iosStarted),

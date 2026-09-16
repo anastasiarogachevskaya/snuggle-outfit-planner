@@ -38,14 +38,16 @@ export const Route = createFileRoute("/_authenticated/baby")({
 });
 
 // Only this account can see the Insights link; the page itself is gated
-// server-side as well, so this is purely about not showing a dead entry.
+// server-side as well (and independently, on both id and email — see
+// funnel.functions.ts), so this is purely about not showing a dead entry.
+const OWNER_USER_ID = "ac24b320-61a2-4904-9651-5d6ff5e31e1f";
 const OWNER_EMAIL = "nastasija.r@proton.me";
 
 function BabyPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { user } = Route.useRouteContext();
-  const isOwner = user?.email?.toLowerCase() === OWNER_EMAIL;
+  const isOwner = user?.id === OWNER_USER_ID && user?.email?.toLowerCase() === OWNER_EMAIL;
 
   const babyQ = useQuery({
     queryKey: ["baby"],
