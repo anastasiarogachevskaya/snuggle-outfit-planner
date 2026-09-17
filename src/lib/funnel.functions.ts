@@ -199,12 +199,16 @@ export const getFunnelReport = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<FunnelReport> => {
     // Hide the page entirely from anyone who is not the owner. This page
     // reads every user's analytics events, so this must fail closed.
-    const claims = context.claims as { email?: string; email_verified?: boolean } | undefined;
+    //
+    // getClaims() returns the raw JWT payload, which carries no
+    // email_verified field — that only exists on the user record itself
+    // (getUser()'s email_confirmed_at). Checking the wrong field made this
+    // fail closed for literally everyone, including the owner.
+    const { data: userData } = await context.supabase.auth.getUser();
     const isOwner =
       context.userId === OWNER_USER_ID &&
-      typeof claims?.email === "string" &&
-      claims.email.toLowerCase() === OWNER_EMAIL &&
-      claims.email_verified === true;
+      userData.user?.email?.toLowerCase() === OWNER_EMAIL &&
+      userData.user?.email_confirmed_at != null;
     if (!isOwner) throw notFound();
 
     // app_events has no read policy for normal roles on purpose, so the
