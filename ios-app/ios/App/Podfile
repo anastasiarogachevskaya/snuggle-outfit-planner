@@ -30,4 +30,16 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+  # Capacitor's own helper only raises a pod's deployment target up to 14.0,
+  # which current Xcode's Simulator SDK no longer ships (15.0+ only), so
+  # several third-party pods (Google/Firebase-adjacent ones) fail to build
+  # even though this Podfile already declares platform 15.0. Enforce that
+  # floor directly on every pod target instead.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
+  end
 end
