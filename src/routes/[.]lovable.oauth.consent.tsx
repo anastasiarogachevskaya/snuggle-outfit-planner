@@ -3,12 +3,27 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { storeAuthReturnUrl } from "@/lib/auth-redirect";
 
+type OAuthAuthorizationDetails = {
+  redirect_url?: string;
+  redirect_to?: string;
+  client?: { name?: string };
+};
+
+type OAuthActionResult = {
+  redirect_url?: string;
+  redirect_to?: string;
+};
+
 type OAuthApi = {
   getAuthorizationDetails: (
     id: string,
-  ) => Promise<{ data: any; error: { message: string } | null }>;
-  approveAuthorization: (id: string) => Promise<{ data: any; error: { message: string } | null }>;
-  denyAuthorization: (id: string) => Promise<{ data: any; error: { message: string } | null }>;
+  ) => Promise<{ data: OAuthAuthorizationDetails | null; error: { message: string } | null }>;
+  approveAuthorization: (
+    id: string,
+  ) => Promise<{ data: OAuthActionResult | null; error: { message: string } | null }>;
+  denyAuthorization: (
+    id: string,
+  ) => Promise<{ data: OAuthActionResult | null; error: { message: string } | null }>;
 };
 
 const oauthApi = () => (supabase.auth as unknown as { oauth: OAuthApi }).oauth;
@@ -55,7 +70,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 function Consent() {
-  const details = Route.useLoaderData() as any;
+  const details = Route.useLoaderData();
   const { authorization_id } = Route.useSearch();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

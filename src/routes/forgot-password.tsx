@@ -40,8 +40,8 @@ function ForgotPasswordPage() {
       if (error) throw error;
       setSent(true);
       toast.success("Check your email for a reset link");
-    } catch (err: any) {
-      const msg = err?.message ?? "Something went wrong";
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
       setErrorMsg(msg);
       toast.error(msg);
     } finally {

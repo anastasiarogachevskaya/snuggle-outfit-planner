@@ -81,7 +81,7 @@ function WardrobePage() {
       );
       return { previous };
     },
-    onError: (e: any, _vars, context) => {
+    onError: (e: Error, _vars, context) => {
       if (context?.previous) qc.setQueryData(wardrobeKey, context.previous);
       warningHaptic();
       toast.error(e.message ?? "Update failed");

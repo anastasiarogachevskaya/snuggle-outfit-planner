@@ -145,7 +145,7 @@ function BabyPage() {
       toast.success("Saved");
       navigate({ to: result?.isNew ? "/onboarding/wardrobe" : "/today" });
     },
-    onError: (e: any) => {
+    onError: (e: Error) => {
       warningHaptic();
       toast.error(e.message ?? "Save failed");
     },

@@ -68,9 +68,9 @@ function OnboardingWardrobe() {
       successHaptic();
       toast.success("Wardrobe saved");
       navigate({ to: "/today" });
-    } catch (e: any) {
+    } catch (e) {
       warningHaptic();
-      toast.error(e.message ?? "Save failed");
+      toast.error(e instanceof Error ? e.message : "Save failed");
     } finally {
       setSaving(false);
     }

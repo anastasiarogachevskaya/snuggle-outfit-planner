@@ -108,9 +108,9 @@ function AuthPage() {
         return;
       }
       navigate({ to: "/today", replace: true });
-    } catch (err: any) {
+    } catch (err) {
       // Record that it failed and roughly why, never the raw message.
-      const reason = classifyAuthError(err?.message);
+      const reason = classifyAuthError(err instanceof Error ? err.message : undefined);
       logEvent("auth_failed", { method: "email", surface, reason });
       toast.error(authErrorMessage(reason));
     } finally {

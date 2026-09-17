@@ -8,6 +8,11 @@ import { RecoveryEmail } from "@/lib/email-templates/recovery";
 import { EmailChangeEmail } from "@/lib/email-templates/email-change";
 import { ReauthenticationEmail } from "@/lib/email-templates/reauthentication";
 
+// Each template has its own distinct, unrelated props type, so there's no
+// sound shared type here short of a per-template discriminated union — not
+// worth it for an internal preview-only route where SAMPLE_DATA below is the
+// real safety net (a mismatch just renders wrong, it doesn't ship).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   signup: SignupEmail,
   invite: InviteEmail,

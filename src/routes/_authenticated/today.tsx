@@ -2,11 +2,17 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import { successHaptic, warningHaptic } from "@/lib/haptics";
 import { TodayScreen, type FeedbackContext } from "@/components/today-screen";
-import { clearGuestProfile, readGuestProfile, GUEST_DEFAULT_WARDROBE } from "@/lib/guest-profile";
+import {
+  clearGuestProfile,
+  readGuestProfile,
+  GUEST_DEFAULT_WARDROBE,
+  type GuestFeedbackEntry,
+} from "@/lib/guest-profile";
 import { logEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/_authenticated/today")({
@@ -92,7 +98,18 @@ function TodayPage() {
             rating: f.rating,
             created_at: f.createdAt,
             activity: f.details!.situation,
-            ...(f.details as any),
+            // `details`'s three `unknown` fields (opaque local-storage blobs)
+            // are what the DB actually stores as Json — narrow just those,
+            // not the whole object, so the rest keeps its real keys/types for
+            // Supabase's required-column check below.
+            ...(f.details as unknown as Omit<
+              NonNullable<GuestFeedbackEntry["details"]>,
+              "recommendation" | "recommended_clothing" | "recommended_transport_extras"
+            > & {
+              recommendation: Json;
+              recommended_clothing: Json;
+              recommended_transport_extras: Json;
+            }),
           })),
         );
         if (fErr) throw fErr;
@@ -106,7 +123,7 @@ function TodayPage() {
         toast.success("Your trial profile has been saved.");
       }
     },
-    onError: (e: any) => toast.error(e.message ?? "Couldn't save your profile"),
+    onError: (e: Error) => toast.error(e.message ?? "Couldn't save your profile"),
   });
 
   useEffect(() => {
@@ -160,13 +177,16 @@ function TodayPage() {
         wind_kph: ctx.weather.windKph,
         baby_age_months: ctx.ageMonths,
         temperature_pref: babyQ.data.temperature_pref,
-        recommendation: ctx.rec as any,
+        // recommend()'s return type is structurally JSON-safe, but as a
+        // specific interface (not an object literal) TS won't assign it to
+        // the Json union directly.
+        recommendation: ctx.rec as unknown as Json,
         recommended_clothing: [
           ...ctx.rec.babyClothing,
           ...ctx.rec.accessories,
           ...ctx.rec.sleepAccessories,
-        ] as any,
-        recommended_transport_extras: ctx.rec.transportExtras as any,
+        ] as unknown as Json,
+        recommended_transport_extras: ctx.rec.transportExtras as unknown as Json,
         feedback_details: null,
         rating,
       });
@@ -181,7 +201,7 @@ function TodayPage() {
       setConfirmation(vars.rating);
       setTimeout(() => setConfirmation((c) => (c === vars.rating ? null : c)), 4000);
     },
-    onError: (e: any) => {
+    onError: (e: Error) => {
       warningHaptic();
       toast.error(e.message ?? "Couldn't save");
     },

@@ -68,8 +68,8 @@ function AccountPage() {
       await supabase.auth.signOut();
       qc.clear();
       navigate({ to: "/auth" });
-    } catch (e: any) {
-      toast.error(e.message ?? "Sign out failed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Sign out failed");
     } finally {
       setBusy(null);
     }
@@ -122,8 +122,8 @@ function AccountPage() {
       // Revoking in the same tick can cancel the download in some browsers.
       setTimeout(() => URL.revokeObjectURL(url), 10_000);
       toast.success("Export downloaded");
-    } catch (e: any) {
-      toast.error(e.message ?? "Export failed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Export failed");
     } finally {
       setBusy(null);
     }
@@ -139,8 +139,8 @@ function AccountPage() {
       setConfirmReset(false);
       toast.success("Wardrobe cleared");
       navigate({ to: "/onboarding/wardrobe" });
-    } catch (e: any) {
-      toast.error(e.message ?? "Reset failed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Reset failed");
     } finally {
       setBusy(null);
     }
@@ -155,8 +155,8 @@ function AccountPage() {
       qc.invalidateQueries({ queryKey: ["feedback"] });
       setConfirmClearFeedback(false);
       toast.success("Feedback history cleared");
-    } catch (e: any) {
-      toast.error(e.message ?? "Clear failed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Clear failed");
     } finally {
       setBusy(null);
     }
