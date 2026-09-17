@@ -132,6 +132,8 @@ export type ActualOutfit = {
   hat: WardrobeSlug | "none";
   socks: WardrobeSlug | "none";
   mittens: boolean;
+  /** Stroller/carrier gear (footmuff, blanket, rain cover…) confirmed in use. */
+  transportExtras: WardrobeSlug[];
 };
 
 export const EMPTY_OUTFIT: ActualOutfit = {
@@ -144,6 +146,7 @@ export const EMPTY_OUTFIT: ActualOutfit = {
   hat: "none",
   socks: "none",
   mittens: false,
+  transportExtras: [],
 };
 
 export function outfitClo(o: ActualOutfit): number {
@@ -164,7 +167,10 @@ export function outfitClo(o: ActualOutfit): number {
 
 /** Reconstructs the slotted shape from what recommend() actually picked. */
 export function idealOutfitFrom(rec: Recommendation): ActualOutfit {
-  const out: ActualOutfit = { ...EMPTY_OUTFIT };
+  const out: ActualOutfit = {
+    ...EMPTY_OUTFIT,
+    transportExtras: rec.transportExtras.map((e) => e.slug),
+  };
   for (const l of rec.babyClothing) {
     if (l.slug === "diaper_only") continue;
     const slug = l.slug as WardrobeSlug;
@@ -238,7 +244,13 @@ function slotAdjustment(
 export function compareOutfits(
   ideal: ActualOutfit,
   actual: ActualOutfit,
-): { verdict: OutfitVerdict; diff: number; adjustments: SlotAdjustment[] } {
+): {
+  verdict: OutfitVerdict;
+  diff: number;
+  adjustments: SlotAdjustment[];
+  /** Transport gear recommend() called for (owned) that isn't marked as in use. */
+  missingTransportExtras: WardrobeSlug[];
+} {
   const { verdict, diff } = verdictFor(outfitClo(actual), outfitClo(ideal));
 
   const adjustments: SlotAdjustment[] = [];
@@ -260,5 +272,9 @@ export function compareOutfits(
   if (ideal.mittens && !actual.mittens) adjustments.push({ slot: "mittens", type: "add" });
   else if (!ideal.mittens && actual.mittens) adjustments.push({ slot: "mittens", type: "remove" });
 
-  return { verdict, diff, adjustments };
+  const missingTransportExtras = ideal.transportExtras.filter(
+    (slug) => !actual.transportExtras.includes(slug),
+  );
+
+  return { verdict, diff, adjustments, missingTransportExtras };
 }

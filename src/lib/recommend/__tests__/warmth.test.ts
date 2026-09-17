@@ -31,6 +31,7 @@ function owned(): Set<WardrobeSlug> {
     "wool_socks",
     "mittens",
     "snow_pants",
+    "footmuff",
   ]);
 }
 
@@ -84,6 +85,20 @@ describe("idealOutfitFrom", () => {
     }
     const bottomSlug = rec.babyClothing.find((l) => l.slot === "bottom")?.slug;
     if (bottomSlug) expect(ideal.bottom).toBe(bottomSlug);
+  });
+
+  it("carries over owned transport extras recommend() calls for (e.g. a footmuff on a cold pram walk)", () => {
+    const rec = recommend({
+      feelsLikeC: -2,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      owned: owned(),
+    })!;
+    expect(rec.transportExtras.some((e) => e.slug === "footmuff")).toBe(true);
+    const ideal = idealOutfitFrom(rec);
+    expect(ideal.transportExtras).toContain("footmuff");
   });
 });
 
@@ -160,5 +175,35 @@ describe("compareOutfits", () => {
     const result = compareOutfits(ideal, ideal);
     expect(result.verdict).toBe("just_right");
     expect(result.adjustments).toHaveLength(0);
+    expect(result.missingTransportExtras).toHaveLength(0);
+  });
+
+  it("flags a recommended, owned transport extra (e.g. footmuff) as missing when not marked in use", () => {
+    const rec = recommend({
+      feelsLikeC: -2,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      owned: owned(),
+    })!;
+    const ideal = idealOutfitFrom(rec);
+    const actual: ActualOutfit = { ...ideal, transportExtras: [] };
+    const result = compareOutfits(ideal, actual);
+    expect(result.missingTransportExtras).toContain("footmuff");
+  });
+
+  it("doesn't flag a transport extra once the parent marks it as in use", () => {
+    const rec = recommend({
+      feelsLikeC: -2,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      owned: owned(),
+    })!;
+    const ideal = idealOutfitFrom(rec);
+    const result = compareOutfits(ideal, ideal);
+    expect(result.missingTransportExtras).toHaveLength(0);
   });
 });

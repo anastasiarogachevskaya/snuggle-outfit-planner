@@ -133,7 +133,7 @@ function ToggleRow({
   label: string;
   value: boolean;
   onChange: (v: boolean) => void;
-  adjustment?: SlotAdjustment;
+  adjustment?: Pick<SlotAdjustment, "type">;
 }) {
   const isRemoveTarget = value && adjustment?.type === "remove";
   const isSuggested = !value && adjustment?.type === "add";
@@ -192,6 +192,16 @@ export function CheckOutfitPanel({
     else warningHaptic();
   };
 
+  const toggleTransportExtra = (slug: WardrobeSlug) => {
+    setResult(null);
+    setActual((prev) => ({
+      ...prev,
+      transportExtras: prev.transportExtras.includes(slug)
+        ? prev.transportExtras.filter((s) => s !== slug)
+        : [...prev.transportExtras, slug],
+    }));
+  };
+
   const adjustmentBySlot: Partial<Record<SlotKey, SlotAdjustment>> = {};
   for (const a of result?.adjustments ?? []) adjustmentBySlot[a.slot] = a;
 
@@ -211,12 +221,6 @@ export function CheckOutfitPanel({
         <p className="mb-6 text-ink/60 leading-relaxed">
           Pick what baby's actually wearing right now.
         </p>
-
-        {result && (
-          <div className="mb-6 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-center font-medium">
-            {VERDICT_COPY[result.verdict].emoji} {VERDICT_COPY[result.verdict].title}
-          </div>
-        )}
 
         <div className="space-y-5">
           <SlotRow
@@ -286,7 +290,41 @@ export function CheckOutfitPanel({
               />
             )}
           </div>
+
+          {rec.transportExtras.length > 0 && (
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <p className="text-xs font-medium uppercase tracking-widest text-primary/60">
+                  Transport extras
+                </p>
+                {result && result.missingTransportExtras.length > 0 && (
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-primary">
+                    Add
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {rec.transportExtras.map((e) => (
+                  <ToggleRow
+                    key={e.slug}
+                    label={e.label}
+                    value={actual.transportExtras.includes(e.slug)}
+                    onChange={() => toggleTransportExtra(e.slug)}
+                    adjustment={
+                      result?.missingTransportExtras.includes(e.slug) ? { type: "add" } : undefined
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {result && (
+          <div className="mt-6 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-center font-medium">
+            {VERDICT_COPY[result.verdict].emoji} {VERDICT_COPY[result.verdict].title}
+          </div>
+        )}
 
         <button
           onClick={checkOutfit}
