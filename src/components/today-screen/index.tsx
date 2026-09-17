@@ -226,8 +226,10 @@ export function TodayScreen({
           </button>
         )}
 
-        {/* Nothing to rate when no outfit could be worked out. */}
-        {rec && (
+        {/* Nothing to rate when no outfit could be worked out, and the
+            subjective "how did it feel" question doesn't apply while the
+            parent is busy answering the objective outfit check instead. */}
+        {rec && !checkingOutfit && (
           <FeedbackPanel
             babyName={baby.name}
             feedbackPending={feedbackPending}

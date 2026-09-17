@@ -10,7 +10,7 @@
 // tied to room temperature — see pick-sleep.ts) and transport-only items
 // (stroller, footmuff, blanket, rain cover, carrier, covers) that aren't
 // worn on baby's body.
-import { LABEL_BY_SLUG, type WardrobeSlug } from "../wardrobe-catalog";
+import type { WardrobeSlug } from "../wardrobe-catalog";
 import type { Recommendation } from "../recommend";
 
 export const CLO_BY_SLUG: Partial<Record<WardrobeSlug, number>> = {
@@ -188,55 +188,77 @@ export function idealOutfitFrom(rec: Recommendation): ActualOutfit {
   return out;
 }
 
-export type OutfitAdjustment = { type: "add" | "remove"; label: string };
+/** Every slot a parent can set in the actual-outfit picker. */
+export type SlotKey =
+  | "bodysuit"
+  | "sleepsuit"
+  | "bottom"
+  | "mid"
+  | "outer"
+  | "hat"
+  | "socks"
+  | "snowPants"
+  | "mittens";
+
+/**
+ * Structured, not display text — the UI highlights the actual slot/chip
+ * rather than only listing this as a sentence, so it only carries what's
+ * needed to do that: which slot, which direction, and which slug (if any)
+ * ideally belongs there.
+ */
+export type SlotAdjustment = {
+  slot: SlotKey;
+  type: "add" | "remove";
+  /** The slug recommend() picked for this slot, when adding. */
+  idealSlug?: WardrobeSlug;
+  /** The slug currently selected for this slot, when removing. */
+  actualSlug?: WardrobeSlug;
+};
 
 function slotAdjustment(
+  slot: SlotKey,
   idealVal: WardrobeSlug | "none",
   actualVal: WardrobeSlug | "none",
-  addLabel: string,
-): OutfitAdjustment | null {
+): SlotAdjustment | null {
   const idealHas = idealVal !== "none";
   const actualHas = actualVal !== "none";
-  if (idealHas && !actualHas) {
-    return { type: "add", label: `${addLabel} (e.g. ${LABEL_BY_SLUG[idealVal].toLowerCase()})` };
-  }
-  if (!idealHas && actualHas) {
-    return { type: "remove", label: LABEL_BY_SLUG[actualVal] };
-  }
+  if (idealHas && !actualHas) return { slot, type: "add", idealSlug: idealVal };
+  if (!idealHas && actualHas) return { slot, type: "remove", actualSlug: actualVal };
   return null;
 }
 
 /**
  * Compares an actual outfit against what recommend() picked, slot by slot,
- * so the parent gets concrete guidance ("add a mid layer") rather than just
- * an overall too-warm/too-cold verdict. Two different items filling the
- * same slot (e.g. ideal wants a sweater, actual has a cardigan) isn't
- * flagged — any garment covering that slot is treated as satisfying it.
+ * so the parent gets concrete guidance (which slot to add to, which item to
+ * remove) rather than just an overall too-warm/too-cold verdict. Two
+ * different items filling the same slot (e.g. ideal wants a sweater, actual
+ * has a cardigan) isn't flagged — any garment covering that slot is treated
+ * as satisfying it.
  */
 export function compareOutfits(
   ideal: ActualOutfit,
   actual: ActualOutfit,
-): { verdict: OutfitVerdict; diff: number; adjustments: OutfitAdjustment[] } {
+): { verdict: OutfitVerdict; diff: number; adjustments: SlotAdjustment[] } {
   const { verdict, diff } = verdictFor(outfitClo(actual), outfitClo(ideal));
 
-  const adjustments: OutfitAdjustment[] = [];
-  const push = (a: OutfitAdjustment | null) => {
+  const adjustments: SlotAdjustment[] = [];
+  const push = (a: SlotAdjustment | null) => {
     if (a) adjustments.push(a);
   };
-  push(slotAdjustment(ideal.bodysuit, actual.bodysuit, "a bodysuit"));
-  push(slotAdjustment(ideal.sleepsuit, actual.sleepsuit, "pajamas or a romper"));
-  push(slotAdjustment(ideal.bottom, actual.bottom, "bottoms"));
-  push(slotAdjustment(ideal.mid, actual.mid, "a mid layer"));
-  push(slotAdjustment(ideal.outer, actual.outer, "an outer layer"));
-  push(slotAdjustment(ideal.hat, actual.hat, "a hat"));
-  push(slotAdjustment(ideal.socks, actual.socks, "socks"));
+  push(slotAdjustment("bodysuit", ideal.bodysuit, actual.bodysuit));
+  push(slotAdjustment("sleepsuit", ideal.sleepsuit, actual.sleepsuit));
+  push(slotAdjustment("bottom", ideal.bottom, actual.bottom));
+  push(slotAdjustment("mid", ideal.mid, actual.mid));
+  push(slotAdjustment("outer", ideal.outer, actual.outer));
+  push(slotAdjustment("hat", ideal.hat, actual.hat));
+  push(slotAdjustment("socks", ideal.socks, actual.socks));
 
-  if (ideal.snowPants && !actual.snowPants) adjustments.push({ type: "add", label: "snow pants" });
+  if (ideal.snowPants && !actual.snowPants) adjustments.push({ slot: "snowPants", type: "add" });
   else if (!ideal.snowPants && actual.snowPants)
-    adjustments.push({ type: "remove", label: "snow pants" });
+    adjustments.push({ slot: "snowPants", type: "remove" });
 
-  if (ideal.mittens && !actual.mittens) adjustments.push({ type: "add", label: "mittens" });
-  else if (!ideal.mittens && actual.mittens) adjustments.push({ type: "remove", label: "mittens" });
+  if (ideal.mittens && !actual.mittens) adjustments.push({ slot: "mittens", type: "add" });
+  else if (!ideal.mittens && actual.mittens) adjustments.push({ slot: "mittens", type: "remove" });
 
   return { verdict, diff, adjustments };
 }
