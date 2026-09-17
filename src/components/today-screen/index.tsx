@@ -224,9 +224,7 @@ export function TodayScreen({
               <div className="flex flex-col">
                 <span className="text-base font-semibold text-ink">Layer up</span>
                 <span className="mt-0.5 text-sm text-ink/60">
-                  {weatherQ.data
-                    ? `Build your own outfit for today's ${Math.round(weatherQ.data.feelsLikeC)}°C weather`
-                    : "Build your own outfit and we'll check it's right for today."}
+                  Build your own outfit for today
                 </span>
               </div>
               <div className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
