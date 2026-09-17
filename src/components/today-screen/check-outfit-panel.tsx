@@ -217,7 +217,7 @@ export function CheckOutfitPanel({
         >
           ← Back to recommendation
         </button>
-        <h1 className="mb-1 text-3xl font-serif font-semibold">Check my outfit</h1>
+        <h1 className="mb-1 text-3xl font-serif font-semibold">Check baby's outfit</h1>
         <p className="mb-6 text-ink/60 leading-relaxed">
           Pick what baby's actually wearing right now.
         </p>

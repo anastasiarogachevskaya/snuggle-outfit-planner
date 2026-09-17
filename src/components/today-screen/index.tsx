@@ -219,7 +219,7 @@ export function TodayScreen({
             }}
             className="mb-6 w-full rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4 text-left"
           >
-            <p className="font-medium text-primary">Check my outfit</p>
+            <p className="font-medium text-primary">Check baby's outfit</p>
             <p className="mt-0.5 text-xs text-ink/60">
               Tell us what baby's actually wearing and we'll tell you if it's right for today.
             </p>
