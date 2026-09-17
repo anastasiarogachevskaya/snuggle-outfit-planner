@@ -217,12 +217,37 @@ export function TodayScreen({
               lightHaptic();
               setCheckingOutfit(true);
             }}
-            className="mb-6 w-full rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4 text-left"
+            className="group relative mb-6 w-full text-left"
           >
-            <p className="font-medium text-primary">Check baby's outfit</p>
-            <p className="mt-0.5 text-xs text-ink/60">
-              Tell us what baby's actually wearing and we'll tell you if it's right for today.
-            </p>
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary/10 to-accent/10 blur-md opacity-60" />
+            <div className="relative flex items-center justify-between rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-ink/5 transition-transform duration-150 active:scale-[0.98]">
+              <div className="flex flex-col">
+                <span className="text-base font-semibold text-ink">Check baby's outfit</span>
+                <span className="mt-0.5 text-sm text-ink/60">
+                  {weatherQ.data
+                    ? `Based on the current ${Math.round(weatherQ.data.feelsLikeC)}°C weather`
+                    : "Pick what baby is wearing and we'll check if it's right."}
+                </span>
+              </div>
+              <div className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M8 4 4.5 6 3 11l3 1v7h12v-7l3-1-1.5-5L16 4l-2 1.5a3 3 0 0 1-4 0Z" />
+                  <path d="m9 13 2 2 4-4" />
+                </svg>
+                <span className="absolute -top-1 -right-1 size-3 rounded-full bg-accent ring-2 ring-surface" />
+              </div>
+            </div>
           </button>
         )}
 
