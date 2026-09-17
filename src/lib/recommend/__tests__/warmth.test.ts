@@ -1,11 +1,14 @@
 // @ts-expect-error bun:test is provided by the bun test runner
 import { describe, it, expect } from "bun:test";
 import {
-  outfitWarmth,
-  recommendedWarmth,
+  outfitClo,
+  idealOutfitFrom,
+  compareOutfits,
   verdictFor,
   VERDICT_TOLERANCE,
   CLO_BY_SLUG,
+  EMPTY_OUTFIT,
+  type ActualOutfit,
 } from "../warmth";
 import { recommend } from "../../recommend";
 import type { WardrobeSlug } from "../../wardrobe-catalog";
@@ -15,6 +18,7 @@ function owned(): Set<WardrobeSlug> {
     "sleeveless_bodysuit",
     "short_sleeve_bodysuit",
     "long_sleeve_bodysuit",
+    "pajamas",
     "pants",
     "leggings",
     "shorts",
@@ -26,27 +30,43 @@ function owned(): Set<WardrobeSlug> {
     "cotton_socks",
     "wool_socks",
     "mittens",
+    "snow_pants",
   ]);
 }
 
-describe("outfitWarmth", () => {
-  it("sums the clo values of the given slugs", () => {
-    expect(outfitWarmth(["short_sleeve_bodysuit", "pants"])).toBeCloseTo(
-      CLO_BY_SLUG.short_sleeve_bodysuit! + CLO_BY_SLUG.pants!,
+describe("outfitClo", () => {
+  it("sums the clo values of every filled slot", () => {
+    const outfit: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      bodysuit: "short_sleeve_bodysuit",
+      bottom: "pants",
+    };
+    expect(outfitClo(outfit)).toBeCloseTo(CLO_BY_SLUG.short_sleeve_bodysuit! + CLO_BY_SLUG.pants!);
+  });
+
+  it("counts a bodysuit worn under a sleepsuit as two slots, not a conflict", () => {
+    const outfit: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      bodysuit: "short_sleeve_bodysuit",
+      sleepsuit: "pajamas",
+    };
+    expect(outfitClo(outfit)).toBeCloseTo(
+      CLO_BY_SLUG.short_sleeve_bodysuit! + CLO_BY_SLUG.pajamas!,
     );
   });
 
-  it("treats an unlisted slug (e.g. a transport-only item) as zero warmth", () => {
-    expect(outfitWarmth(["stroller"])).toBe(0);
+  it("adds snow pants and mittens as independent add-ons", () => {
+    const outfit: ActualOutfit = { ...EMPTY_OUTFIT, snowPants: true, mittens: true };
+    expect(outfitClo(outfit)).toBeCloseTo(CLO_BY_SLUG.snow_pants! + CLO_BY_SLUG.mittens!);
   });
 
-  it("returns 0 for no items", () => {
-    expect(outfitWarmth([])).toBe(0);
+  it("is 0 for a fully empty outfit", () => {
+    expect(outfitClo(EMPTY_OUTFIT)).toBe(0);
   });
 });
 
-describe("recommendedWarmth", () => {
-  it("sums clothing and accessories but ignores diaper_only", () => {
+describe("idealOutfitFrom", () => {
+  it("reconstructs the slotted shape from what recommend() picked", () => {
     const rec = recommend({
       feelsLikeC: 21,
       tempPref: 3,
@@ -55,18 +75,21 @@ describe("recommendedWarmth", () => {
       durationMin: 30,
       owned: owned(),
     })!;
-    const expected = [...rec.babyClothing, ...rec.accessories]
-      .filter((l) => l.slug !== "diaper_only")
-      .reduce((sum, l) => sum + (CLO_BY_SLUG[l.slug as WardrobeSlug] ?? 0), 0);
-    expect(recommendedWarmth(rec)).toBeCloseTo(expected);
+    const ideal = idealOutfitFrom(rec);
+    // Whatever recommend() picked for base/bottom should show up as the
+    // matching slot rather than being dropped.
+    const baseSlug = rec.babyClothing.find((l) => l.slot === "base")?.slug;
+    if (baseSlug && baseSlug !== "diaper_only") {
+      expect([ideal.bodysuit, ideal.sleepsuit]).toContain(baseSlug);
+    }
+    const bottomSlug = rec.babyClothing.find((l) => l.slot === "bottom")?.slug;
+    if (bottomSlug) expect(ideal.bottom).toBe(bottomSlug);
   });
 });
 
 describe("verdictFor", () => {
   it("calls it just right within the tolerance band", () => {
     expect(verdictFor(1.0, 1.0).verdict).toBe("just_right");
-    // Just inside the band, not exactly on the boundary — floating-point
-    // rounding at the exact tolerance value isn't what this test is about.
     expect(verdictFor(1.0 + VERDICT_TOLERANCE - 0.01, 1.0).verdict).toBe("just_right");
     expect(verdictFor(1.0 - VERDICT_TOLERANCE + 0.01, 1.0).verdict).toBe("just_right");
   });
@@ -84,8 +107,8 @@ describe("verdictFor", () => {
   });
 });
 
-describe("check my outfit, end to end", () => {
-  it("a warm walk outfit gets flagged as too warm for a hot day", () => {
+describe("compareOutfits", () => {
+  it("flags a warm bundled-up outfit as too warm on a hot day, and says what to remove", () => {
     const rec = recommend({
       feelsLikeC: 26,
       tempPref: 3,
@@ -94,13 +117,18 @@ describe("check my outfit, end to end", () => {
       durationMin: 30,
       owned: owned(),
     })!;
-    // Bundled up for cold weather on a hot day.
-    const actual = new Set<WardrobeSlug>(["long_sleeve_bodysuit", "pants", "winter_overall"]);
-    const result = verdictFor(outfitWarmth(actual), recommendedWarmth(rec));
+    const actual: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      bodysuit: "long_sleeve_bodysuit",
+      bottom: "pants",
+      outer: "winter_overall",
+    };
+    const result = compareOutfits(idealOutfitFrom(rec), actual);
     expect(result.verdict).toBe("too_warm");
+    expect(result.adjustments.some((a) => a.type === "remove")).toBe(true);
   });
 
-  it("a bare outfit gets flagged as too cold for a freezing day", () => {
+  it("flags a bare outfit as too cold on a freezing day, and says what to add", () => {
     const rec = recommend({
       feelsLikeC: -5,
       tempPref: 3,
@@ -109,8 +137,28 @@ describe("check my outfit, end to end", () => {
       durationMin: 30,
       owned: owned(),
     })!;
-    const actual = new Set<WardrobeSlug>(["short_sleeve_bodysuit", "shorts"]);
-    const result = verdictFor(outfitWarmth(actual), recommendedWarmth(rec));
+    const actual: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      bodysuit: "short_sleeve_bodysuit",
+      bottom: "shorts",
+    };
+    const result = compareOutfits(idealOutfitFrom(rec), actual);
     expect(result.verdict).toBe("too_cold");
+    expect(result.adjustments.some((a) => a.type === "add")).toBe(true);
+  });
+
+  it("doesn't flag anything when the actual outfit matches recommend()'s own pick", () => {
+    const rec = recommend({
+      feelsLikeC: 21,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      owned: owned(),
+    })!;
+    const ideal = idealOutfitFrom(rec);
+    const result = compareOutfits(ideal, ideal);
+    expect(result.verdict).toBe("just_right");
+    expect(result.adjustments).toHaveLength(0);
   });
 });

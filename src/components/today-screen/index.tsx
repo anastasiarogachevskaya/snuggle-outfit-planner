@@ -10,7 +10,7 @@ import { WeatherSummary } from "./weather-summary";
 import { ActivityPicker } from "./activity-picker";
 import { OutfitResult } from "./outfit-result";
 import { FeedbackPanel } from "./feedback-panel";
-import { CheckOutfitSheet } from "./check-outfit-sheet";
+import { CheckOutfitPanel } from "./check-outfit-panel";
 
 /** Fires a selection haptic only when the value actually changes. */
 function change<T>(current: T, next: T, set: (v: T) => void) {
@@ -97,6 +97,11 @@ export function TodayScreen({
   const [duration, setDuration] = useState<30 | 60 | 90>(30);
   const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
   const [checkingOutfit, setCheckingOutfit] = useState(false);
+  // The warmth model doesn't apply to sleep, so drop out of the checker if
+  // the parent switches activity while it's open.
+  useEffect(() => {
+    if (situation === "home" && homeActivity === "sleeping") setCheckingOutfit(false);
+  }, [situation, homeActivity]);
 
   const isRaining = weatherQ.data ? isRainingCode(weatherQ.data.code) : false;
 
@@ -197,11 +202,16 @@ export function TodayScreen({
           onRoomTempChange={setRoomTemp}
         />
 
-        {rec && <OutfitResult rec={rec} owned={owned} onOpenWardrobe={onOpenWardrobe} />}
-
         {/* The warmth-comparison model is clo-based and doesn't apply to
-            TOG-rated sleep sacks, so this only makes sense while awake. */}
-        {rec && !(situation === "home" && homeActivity === "sleeping") && (
+            TOG-rated sleep sacks, so this replaces the recommendation card
+            only while awake — during sleep there's nothing to check. */}
+        {rec && checkingOutfit ? (
+          <CheckOutfitPanel rec={rec} owned={owned} onBack={() => setCheckingOutfit(false)} />
+        ) : (
+          rec && <OutfitResult rec={rec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
+        )}
+
+        {rec && !checkingOutfit && !(situation === "home" && homeActivity === "sleeping") && (
           <button
             onClick={() => {
               lightHaptic();
@@ -240,10 +250,6 @@ export function TodayScreen({
 
         <SiteFooter className="mt-10" />
       </div>
-
-      {checkingOutfit && rec && (
-        <CheckOutfitSheet rec={rec} owned={owned} onClose={() => setCheckingOutfit(false)} />
-      )}
     </div>
   );
 }
