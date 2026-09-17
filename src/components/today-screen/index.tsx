@@ -222,7 +222,7 @@ export function TodayScreen({
             <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary/10 to-accent/10 blur-md opacity-60" />
             <div className="relative flex items-center justify-between rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-ink/5 transition-transform duration-150 active:scale-[0.98]">
               <div className="flex flex-col">
-                <span className="text-base font-semibold text-ink">Check baby's outfit</span>
+                <span className="text-base font-semibold text-ink">Layer up</span>
                 <span className="mt-0.5 text-sm text-ink/60">
                   {weatherQ.data
                     ? `Based on the current ${Math.round(weatherQ.data.feelsLikeC)}°C weather`
