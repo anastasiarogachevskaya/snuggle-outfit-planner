@@ -5,6 +5,12 @@ on:
     branches: ["**"]
   pull_request:
 
+# A push to a branch with an open PR fires both events for the same commit;
+# cancel the older, now-pointless run instead of burning double the minutes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -15,8 +21,18 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache bun install cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
 
       # A service-role key would grant full read/write over every account, so
       # catch one before it is ever pushed. (.env is committed on purpose, but
@@ -45,8 +61,22 @@ jobs:
       - name: Capacitor version drift
         run: bun run check:capacitor
 
+      - name: Get resolved Playwright version
+        id: playwright-version
+        run: echo "version=$(grep -m1 -oE '"playwright": \[\s*"playwright@[0-9.]+' bun.lock | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      # System deps (--with-deps) are what's actually slow here, not the
+      # browser download, so only skip them — not the whole install — on a
+      # cache hit; the browser binaries themselves are cheap to re-verify.
       - name: Install Playwright browsers
-        run: bunx playwright install --with-deps chromium
+        run: bunx playwright install ${{ steps.playwright-cache.outputs.cache-hit == 'true' && 'chromium' || '--with-deps chromium' }}
 
       - name: End-to-end tests (iOS webview + desktop)
         run: bun run test:e2e

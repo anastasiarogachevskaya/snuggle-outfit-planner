@@ -117,7 +117,11 @@ function TryPage() {
 
   if (step === "wardrobe-setup" && profile) {
     const finish = (wardrobe?: WardrobeSlug[]) => {
-      update({ setupComplete: true, onboardingStep: "complete", ...(wardrobe ? { wardrobe } : {}) });
+      update({
+        setupComplete: true,
+        onboardingStep: "complete",
+        ...(wardrobe ? { wardrobe } : {}),
+      });
       if (wardrobe) {
         logEvent("wardrobe_saved", { items: wardrobe.length });
         successHaptic();
@@ -167,10 +171,14 @@ function TryPage() {
     const setupPending = localFirst && !profile?.setupComplete;
     return (
       <LocationStep
-        onSkip={setupPending ? () => {
-          update({ onboardingStep: "wardrobe" });
-          setStep("wardrobe-setup");
-        } : undefined}
+        onSkip={
+          setupPending
+            ? () => {
+                update({ onboardingStep: "wardrobe" });
+                setStep("wardrobe-setup");
+              }
+            : undefined
+        }
         onDone={(lat, lon, label, method) => {
           logEvent("try_location_set", { method });
           update({
@@ -231,7 +239,6 @@ function TryPage() {
     );
   }
 
-
   return (
     <>
       <TodayScreen
@@ -289,11 +296,13 @@ function TryPage() {
         }}
         onOpenProfile={() => {
           lightHaptic();
-          localFirst ? setStep("profile") : setPrompt("profile");
+          if (localFirst) setStep("profile");
+          else setPrompt("profile");
         }}
         onOpenWardrobe={() => {
           lightHaptic();
-          localFirst ? setStep("wardrobe") : setPrompt("wardrobe");
+          if (localFirst) setStep("wardrobe");
+          else setPrompt("wardrobe");
         }}
         secondaryAction={{
           label: "Create account",
@@ -328,7 +337,9 @@ function BabyStep({ onDone }: { onDone: (name: string, dob: string) => void }) {
         }}
       >
         <label className="block">
-          <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">Name</span>
+          <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">
+            Name
+          </span>
           <input
             className="w-full rounded-xl border border-ink/10 bg-surface px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-primary/60 focus:ring-2 focus:ring-primary/10"
             required
@@ -341,7 +352,9 @@ function BabyStep({ onDone }: { onDone: (name: string, dob: string) => void }) {
           />
         </label>
         <label className="block">
-          <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">Date of birth</span>
+          <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">
+            Date of birth
+          </span>
           <input
             type="date"
             className="block min-h-12 w-full appearance-none rounded-xl border border-ink/10 bg-surface px-4 py-3 text-base text-ink outline-none transition-colors focus:border-primary/60 focus:ring-2 focus:ring-primary/10"
@@ -404,7 +417,10 @@ function LocationStep({
   const [failure, setFailure] = useState<LocationFailureStatus | null>(null);
   const gpsFailed = failure !== null;
 
-  useLocationPermissionRecovery(gpsFailed, useCallback(() => setFailure(null), []));
+  useLocationPermissionRecovery(
+    gpsFailed,
+    useCallback(() => setFailure(null), []),
+  );
 
   const useGps = async () => {
     lightHaptic();
@@ -448,9 +464,7 @@ function LocationStep({
               Open Settings
             </button>
           )}
-          <p className="mt-2 text-xs text-ink/50">
-            No problem — search for your city instead.
-          </p>
+          <p className="mt-2 text-xs text-ink/50">No problem — search for your city instead.</p>
         </div>
       )}
 
@@ -466,9 +480,7 @@ function LocationStep({
           Skip for now
         </button>
       )}
-      <p className="mt-6 text-center text-xs text-ink/40">
-        Not sure? You can change this later.
-      </p>
+      <p className="mt-6 text-center text-xs text-ink/40">Not sure? You can change this later.</p>
     </Shell>
   );
 }
@@ -508,11 +520,15 @@ function LocalProfile({
           toast.success("Saved on this device");
         }}
       >
-        <button type="button" onClick={onBack} className="text-sm text-ink/60">← Today</button>
+        <button type="button" onClick={onBack} className="text-sm text-ink/60">
+          ← Today
+        </button>
         <h1 className="mt-6 font-serif text-3xl font-semibold">Baby profile</h1>
         <div className="mt-8 space-y-6">
           <label className="block">
-            <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">Name</span>
+            <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">
+              Name
+            </span>
             <input
               className="w-full rounded-xl border border-ink/10 bg-surface px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-primary/60 focus:ring-2 focus:ring-primary/10"
               required
@@ -523,7 +539,9 @@ function LocalProfile({
             />
           </label>
           <label className="block">
-            <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">Date of birth</span>
+            <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-primary/70">
+              Date of birth
+            </span>
             <input
               type="date"
               className="block min-h-12 w-full appearance-none rounded-xl border border-ink/10 bg-surface px-4 py-3 text-base text-ink outline-none transition-colors focus:border-primary/60 focus:ring-2 focus:ring-primary/10"
@@ -533,9 +551,21 @@ function LocalProfile({
               onChange={(e) => setDob(e.target.value)}
             />
           </label>
-          <label className="block text-sm font-medium">Temperature preference
-            <input type="range" min={1} max={5} className="mt-3 w-full accent-primary" value={temperaturePref} onChange={(e) => setTemperaturePref(Number(e.target.value))} />
-            <span className="mt-1 flex justify-between text-xs font-normal text-ink/40"><span>Runs warm</span><span>Average</span><span>Runs cold</span></span>
+          <label className="block text-sm font-medium">
+            Temperature preference
+            <input
+              type="range"
+              min={1}
+              max={5}
+              className="mt-3 w-full accent-primary"
+              value={temperaturePref}
+              onChange={(e) => setTemperaturePref(Number(e.target.value))}
+            />
+            <span className="mt-1 flex justify-between text-xs font-normal text-ink/40">
+              <span>Runs warm</span>
+              <span>Average</span>
+              <span>Runs cold</span>
+            </span>
           </label>
           <div>
             <p className="mb-2 text-sm font-medium">Location</p>
@@ -552,7 +582,9 @@ function LocalProfile({
             />
           </div>
         </div>
-        <button className="mt-8 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20">Save</button>
+        <button className="mt-8 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20">
+          Save
+        </button>
         <p className="mt-3 text-center text-xs text-ink/40">Saved privately on this device.</p>
 
         <div className="mt-8 space-y-2">
@@ -578,18 +610,42 @@ function LocalProfile({
             className="w-full rounded-2xl border border-destructive/25 bg-surface px-5 py-4 text-left text-destructive"
           >
             <p className="font-medium">Reset local profile</p>
-            <p className="mt-1 text-xs text-destructive/70">Erase this device's data and start setup again.</p>
+            <p className="mt-1 text-xs text-destructive/70">
+              Erase this device's data and start setup again.
+            </p>
           </button>
         </div>
       </form>
       {confirmReset && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/30 px-4 pb-[calc(var(--safe-area-bottom)+1rem)] sm:items-center">
-          <div role="alertdialog" aria-modal="true" aria-labelledby="reset-title" className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl">
-            <h2 id="reset-title" className="font-serif text-2xl font-semibold">Reset local profile?</h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink/60">This permanently erases the baby profile, wardrobe and comfort ratings saved on this iPhone.</p>
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="reset-title"
+            className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl"
+          >
+            <h2 id="reset-title" className="font-serif text-2xl font-semibold">
+              Reset local profile?
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink/60">
+              This permanently erases the baby profile, wardrobe and comfort ratings saved on this
+              iPhone.
+            </p>
             <div className="mt-6 flex gap-2">
-              <button type="button" onClick={() => setConfirmReset(false)} className="flex-1 rounded-xl border border-ink/10 px-4 py-3 text-sm font-medium">Cancel</button>
-              <button type="button" onClick={onReset} className="flex-1 rounded-xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground">Reset</button>
+              <button
+                type="button"
+                onClick={() => setConfirmReset(false)}
+                className="flex-1 rounded-xl border border-ink/10 px-4 py-3 text-sm font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={onReset}
+                className="flex-1 rounded-xl bg-destructive px-4 py-3 text-sm font-medium text-destructive-foreground"
+              >
+                Reset
+              </button>
             </div>
           </div>
         </div>
@@ -611,13 +667,19 @@ function LocalWardrobe({
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
       <div className="mx-auto max-w-md px-6 py-8">
-        <button onClick={onBack} className="text-sm text-ink/60">← Today</button>
+        <button onClick={onBack} className="text-sm text-ink/60">
+          ← Today
+        </button>
         <h1 className="mt-6 font-serif text-3xl font-semibold">Wardrobe</h1>
-        <p className="mt-2 text-sm text-ink/60">Tick everything you own. Changes are saved on this device.</p>
+        <p className="mt-2 text-sm text-ink/60">
+          Tick everything you own. Changes are saved on this device.
+        </p>
         <div className="mt-8 space-y-8">
           {groups.map((group) => (
             <section key={group}>
-              <p className="mb-3 text-xs font-medium uppercase tracking-widest text-primary/60">{group}</p>
+              <p className="mb-3 text-xs font-medium uppercase tracking-widest text-primary/60">
+                {group}
+              </p>
               <div className="space-y-2">
                 {WARDROBE_CATALOG.filter((item) => item.group === group).map((item) => {
                   const selected = owned.has(item.slug);
@@ -627,14 +689,21 @@ function LocalWardrobe({
                       aria-pressed={selected}
                       onClick={() => {
                         const next = new Set(owned);
-                        selected ? next.delete(item.slug) : next.add(item.slug);
+                        if (selected) next.delete(item.slug);
+                        else next.add(item.slug);
                         onChange([...next]);
                         lightHaptic();
                       }}
                       className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left ${selected ? "border-primary/30 bg-surface" : "border-black/5 opacity-60"}`}
                     >
-                      <span className={`flex size-6 items-center justify-center rounded-full text-xs ${selected ? "bg-primary text-primary-foreground" : "border border-black/10 bg-white"}`}>{selected ? "✓" : ""}</span>
-                      <span className={selected ? "text-primary" : "text-ink/50"}><ClothingIcon slug={item.slug} size={22} /></span>
+                      <span
+                        className={`flex size-6 items-center justify-center rounded-full text-xs ${selected ? "bg-primary text-primary-foreground" : "border border-black/10 bg-white"}`}
+                      >
+                        {selected ? "✓" : ""}
+                      </span>
+                      <span className={selected ? "text-primary" : "text-ink/50"}>
+                        <ClothingIcon slug={item.slug} size={22} />
+                      </span>
                       <span className="text-sm font-medium">{item.label}</span>
                     </button>
                   );
@@ -647,7 +716,6 @@ function LocalWardrobe({
     </div>
   );
 }
-
 
 function Shell({
   title,
