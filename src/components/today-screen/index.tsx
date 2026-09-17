@@ -5,11 +5,12 @@ import { recommend, type Situation, type TransportMode, type HomeActivity } from
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { ageInMonths } from "@/lib/baby-age";
 import { SiteFooter } from "@/components/site-footer";
-import { selectionHaptic } from "@/lib/haptics";
+import { selectionHaptic, lightHaptic } from "@/lib/haptics";
 import { WeatherSummary } from "./weather-summary";
 import { ActivityPicker } from "./activity-picker";
 import { OutfitResult } from "./outfit-result";
 import { FeedbackPanel } from "./feedback-panel";
+import { CheckOutfitSheet } from "./check-outfit-sheet";
 
 /** Fires a selection haptic only when the value actually changes. */
 function change<T>(current: T, next: T, set: (v: T) => void) {
@@ -95,6 +96,7 @@ export function TodayScreen({
 
   const [duration, setDuration] = useState<30 | 60 | 90>(30);
   const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
+  const [checkingOutfit, setCheckingOutfit] = useState(false);
 
   const isRaining = weatherQ.data ? isRainingCode(weatherQ.data.code) : false;
 
@@ -197,6 +199,23 @@ export function TodayScreen({
 
         {rec && <OutfitResult rec={rec} owned={owned} onOpenWardrobe={onOpenWardrobe} />}
 
+        {/* The warmth-comparison model is clo-based and doesn't apply to
+            TOG-rated sleep sacks, so this only makes sense while awake. */}
+        {rec && !(situation === "home" && homeActivity === "sleeping") && (
+          <button
+            onClick={() => {
+              lightHaptic();
+              setCheckingOutfit(true);
+            }}
+            className="mb-6 w-full rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4 text-left"
+          >
+            <p className="font-medium text-primary">Check my outfit</p>
+            <p className="mt-0.5 text-xs text-ink/60">
+              Tell us what baby's actually wearing and we'll tell you if it's right for today.
+            </p>
+          </button>
+        )}
+
         {/* Nothing to rate when no outfit could be worked out. */}
         {rec && (
           <FeedbackPanel
@@ -221,6 +240,10 @@ export function TodayScreen({
 
         <SiteFooter className="mt-10" />
       </div>
+
+      {checkingOutfit && rec && (
+        <CheckOutfitSheet rec={rec} owned={owned} onClose={() => setCheckingOutfit(false)} />
+      )}
     </div>
   );
 }
