@@ -1,4 +1,4 @@
-import { TEMP } from "./temperature";
+import { TEMP, ageUnder } from "./temperature";
 import type { LayerNeed, AccessoryNeed } from "./layers";
 import type { HomeActivity } from "../recommend";
 import type { WardrobeSlug } from "../wardrobe-catalog";
@@ -55,7 +55,7 @@ export function pickHome(ctx: HomeContext): HomePick {
     // is one of its documented risk factors, independent of room temperature
     // — so this is additional to, not a replacement for, the checks above.
     // See docs/research-sleep-dressing-by-age.md.
-    if (ageMonths !== null && ageMonths < 6 && roomTempC < TEMP.VERY_HOT + 1) {
+    if (ageUnder(ageMonths, 6) && roomTempC < TEMP.VERY_HOT + 1) {
       out.safetyAdvice.push(
         "🌡️ Under 6 months is the highest-risk age for overheating during sleep — check baby's neck or chest regularly, even if the room feels comfortable.",
       );
@@ -67,7 +67,7 @@ export function pickHome(ctx: HomeContext): HomePick {
     // free their arms to reposition. The cutoff is a default, not a
     // guarantee: swaddling must stop the moment a baby shows any sign of
     // rolling, whatever their age.
-    const swaddleEligible = ageMonths !== null && ageMonths < 3;
+    const swaddleEligible = ageUnder(ageMonths, 3);
     if (swaddleEligible && owned.has("swaddle") && roomTempC < SLEEP_ROOM_TEMP.NO_SACK) {
       // Baseline pajamas by room temp, no TOG suggestion — but read off the
       // same boundaries the sleep-sack path uses, so the two agree.
@@ -78,7 +78,7 @@ export function pickHome(ctx: HomeContext): HomePick {
       // Swaddled newborns are exactly who the under-1-month "dress a layer
       // lighter" guidance targets, so this needs the same adjustment as the
       // TOG path below, not a separately-derived base layer.
-      const isNewborn = ageMonths !== null && ageMonths < 1;
+      const isNewborn = ageUnder(ageMonths, 1);
       out.layers.base = isNewborn ? stepBaseDown(swaddleBase) : swaddleBase;
       out.sleepAccessories.push({ slug: "swaddle", label: "Swaddle", owned: true });
       out.safetyAdvice.push(

@@ -45,6 +45,11 @@ export function ageGroup(ageMonths: number | null | undefined): AgeGroup {
   return "12+";
 }
 
+/** True when a known age is strictly under `months` — false for null/undefined ages. */
+export function ageUnder(ageMonths: number | null | undefined, months: number): boolean {
+  return ageMonths !== null && ageMonths !== undefined && ageMonths < months;
+}
+
 export function ageAdjustmentC(g: AgeGroup): number {
   switch (g) {
     case "0-3":

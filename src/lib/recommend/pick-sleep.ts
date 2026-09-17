@@ -4,6 +4,7 @@
 
 import type { WardrobeSlug } from "../wardrobe-catalog";
 import type { BaseKind, SockKind } from "./layers";
+import { ageUnder } from "./temperature";
 
 export type TogValue = 0.5 | 1.0 | 2.5 | 3.5;
 
@@ -175,7 +176,7 @@ export function pickSleep(
 ): SleepPick {
   const { chosen, ideal, suggestion } = chooseSleepSack(roomTempC, owned);
   const { base: rawBase, socks: rawSocks } = sleepwearFor(roomTempC, chosen, ideal);
-  const newborn = ageMonths !== null && ageMonths < 1;
+  const newborn = ageUnder(ageMonths, 1);
   const base = newborn ? stepBaseDown(rawBase) : rawBase;
 
   // Socks are not part of a normal sleep outfit — warmth comes from sleepwear,

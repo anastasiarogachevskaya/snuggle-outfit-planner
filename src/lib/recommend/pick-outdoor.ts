@@ -1,4 +1,4 @@
-import { TEMP, ageAdjustmentC, ageGroup, bandFor } from "./temperature";
+import { TEMP, ageAdjustmentC, ageGroup, ageUnder, bandFor } from "./temperature";
 import type { LayerNeed, AccessoryNeed } from "./layers";
 import type { Situation, TransportMode } from "../recommend";
 import type { WardrobeSlug } from "../wardrobe-catalog";
@@ -323,7 +323,7 @@ function buildSafety(ctx: OutdoorContext, effectiveC: number): string[] {
   // they're carried or seated, not moving — so the real age-driven risk in
   // cold weather is exposure duration, not clothing weight. See
   // docs/research-outdoor-dressing-by-age.md.
-  const veryYoung = ctx.ageMonths !== null && ctx.ageMonths !== undefined && ctx.ageMonths < 2;
+  const veryYoung = ageUnder(ctx.ageMonths, 2);
   if (veryYoung) {
     if (ctx.feelsLikeC < TEMP.FREEZING) {
       advice.push(
@@ -337,7 +337,7 @@ function buildSafety(ctx: OutdoorContext, effectiveC: number): string[] {
   const uv = ctx.uvIndex;
   const sunny = uv !== undefined && uv >= 3;
   const hot = ctx.feelsLikeC >= TEMP.HOT;
-  const infant = ctx.ageMonths !== null && ctx.ageMonths !== undefined && ctx.ageMonths < 6;
+  const infant = ageUnder(ctx.ageMonths, 6);
 
   if (hot || sunny) {
     if (infant) {
