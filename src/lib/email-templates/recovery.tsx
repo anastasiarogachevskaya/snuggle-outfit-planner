@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 
 import {
   Body,
@@ -12,18 +12,15 @@ import {
   Preview,
   Section,
   Text,
-} from '@react-email/components'
-import * as brand from './brand'
+} from "@react-email/components";
+import * as brand from "./brand";
 
 interface RecoveryEmailProps {
-  siteName: string
-  confirmationUrl: string
+  siteName: string;
+  confirmationUrl: string;
 }
 
-export const RecoveryEmail = ({
-  siteName,
-  confirmationUrl,
-}: RecoveryEmailProps) => (
+export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Reset your password for {siteName}</Preview>
@@ -36,8 +33,8 @@ export const RecoveryEmail = ({
         <Container style={brand.card}>
           <Heading style={brand.h1}>Reset your password</Heading>
           <Text style={brand.text}>
-            We received a request to reset your password for {siteName}. Click the button below
-            to choose a new one.
+            We received a request to reset your password for {siteName}. Click the button below to
+            choose a new one.
           </Text>
 
           <Section style={brand.buttonWrap}>
@@ -47,7 +44,7 @@ export const RecoveryEmail = ({
           </Section>
 
           <Text style={brand.mutedText}>
-            Button not working?{' '}
+            Button not working?{" "}
             <Link href={confirmationUrl} style={brand.plainLink}>
               Reset your password here
             </Link>
@@ -57,13 +54,13 @@ export const RecoveryEmail = ({
           <Hr style={brand.hr} />
 
           <Text style={brand.footer}>
-            If you didn't request a password reset, you can safely ignore this email — your
-            password won't be changed.
+            If you didn't request a password reset, you can safely ignore this email — your password
+            won't be changed.
           </Text>
         </Container>
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default RecoveryEmail
+export default RecoveryEmail;

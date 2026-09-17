@@ -54,7 +54,8 @@ export function resyncKeyboardState(): void {
   if (typeof document === "undefined") return;
   const active = document.activeElement as HTMLElement | null;
   const editing =
-    !!active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable);
+    !!active &&
+    (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable);
   if (!editing) document.documentElement.classList.remove(KEYBOARD_CLASS);
 }
 

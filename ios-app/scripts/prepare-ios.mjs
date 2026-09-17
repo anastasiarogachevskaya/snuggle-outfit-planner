@@ -6,12 +6,20 @@
 //   4. runs `cap sync ios` only when ios/ already exists
 //   5. installs the Layerly AppIcon asset catalog into the native project
 //   6. verifies the synced native config still points at the intended source
-import { existsSync, mkdirSync, readdirSync, rmSync, copyFileSync, cpSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  rmSync,
+  copyFileSync,
+  cpSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { detectWebOutputDir, webRoot } from "./detect-web-output.mjs";
-
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const iosApp = path.resolve(here, "..");
@@ -98,8 +106,6 @@ console.log(
     : "\n✔ Layerly iOS source: bundled (local static assets)",
 );
 
-
-
 // The synced native config is what the simulator/device actually obeys. If the
 // server block is missing there, the WebView silently falls back to bundled
 // assets — which for this SSR app means stale, non-hydrating (unclickable) HTML.
@@ -159,7 +165,7 @@ function verifyGeolocationPlugin() {
     console.error(
       "\n\u2716 Info.plist declares an Always-location usage key." +
         "\n  Layerly is foreground-only; remove it so iOS requests" +
-        "\n  \"While Using the App\" and App Review does not flag background location.",
+        '\n  "While Using the App" and App Review does not flag background location.',
     );
     process.exit(1);
   }
@@ -179,7 +185,9 @@ function installAppIcons() {
   for (const file of readdirSync(source)) {
     copyFileSync(path.join(source, file), path.join(target, file));
   }
-  console.log(`✔ Layerly AppIcon installed (${readdirSync(target).length} files) — no Capacitor placeholder left.`);
+  console.log(
+    `✔ Layerly AppIcon installed (${readdirSync(target).length} files) — no Capacitor placeholder left.`,
+  );
 }
 
 if (existsSync(path.join(iosApp, "ios"))) {
@@ -189,7 +197,6 @@ if (existsSync(path.join(iosApp, "ios"))) {
   verifyGeolocationPlugin();
   installAppIcons();
   console.log("\n✔ Native iOS project synced. Next: bun run open:ios");
-
 } else {
   console.log(
     [

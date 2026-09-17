@@ -64,7 +64,6 @@ export function isNativePluginAvailable(pluginName: string): boolean {
   return safeCapacitor(() => Capacitor.isPluginAvailable(pluginName) === true, false);
 }
 
-
 /** Human label used by the optional debug indicator. */
 export function getPlatformLabel(): string {
   if (isIOSApp()) return "iOS app";

@@ -83,7 +83,9 @@ function Consent() {
 
   return (
     <Shell>
-      <p className="text-xs font-medium uppercase tracking-widest text-primary/70">Connect an app</p>
+      <p className="text-xs font-medium uppercase tracking-widest text-primary/70">
+        Connect an app
+      </p>
       <h1 className="mt-2 text-2xl font-serif font-semibold">Allow {clientName} to use Layerly?</h1>
       <p className="mt-3 text-sm text-ink/60">
         {clientName} will be able to read your baby profiles and wardrobe, get outfit

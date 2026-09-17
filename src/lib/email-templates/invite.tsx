@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 
 import {
   Body,
@@ -12,20 +12,16 @@ import {
   Preview,
   Section,
   Text,
-} from '@react-email/components'
-import * as brand from './brand'
+} from "@react-email/components";
+import * as brand from "./brand";
 
 interface InviteEmailProps {
-  siteName: string
-  siteUrl: string
-  confirmationUrl: string
+  siteName: string;
+  siteUrl: string;
+  confirmationUrl: string;
 }
 
-export const InviteEmail = ({
-  siteName,
-  siteUrl,
-  confirmationUrl,
-}: InviteEmailProps) => (
+export const InviteEmail = ({ siteName, siteUrl, confirmationUrl }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>You've been invited to join {siteName}</Preview>
@@ -38,7 +34,7 @@ export const InviteEmail = ({
         <Container style={brand.card}>
           <Heading style={brand.h1}>You've been invited</Heading>
           <Text style={brand.text}>
-            You've been invited to join{' '}
+            You've been invited to join{" "}
             <Link href={siteUrl} style={brand.link}>
               {siteName}
             </Link>
@@ -52,7 +48,7 @@ export const InviteEmail = ({
           </Section>
 
           <Text style={brand.mutedText}>
-            Button not working?{' '}
+            Button not working?{" "}
             <Link href={confirmationUrl} style={brand.plainLink}>
               Accept the invitation here
             </Link>
@@ -68,6 +64,6 @@ export const InviteEmail = ({
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default InviteEmail
+export default InviteEmail;

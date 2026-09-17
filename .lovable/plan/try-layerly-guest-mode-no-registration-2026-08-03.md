@@ -21,6 +21,7 @@ Signed-in users hitting `/` still go straight to `/today`. Guests who land on `/
 ## Guest profile
 
 Stored in `localStorage` (`layerly:guest`), no database writes:
+
 - name `Baby`, warmth preference `3`
 - date of birth derived from the chosen age band (midpoint of the range)
 - location: coords + label, when granted or chosen
@@ -31,6 +32,7 @@ Stored in `localStorage` (`layerly:guest`), no database writes:
 ## Registration prompts
 
 A shared sheet with the copy from the brief and the buttons **Create account** / **Maybe later**, triggered only when a guest tries to:
+
 - edit the wardrobe
 - rate a recommendation
 - edit the baby profile

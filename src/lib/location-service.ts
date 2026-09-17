@@ -1,9 +1,4 @@
-import {
-  isNativeApp,
-  isIOSApp,
-  getPlatform,
-  isGeolocationPluginAvailable,
-} from "@/lib/platform";
+import { isNativeApp, isIOSApp, getPlatform, isGeolocationPluginAvailable } from "@/lib/platform";
 import { recordLocationEvent, timeStep, type LocationDiagStep } from "@/lib/location-diagnostics";
 // Static import: this used to be a runtime `import("@capacitor/geolocation")`,
 // but that chunk isn't in any page's modulepreload list, and inside the iOS
@@ -73,7 +68,6 @@ function devInfo(message: string, step: LocationDiagStep = "note") {
   recordLocationEvent(step, message);
   if (debugEnabled()) console.info(`[location] ${message}`);
 }
-
 
 /** Resolves to `fallback` if `promise` hasn't settled in `ms`. */
 function withWatchdog(promise: Promise<LocationResult>, ms: number): Promise<LocationResult> {
@@ -270,9 +264,13 @@ async function getNativeLocation(force: boolean): Promise<LocationResult> {
     if (state !== "granted") {
       // iOS reports both "denied" and "restricted" as denied here; the precise
       // reason, when it matters, comes back on the getCurrentPosition error.
-      recordLocationEvent("getCurrentPosition", `getCurrentPosition called: no (permission ${state})`, {
-        patch: { lastGetCurrentPositionOutcome: `not called (permission ${state})` },
-      });
+      recordLocationEvent(
+        "getCurrentPosition",
+        `getCurrentPosition called: no (permission ${state})`,
+        {
+          patch: { lastGetCurrentPositionOutcome: `not called (permission ${state})` },
+        },
+      );
       return { status: state === "denied" ? "permission-denied" : "permission-not-determined" };
     }
 
@@ -367,7 +365,9 @@ export type GetCurrentLocationOptions = {
  * is guaranteed to settle: a watchdog resolves to a timeout state if the
  * platform never calls back.
  */
-export function getCurrentLocation(options: GetCurrentLocationOptions = {}): Promise<LocationResult> {
+export function getCurrentLocation(
+  options: GetCurrentLocationOptions = {},
+): Promise<LocationResult> {
   const force = options.force === true;
   if (inFlight && !force) {
     devInfo("request already in flight — reusing it");
@@ -390,14 +390,18 @@ export function getCurrentLocation(options: GetCurrentLocationOptions = {}): Pro
 
   const native = isNativeApp();
   const started = Date.now();
-  recordLocationEvent("entry", `getCurrentLocation entered — isNativeApp=${native}, force=${force}`, {
-    patch: {
-      nativePathUsed: native,
-      lastRunAt: started,
-      lastOutcome: null,
-      lastDurationMs: null,
+  recordLocationEvent(
+    "entry",
+    `getCurrentLocation entered — isNativeApp=${native}, force=${force}`,
+    {
+      patch: {
+        nativePathUsed: native,
+        lastRunAt: started,
+        lastOutcome: null,
+        lastDurationMs: null,
+      },
     },
-  });
+  );
   devInfo(native ? "calling native location service" : "calling browser geolocation");
 
   const run = withWatchdog(
@@ -418,7 +422,6 @@ export function getCurrentLocation(options: GetCurrentLocationOptions = {}): Pro
   inFlight = run;
   return run;
 }
-
 
 /** True when a "Open Settings" affordance makes sense (native app, already denied). */
 export function canOpenAppSettings(): boolean {

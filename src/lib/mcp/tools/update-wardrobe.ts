@@ -23,9 +23,10 @@ export default defineTool({
     const supabase = supabaseForUser(ctx);
 
     if (toAdd.length) {
-      const { error } = await supabase
-        .from("wardrobe_items")
-        .upsert(toAdd.map((slug) => ({ baby_id, slug })), { onConflict: "baby_id,slug" });
+      const { error } = await supabase.from("wardrobe_items").upsert(
+        toAdd.map((slug) => ({ baby_id, slug })),
+        { onConflict: "baby_id,slug" },
+      );
       if (error) return errorResult(error.message);
     }
     if (toRemove.length) {

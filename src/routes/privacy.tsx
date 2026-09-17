@@ -47,8 +47,8 @@ function Privacy() {
                 sign in with Apple or Google. We never see your Apple or Google password.
               </li>
               <li>
-                <strong>Baby profile:</strong> a name (or nickname) and date of birth, used to
-                judge how warm or cool an outfit should be.
+                <strong>Baby profile:</strong> a name (or nickname) and date of birth, used to judge
+                how warm or cool an outfit should be.
               </li>
               <li>
                 <strong>Wardrobe:</strong> which clothing items you've told us you own, so we only
@@ -86,18 +86,17 @@ function Privacy() {
             <p>
               Your data is stored with our backend provider (Supabase). Weather lookups go to
               Open-Meteo, and turning coordinates into a place name goes to BigDataCloud — both
-              receive only the coordinates needed for that one request, never your account
-              details.
+              receive only the coordinates needed for that one request, never your account details.
             </p>
           </section>
 
           <section>
             <h2 className="mb-2 font-medium text-ink">Your choices</h2>
             <p>
-              From your account page you can reset your baby's comfort history or delete your
-              baby's profile and wardrobe entirely. You can also permanently delete your account
-               there; this immediately removes your identity from past usage events. Those
-               anonymous events remain only until the automatic 90-day deletion date.
+              From your account page you can reset your baby's comfort history or delete your baby's
+              profile and wardrobe entirely. You can also permanently delete your account there;
+              this immediately removes your identity from past usage events. Those anonymous events
+              remain only until the automatic 90-day deletion date.
             </p>
           </section>
 
@@ -105,8 +104,8 @@ function Privacy() {
             <h2 className="mb-2 font-medium text-ink">Children's privacy</h2>
             <p>
               Layerly is a tool for parents and caregivers, not for children. We don't knowingly
-              collect information directly from children; the baby's date of birth is entered by
-              the parent to size clothing recommendations.
+              collect information directly from children; the baby's date of birth is entered by the
+              parent to size clothing recommendations.
             </p>
           </section>
 

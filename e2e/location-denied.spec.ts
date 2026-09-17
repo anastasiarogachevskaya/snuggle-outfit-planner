@@ -7,7 +7,10 @@ import { denyGeolocation, stubOpenMeteo } from "./fixtures";
  */
 async function startGuestFlow(page: import("@playwright/test").Page) {
   await page.goto("/try");
-  await page.getByRole("button", { name: /0\s*[–-]|month|year/i }).first().click();
+  await page
+    .getByRole("button", { name: /0\s*[–-]|month|year/i })
+    .first()
+    .click();
   await expect(page.getByRole("button", { name: "Use my current location" })).toBeVisible();
 }
 
@@ -29,7 +32,10 @@ test.describe("location permission denied", () => {
     // Manual fallback appears and stays usable.
     await expect(page.getByText(/search for your city instead/i)).toBeVisible();
     await page.getByPlaceholder("Start typing a city").fill("Helsin");
-    await page.getByRole("option", { name: /Helsinki/ }).first().click();
+    await page
+      .getByRole("option", { name: /Helsinki/ })
+      .first()
+      .click();
 
     // Recommendation screen renders with the stubbed weather.
     await expect(page.getByText("Today's activity")).toBeVisible();
@@ -75,7 +81,10 @@ test.describe("location permission denied", () => {
     });
 
     await page.getByPlaceholder("Start typing a city").fill("Helsin");
-    await page.getByRole("option", { name: /Helsinki/ }).first().click();
+    await page
+      .getByRole("option", { name: /Helsinki/ })
+      .first()
+      .click();
 
     await expect(page.getByText("Today's activity")).toBeVisible();
     await expect(page.getByText("18°")).toBeVisible();

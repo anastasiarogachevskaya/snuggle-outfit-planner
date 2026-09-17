@@ -13,7 +13,10 @@ export const Route = createFileRoute("/auth-callback")({
   head: () => ({
     meta: [
       { title: "Signing in — Layerly" },
-      { name: "description", content: "Finishing your secure Layerly sign-in and redirecting you back to the app." },
+      {
+        name: "description",
+        content: "Finishing your secure Layerly sign-in and redirecting you back to the app.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -24,7 +27,6 @@ function AuthCallbackPage() {
   const navigate = useNavigate();
   const { error: linkError } = Route.useSearch();
   const [message, setMessage] = useState("Finishing sign-in…");
-
 
   useEffect(() => {
     if (linkError) return;
@@ -98,13 +100,14 @@ function AuthCallbackPage() {
           {failed ? "Link no longer valid" : "Signing you in"}
         </h1>
         <p className="mt-3 text-sm text-ink/60">
-          {linkError
-            ? AUTH_LINK_EXPIRED_MESSAGE
-            : message}
+          {linkError ? AUTH_LINK_EXPIRED_MESSAGE : message}
         </p>
         {failed && (
           <div className="mt-6 flex flex-col gap-2">
-            <Link to="/auth" className="rounded-2xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">
+            <Link
+              to="/auth"
+              className="rounded-2xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
+            >
               Back to sign in
             </Link>
             <Link to="/forgot-password" className="text-sm font-medium text-primary">

@@ -25,10 +25,12 @@ function WebAppPage() {
         </header>
 
         <main>
-          <h1 className="font-serif text-3xl font-semibold leading-tight text-ink">Layerly web app</h1>
+          <h1 className="font-serif text-3xl font-semibold leading-tight text-ink">
+            Layerly web app
+          </h1>
           <p className="mt-4 leading-relaxed text-ink/70">
-            Layerly works in any modern browser on phone, tablet or desktop. Nothing to install, no store account, and
-            the same baby clothing calculator everywhere you sign in.
+            Layerly works in any modern browser on phone, tablet or desktop. Nothing to install, no
+            store account, and the same baby clothing calculator everywhere you sign in.
           </p>
 
           <section className="mt-10">
@@ -42,10 +44,14 @@ function WebAppPage() {
           </section>
 
           <section className="mt-10">
-            <h2 className="font-serif text-2xl font-semibold text-ink">What the web app includes</h2>
+            <h2 className="font-serif text-2xl font-semibold text-ink">
+              What the web app includes
+            </h2>
             <ul className="mt-4 space-y-3 text-sm leading-relaxed text-ink/70">
               <li>· Live weather, feels-like temperature, rain and UV index from Open-Meteo.</li>
-              <li>· Home, walk and car situations with room temperature, transport and duration.</li>
+              <li>
+                · Home, walk and car situations with room temperature, transport and duration.
+              </li>
               <li>· A wardrobe checklist so recommendations only use clothes you own.</li>
               <li>· Sleep recommendations built around sleep sack TOG ratings.</li>
               <li>· Data export and account deletion whenever you want.</li>

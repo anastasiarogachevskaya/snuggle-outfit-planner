@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 
 import {
   Body,
@@ -12,19 +12,19 @@ import {
   Preview,
   Section,
   Text,
-} from '@react-email/components'
-import * as brand from './brand'
+} from "@react-email/components";
+import * as brand from "./brand";
 
 interface EmailChangeEmailProps {
-  siteName: string
+  siteName: string;
   // oldEmail is the user's current address (HookData.OldEmail). For the
   // NEW-recipient half of a secure email_change fanout, `email` equals the
   // recipient (NEW), so the "from" line must render oldEmail to read
   // "from OLD to NEW" instead of "from NEW to NEW".
-  oldEmail: string
-  email: string
-  newEmail: string
-  confirmationUrl: string
+  oldEmail: string;
+  email: string;
+  newEmail: string;
+  confirmationUrl: string;
 }
 
 export const EmailChangeEmail = ({
@@ -45,11 +45,11 @@ export const EmailChangeEmail = ({
         <Container style={brand.card}>
           <Heading style={brand.h1}>Confirm your email change</Heading>
           <Text style={brand.text}>
-            You requested to change your {siteName} email from{' '}
+            You requested to change your {siteName} email from{" "}
             <Link href={`mailto:${oldEmail}`} style={brand.link}>
               {oldEmail}
-            </Link>{' '}
-            to{' '}
+            </Link>{" "}
+            to{" "}
             <Link href={`mailto:${newEmail}`} style={brand.link}>
               {newEmail}
             </Link>
@@ -63,7 +63,7 @@ export const EmailChangeEmail = ({
           </Section>
 
           <Text style={brand.mutedText}>
-            Button not working?{' '}
+            Button not working?{" "}
             <Link href={confirmationUrl} style={brand.plainLink}>
               Confirm the change here
             </Link>
@@ -79,6 +79,6 @@ export const EmailChangeEmail = ({
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default EmailChangeEmail
+export default EmailChangeEmail;

@@ -8,6 +8,7 @@ clears `busy` unless the `layerly://auth/callback` deep link comes back, so
 dismissing the browser leaves every sign-in button and input disabled.
 
 Fix (small and bounded):
+
 - Add a `browserFinished` listener helper in `src/lib/native-social-auth.ts`
   that fires once when the Capacitor Browser is dismissed.
 - In `src/routes/auth.tsx`, subscribe on the pending path and call
@@ -38,6 +39,7 @@ two applies after the configuration call.
 ## 4. Web auth flow (signup → confirm → sign in)
 
 Verify against the live site rather than assume:
+
 - signup creates a user with `confirmation_sent_at` set and
   `email_confirmed_at` null,
 - the confirmation email renders through the webhook route,

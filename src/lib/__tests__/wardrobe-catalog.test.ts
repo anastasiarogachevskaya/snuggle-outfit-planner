@@ -20,7 +20,10 @@ describe("wardrobe catalog", () => {
 
   it("every item has a label, hint and emoji", () => {
     for (const item of allItems) {
-      expect({ slug: item.slug, ok: item.label.length > 0 && item.hint.length > 0 && item.emoji.length > 0 }).toEqual({
+      expect({
+        slug: item.slug,
+        ok: item.label.length > 0 && item.hint.length > 0 && item.emoji.length > 0,
+      }).toEqual({
         slug: item.slug,
         ok: true,
       });
@@ -29,10 +32,12 @@ describe("wardrobe catalog", () => {
 
   it("every step has an id, title, question and at least one item", () => {
     for (const step of WARDROBE_STEPS) {
-      expect({ id: step.id, ok: !!step.title && !!step.question && step.items.length > 0 }).toEqual({
-        id: step.id,
-        ok: true,
-      });
+      expect({ id: step.id, ok: !!step.title && !!step.question && step.items.length > 0 }).toEqual(
+        {
+          id: step.id,
+          ok: true,
+        },
+      );
     }
   });
 

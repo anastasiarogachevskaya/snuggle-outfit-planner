@@ -17,14 +17,14 @@ The project **Site URL is `https://layerly.online`** (confirmed via auth config)
 Supabase auto-allows any URL that shares the Site URL's origin, so two of the six
 are already covered:
 
-| URL | Status |
-| --- | --- |
-| `https://layerly.online/auth-callback` | Auto-allowed (same origin as Site URL) — no action |
-| `https://layerly.online/reset-password` | Auto-allowed (same origin as Site URL) — no action |
-| `https://www.layerly.online/auth-callback` | **Must add** (different hostname `www`) |
-| `https://www.layerly.online/reset-password` | **Must add** (different hostname `www`) |
-| `layerly://auth/callback` | **Must add** (custom scheme — required for iOS) |
-| `layerly://auth/reset-password` | **Must add** (custom scheme — required for iOS) |
+| URL                                         | Status                                             |
+| ------------------------------------------- | -------------------------------------------------- |
+| `https://layerly.online/auth-callback`      | Auto-allowed (same origin as Site URL) — no action |
+| `https://layerly.online/reset-password`     | Auto-allowed (same origin as Site URL) — no action |
+| `https://www.layerly.online/auth-callback`  | **Must add** (different hostname `www`)            |
+| `https://www.layerly.online/reset-password` | **Must add** (different hostname `www`)            |
+| `layerly://auth/callback`                   | **Must add** (custom scheme — required for iOS)    |
+| `layerly://auth/reset-password`             | **Must add** (custom scheme — required for iOS)    |
 
 Adding a URL that's already present is harmless (Supabase de-duplicates), so you
 can safely paste all six if it's easier than picking four.

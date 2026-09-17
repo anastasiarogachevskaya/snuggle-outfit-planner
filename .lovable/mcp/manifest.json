@@ -5,9 +5,7 @@
   "auth": {
     "type": "oauth",
     "issuer": "https://xloxfkhxzrsygvhsozll.supabase.co/auth/v1",
-    "accepted_audiences": [
-      "authenticated"
-    ]
+    "accepted_audiences": ["authenticated"]
   },
   "mcp": {
     "server": {
@@ -49,9 +47,7 @@
               "description": "Baby profile id from list_babies."
             }
           },
-          "required": [
-            "baby_id"
-          ],
+          "required": ["baby_id"],
           "additionalProperties": false,
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
@@ -88,9 +84,7 @@
               "description": "Wardrobe slugs to remove."
             }
           },
-          "required": [
-            "baby_id"
-          ],
+          "required": ["baby_id"],
           "additionalProperties": false,
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
@@ -113,11 +107,7 @@
             },
             "situation": {
               "type": "string",
-              "enum": [
-                "home",
-                "walk",
-                "car"
-              ],
+              "enum": ["home", "walk", "car"],
               "description": "Where the baby will be."
             },
             "room_temp_c": {
@@ -126,19 +116,12 @@
             },
             "home_activity": {
               "type": "string",
-              "enum": [
-                "playing",
-                "sleeping"
-              ],
+              "enum": ["playing", "sleeping"],
               "description": "Home activity, for situation=home."
             },
             "transport_mode": {
               "type": "string",
-              "enum": [
-                "pram",
-                "sitting-stroller",
-                "carrier"
-              ],
+              "enum": ["pram", "sitting-stroller", "carrier"],
               "description": "Transport for situation=walk."
             },
             "duration_min": {
@@ -150,10 +133,7 @@
               "description": "Override the outdoor feels-like temperature instead of fetching live weather."
             }
           },
-          "required": [
-            "baby_id",
-            "situation"
-          ],
+          "required": ["baby_id", "situation"],
           "additionalProperties": false,
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
@@ -176,20 +156,12 @@
             },
             "rating": {
               "type": "string",
-              "enum": [
-                "too_cold",
-                "just_right",
-                "too_warm"
-              ],
+              "enum": ["too_cold", "just_right", "too_warm"],
               "description": "How the baby felt."
             },
             "situation": {
               "type": "string",
-              "enum": [
-                "home",
-                "walk",
-                "car"
-              ],
+              "enum": ["home", "walk", "car"],
               "description": "Where the outfit was worn."
             },
             "room_temp_c": {
@@ -201,11 +173,7 @@
               "description": "Outdoor feels-like temperature in Celsius."
             }
           },
-          "required": [
-            "baby_id",
-            "rating",
-            "situation"
-          ],
+          "required": ["baby_id", "rating", "situation"],
           "additionalProperties": false,
           "$schema": "http://json-schema.org/draft-07/schema#"
         },

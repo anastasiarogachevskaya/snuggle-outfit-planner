@@ -37,7 +37,9 @@ source = source.replace(
 const launchSignature =
   /func application\(\s*_ application: UIApplication,\s*didFinishLaunchingWithOptions launchOptions: \[UIApplication\.LaunchOptionsKey: Any\]\?\s*\) -> Bool \{/m;
 if (!launchSignature.test(source)) {
-  console.error("✖ Could not find application(_:didFinishLaunchingWithOptions:) in AppDelegate.swift.");
+  console.error(
+    "✖ Could not find application(_:didFinishLaunchingWithOptions:) in AppDelegate.swift.",
+  );
   process.exit(1);
 }
 
@@ -278,4 +280,6 @@ ${endMarker}
 `;
 
 writeFileSync(appDelegatePath, `${source.trimEnd()}\n${diagnostics}`, "utf8");
-console.log("✔ Installed DEBUG-only WKWebView load diagnostics in AppDelegate.swift (observation only)");
+console.log(
+  "✔ Installed DEBUG-only WKWebView load diagnostics in AppDelegate.swift (observation only)",
+);

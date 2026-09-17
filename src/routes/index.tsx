@@ -89,11 +89,15 @@ function Landing() {
               <span className="italic">wear today?</span>
             </h1>
             <p className="mt-5 leading-relaxed text-ink/70">
-              Layerly turns today's weather into a simple, layered outfit for your baby — using the clothes you already own.
+              Layerly turns today's weather into a simple, layered outfit for your baby — using the
+              clothes you already own.
             </p>
           </section>
 
-          <section aria-label="Example recommendation" className="mb-8 rounded-[32px] border border-black/5 bg-surface p-6 shadow-sm">
+          <section
+            aria-label="Example recommendation"
+            className="mb-8 rounded-[32px] border border-black/5 bg-surface p-6 shadow-sm"
+          >
             <p className="mb-3 text-xs font-medium uppercase tracking-widest text-primary/60">
               Today &middot; feels like 9°
             </p>

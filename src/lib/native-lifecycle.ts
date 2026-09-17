@@ -3,7 +3,6 @@ import { logAppSource } from "@/lib/build-info";
 import { applyStatusBar, resyncKeyboardState } from "@/lib/native-ui";
 import { preloadNativeSocialAuth } from "@/lib/native-social-auth";
 
-
 /**
  * Native app lifecycle (background / foreground / cold launch / deep links).
  *
@@ -116,7 +115,6 @@ export function initNativeLifecycle(): void {
   void hideSplash();
   preloadNativeSocialAuth();
 }
-
 
 /** Removes native listeners (HMR disposal / tests). */
 export function teardownNativeLifecycle(): void {

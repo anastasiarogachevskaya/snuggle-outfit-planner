@@ -11,9 +11,11 @@
 ## What I'll build
 
 ### 1. Register the URL scheme (native)
+
 Add a single `CFBundleURLTypes` entry to `Info.plist`: name `online.layerly.app`, scheme `layerly`. No other schemes. Nothing else in the Xcode project needs to change — `AppDelegate` already forwards `application(_:open:)` to Capacitor.
 
 ### 2. Platform-aware redirect targets
+
 New helper `src/lib/auth-urls.ts` using the existing `isNativeApp()` from `src/lib/platform.ts`:
 
 ```text
@@ -24,6 +26,7 @@ web     → https://layerly.online/auth-callback and /reset-password (unchanged,
 Sign-up, OAuth, and password reset call this helper instead of hardcoding the origin. Web behaviour is byte-for-byte the same as today.
 
 ### 3. Consume the callback correctly
+
 New `src/lib/native-auth-link.ts` that takes the incoming deep-link URL and:
 
 - parses `layerly://auth/callback` and `layerly://auth/reset-password`, reading params from both the query string and the fragment;
@@ -35,12 +38,15 @@ New `src/lib/native-auth-link.ts` that takes the incoming deep-link URL and:
 Nothing is persisted by hand — only official `setSession` / `exchangeCodeForSession`; no token is logged, and the existing diagnostics logging will be checked to make sure it never prints a URL containing a token or code.
 
 ### 4. Cold start and warm start
+
 Both paths already exist in `native-lifecycle.ts` (`getLaunchUrl()` at init, `appUrlOpen` while running) and both feed the same handler. I'll harden the de-dupe so the same URL delivered by both paths is processed once, keyed on the link's token/code rather than only on the raw string, and make the handler async-safe so a second delivery while the first exchange is in flight is ignored.
 
 ### 5. Reset-password screen
+
 `src/routes/reset-password.tsx` keeps its current logic but will also wait for a session established by the deep link before deciding the link is invalid, so the native flow doesn't flash the "invalid link" state. Token stays out of the UI and out of logs.
 
 ### 6. Session restoration
+
 Session persistence already works via the Supabase client's `localStorage` + `persistSession`; the WebView keeps that storage across launches. I'll verify the authenticated gate doesn't flash the sign-in screen on cold launch and, if it does, gate the redirect on the session check resolving rather than adding new auth logic.
 
 ## Supabase dashboard changes you must make manually

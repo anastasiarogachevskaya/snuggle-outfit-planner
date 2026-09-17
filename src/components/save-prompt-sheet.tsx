@@ -2,10 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 
 export type SavePromptKind = "wardrobe" | "feedback" | "profile" | null;
 
-const COPY: Record<
-  Exclude<SavePromptKind, null>,
-  { title: string; body: string }
-> = {
+const COPY: Record<Exclude<SavePromptKind, null>, { title: string; body: string }> = {
   wardrobe: {
     title: "Want recommendations based on your actual wardrobe?",
     body: "Create a free account to save your wardrobe.",
@@ -20,13 +17,7 @@ const COPY: Record<
   },
 };
 
-export function SavePromptSheet({
-  kind,
-  onClose,
-}: {
-  kind: SavePromptKind;
-  onClose: () => void;
-}) {
+export function SavePromptSheet({ kind, onClose }: { kind: SavePromptKind; onClose: () => void }) {
   const navigate = useNavigate();
   if (!kind) return null;
   const copy = COPY[kind];

@@ -73,9 +73,13 @@ function InsightsPage() {
         {q.data && (
           <div className="mt-8 space-y-8">
             <section>
-              <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">Overview</h2>
+              <h2 className="text-xs font-medium uppercase tracking-widest text-primary/60">
+                Overview
+              </h2>
               <div className="mt-3 grid grid-cols-2 gap-3">
-                {q.data.metrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}
+                {q.data.metrics.map((metric) => (
+                  <MetricCard key={metric.label} metric={metric} />
+                ))}
               </div>
               <p className="mt-3 text-xs text-ink/40">
                 {q.data.totalEvents} events across {q.data.totalSessions} sessions
@@ -98,7 +102,9 @@ function InsightsPage() {
                 iPhone app
               </h2>
               <div className="mt-3 grid grid-cols-2 gap-3">
-                {q.data.iosMetrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}
+                {q.data.iosMetrics.map((metric) => (
+                  <MetricCard key={metric.label} metric={metric} />
+                ))}
               </div>
             </section>
             <Funnel title="iPhone app journey" steps={q.data.iosFunnel} />
@@ -119,7 +125,10 @@ function MetricCard({ metric }: { metric: Metric }) {
   const isRate = metric.label.toLowerCase().includes("rate") || metric.label.includes("completion");
   return (
     <div className="min-w-0 rounded-2xl border border-border bg-surface p-4">
-      <p className="text-2xl font-semibold tabular-nums">{metric.value}{isRate ? "%" : ""}</p>
+      <p className="text-2xl font-semibold tabular-nums">
+        {metric.value}
+        {isRate ? "%" : ""}
+      </p>
       <p className="mt-1 text-xs font-medium text-ink/70">{metric.label}</p>
       <p className="mt-1 break-words text-[11px] leading-snug text-ink/40">{metric.detail}</p>
     </div>
@@ -135,14 +144,25 @@ function AuthPaths({ rows, title = "Sign-in paths" }: { rows: AuthPathRow[]; tit
       ) : (
         <div className="mt-3 overflow-hidden rounded-2xl border border-border bg-surface">
           <div className="grid grid-cols-[minmax(0,1fr)_repeat(4,2.5rem)] gap-1 border-b border-border px-3 py-2 text-center text-[10px] text-ink/40">
-            <span className="text-left">Path</span><span>Start</span><span>Done</span><span>Exit</span><span>Fail</span>
+            <span className="text-left">Path</span>
+            <span>Start</span>
+            <span>Done</span>
+            <span>Exit</span>
+            <span>Fail</span>
           </div>
           <div className="divide-y divide-border">
             {rows.map((row) => (
-              <div key={row.label} className="grid grid-cols-[minmax(0,1fr)_repeat(4,2.5rem)] items-center gap-1 px-3 py-3 text-center text-xs tabular-nums">
-                <span className="min-w-0 break-words text-left text-sm text-ink/70">{row.label}</span>
-                <span>{row.attempts}</span><span className="font-semibold text-primary">{row.successes}</span>
-                <span>{row.cancelled}</span><span>{row.failed}</span>
+              <div
+                key={row.label}
+                className="grid grid-cols-[minmax(0,1fr)_repeat(4,2.5rem)] items-center gap-1 px-3 py-3 text-center text-xs tabular-nums"
+              >
+                <span className="min-w-0 break-words text-left text-sm text-ink/70">
+                  {row.label}
+                </span>
+                <span>{row.attempts}</span>
+                <span className="font-semibold text-primary">{row.successes}</span>
+                <span>{row.cancelled}</span>
+                <span>{row.failed}</span>
               </div>
             ))}
           </div>
@@ -161,9 +181,10 @@ function Funnel({ title, steps }: { title: string; steps: FunnelStep[] }) {
         {steps.map((s, i) => {
           const prev = i > 0 ? steps[i - 1].sessions : null;
           const width = top > 0 ? Math.min(Math.max((s.sessions / top) * 100, 2), 100) : 2;
-           const drop = prev && prev > 0 && s.sessions <= prev
-             ? Math.round(((prev - s.sessions) / prev) * 100)
-             : null;
+          const drop =
+            prev && prev > 0 && s.sessions <= prev
+              ? Math.round(((prev - s.sessions) / prev) * 100)
+              : null;
           return (
             <div key={s.key} className="min-w-0 rounded-2xl border border-border bg-surface p-3">
               <div className="flex min-w-0 items-baseline justify-between gap-3">
@@ -193,7 +214,10 @@ function Breakdown({ title, rows }: { title: string; rows: BreakdownRow[] }) {
       ) : (
         <div className="mt-3 divide-y divide-border rounded-2xl border border-border bg-surface">
           {rows.map((r) => (
-            <div key={r.label} className="flex min-w-0 items-center justify-between gap-3 px-4 py-2.5">
+            <div
+              key={r.label}
+              className="flex min-w-0 items-center justify-between gap-3 px-4 py-2.5"
+            >
               <p className="min-w-0 break-words text-sm text-ink/70">{r.label}</p>
               <p className="shrink-0 text-sm font-semibold tabular-nums">{r.count}</p>
             </div>

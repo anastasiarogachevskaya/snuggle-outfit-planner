@@ -1,4 +1,4 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from "@capacitor/cli";
 
 // Local / bundled config: ships the built static web assets from the root
 // build inside the .ipa. `bun run prepare:ios` stages them into ios-app/www.
@@ -11,15 +11,15 @@ import type { CapacitorConfig } from '@capacitor/cli';
 // index.html of their own. Only use this mode with a prerendered/static build,
 // otherwise the WebView shows stale or non-hydrating markup (nothing clickable).
 const config: CapacitorConfig = {
-  appId: 'online.layerly.app',
-  appName: 'Layerly',
-  webDir: 'www',
+  appId: "online.layerly.app",
+  appName: "Layerly",
+  webDir: "www",
 
-  backgroundColor: '#A8B894',
+  backgroundColor: "#A8B894",
   ios: {
-    scheme: 'layerly',
-    contentInset: 'never',
-    backgroundColor: '#A8B894',
+    scheme: "layerly",
+    contentInset: "never",
+    backgroundColor: "#A8B894",
   },
   plugins: {
     SplashScreen: {
@@ -27,16 +27,16 @@ const config: CapacitorConfig = {
       launchAutoHide: true,
       launchShowDuration: 8000,
       launchFadeOutDuration: 200,
-      backgroundColor: '#A8B894',
+      backgroundColor: "#A8B894",
       showSpinner: false,
     },
     StatusBar: {
       overlaysWebView: false,
-      style: 'DARK',
-      backgroundColor: '#A8B894',
+      style: "DARK",
+      backgroundColor: "#A8B894",
     },
     Keyboard: {
-      resize: 'native',
+      resize: "native",
       resizeOnFullScreen: true,
     },
   },

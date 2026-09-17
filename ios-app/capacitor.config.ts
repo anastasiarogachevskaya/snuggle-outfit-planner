@@ -1,4 +1,4 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from "@capacitor/cli";
 
 // PRODUCTION CONFIG — the single source of truth for the shipped iOS app.
 //
@@ -19,27 +19,26 @@ import type { CapacitorConfig } from '@capacitor/cli';
 // GOOGLE_IOS_CLIENT_ID  → Google Cloud Console → Credentials → OAuth client, type "iOS"
 // GOOGLE_WEB_CLIENT_ID  → the existing Web client (used as audience so the
 //                          backend accepts the id_token).
-const GOOGLE_IOS_CLIENT_ID = '614898700516-or4tddis777mpvvmkr3g5v66re82fv0h.apps.googleusercontent.com';
-const GOOGLE_WEB_CLIENT_ID = '614898700516-ld3f6r0bi9k33iots2h2kfsdqob3mo8j.apps.googleusercontent.com';
+const GOOGLE_IOS_CLIENT_ID =
+  "614898700516-or4tddis777mpvvmkr3g5v66re82fv0h.apps.googleusercontent.com";
+const GOOGLE_WEB_CLIENT_ID =
+  "614898700516-ld3f6r0bi9k33iots2h2kfsdqob3mo8j.apps.googleusercontent.com";
 
 const config: CapacitorConfig = {
-  appId: 'online.layerly.app',
-  appName: 'Layerly',
-  webDir: 'www',
-  backgroundColor: '#A8B894',
+  appId: "online.layerly.app",
+  appName: "Layerly",
+  webDir: "www",
+  backgroundColor: "#A8B894",
   server: {
-    url: 'https://layerly.online',
+    url: "https://layerly.online",
     cleartext: false,
-    allowNavigation: [
-      'layerly.online',
-      '*.layerly.online',
-    ],
+    allowNavigation: ["layerly.online", "*.layerly.online"],
   },
 
   ios: {
-    scheme: 'layerly',
-    contentInset: 'never',
-    backgroundColor: '#A8B894',
+    scheme: "layerly",
+    contentInset: "never",
+    backgroundColor: "#A8B894",
   },
   plugins: {
     // Native Google Sign-In (no web page, no backend hostname shown).
@@ -48,7 +47,7 @@ const config: CapacitorConfig = {
     // ios/App/App/Info.plist, otherwise the sheet never returns.
     GoogleAuth: {
       iosClientId: GOOGLE_IOS_CLIENT_ID,
-      scopes: ['profile', 'email'],
+      scopes: ["profile", "email"],
       serverClientId: GOOGLE_WEB_CLIENT_ID,
       forceCodeForRefreshToken: false,
     },
@@ -59,16 +58,16 @@ const config: CapacitorConfig = {
       launchAutoHide: true,
       launchShowDuration: 8000,
       launchFadeOutDuration: 200,
-      backgroundColor: '#A8B894',
+      backgroundColor: "#A8B894",
       showSpinner: false,
     },
     StatusBar: {
       overlaysWebView: false,
-      style: 'DARK',
-      backgroundColor: '#A8B894',
+      style: "DARK",
+      backgroundColor: "#A8B894",
     },
     Keyboard: {
-      resize: 'native',
+      resize: "native",
       resizeOnFullScreen: true,
     },
   },

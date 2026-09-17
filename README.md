@@ -54,7 +54,7 @@ Layerly turns today's weather into a specific, layer-by-layer outfit for your ba
 
 The core logic lives in [`src/lib/recommend/`](src/lib/recommend). It works in two stages:
 
-1. **Pick layer *kinds***, not items — `pick-outdoor.ts` / `pick-home.ts` / `pick-sleep.ts` decide things like "mid: fleece, outer: none" from an effective temperature (adjusted for transport, walk duration, age, and situation), using temperature bands defined in `temperature.ts`.
+1. **Pick layer _kinds_**, not items — `pick-outdoor.ts` / `pick-home.ts` / `pick-sleep.ts` decide things like "mid: fleece, outer: none" from an effective temperature (adjusted for transport, walk duration, age, and situation), using temperature bands defined in `temperature.ts`.
 2. **Map kinds to real wardrobe items** — `map-wardrobe.ts` turns "mid: fleece" into "your fleece overall," falling back to substitutes (a sweater instead, or a jacket + snow pants standing in for a winter overall) only when the exact item isn't owned, and always naming the real substitution.
 
 This split is why the engine can reason about "the outfit for now vs. the outfit for when this walk ends" — it just runs the same pipeline twice at two temperatures and diffs the result.
@@ -72,26 +72,26 @@ bun run dev
 
 ### Environment variables
 
-| Variable | Used for |
-| --- | --- |
-| `SUPABASE_URL` / `VITE_SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_PUBLISHABLE_KEY` / `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon/publishable key (client-side) |
-| `SUPABASE_PROJECT_ID` / `VITE_SUPABASE_PROJECT_ID` | Supabase project ref |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only, **not** in `.env` — used for account deletion (`src/lib/account.functions.ts`); configured in Lovable Cloud |
-| `LOVABLE_API_KEY` | Server-only — auth email webhook (`src/routes/lovable/email/auth/webhook.ts`); configured in Lovable Cloud |
+| Variable                                                     | Used for                                                                                                                 |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `SUPABASE_URL` / `VITE_SUPABASE_URL`                         | Supabase project URL                                                                                                     |
+| `SUPABASE_PUBLISHABLE_KEY` / `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon/publishable key (client-side)                                                                              |
+| `SUPABASE_PROJECT_ID` / `VITE_SUPABASE_PROJECT_ID`           | Supabase project ref                                                                                                     |
+| `SUPABASE_SERVICE_ROLE_KEY`                                  | Server-only, **not** in `.env` — used for account deletion (`src/lib/account.functions.ts`); configured in Lovable Cloud |
+| `LOVABLE_API_KEY`                                            | Server-only — auth email webhook (`src/routes/lovable/email/auth/webhook.ts`); configured in Lovable Cloud               |
 
 ### Scripts
 
-| Command | What it does |
-| --- | --- |
-| `bun run dev` | Start the dev server |
-| `bun run build` | Production build |
-| `bun run preview` | Preview a production build locally |
-| `bun run test` | Unit tests (`bun:test`) |
-| `bun run test:e2e` | End-to-end tests (Playwright) |
-| `bun run typecheck` | `tsc --noEmit` |
-| `bun run lint` | ESLint |
-| `bun run format` | Prettier, write mode |
+| Command                   | What it does                                                            |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `bun run dev`             | Start the dev server                                                    |
+| `bun run build`           | Production build                                                        |
+| `bun run preview`         | Preview a production build locally                                      |
+| `bun run test`            | Unit tests (`bun:test`)                                                 |
+| `bun run test:e2e`        | End-to-end tests (Playwright)                                           |
+| `bun run typecheck`       | `tsc --noEmit`                                                          |
+| `bun run lint`            | ESLint                                                                  |
+| `bun run format`          | Prettier, write mode                                                    |
 | `bun run check:capacitor` | Verifies root and `ios-app/` Capacitor packages share one major version |
 
 ## iOS app
@@ -106,4 +106,4 @@ The web app deploys automatically on push to `main` via Lovable Cloud. This repo
 
 ## Testing philosophy
 
-The recommendation engine is the part of this app that most needs to be *correct*, not just "looks right" — a wrong layer recommendation is the actual product failing, not a cosmetic bug. It has the heaviest unit test coverage in the repo (`src/lib/recommend/__tests__/`), covering temperature-band edges, wardrobe substitution rules, and situation-specific safety behavior (e.g. never recommending a bulky outer layer under a car-seat harness).
+The recommendation engine is the part of this app that most needs to be _correct_, not just "looks right" — a wrong layer recommendation is the actual product failing, not a cosmetic bug. It has the heaviest unit test coverage in the repo (`src/lib/recommend/__tests__/`), covering temperature-band edges, wardrobe substitution rules, and situation-specific safety behavior (e.g. never recommending a bulky outer layer under a car-seat harness).

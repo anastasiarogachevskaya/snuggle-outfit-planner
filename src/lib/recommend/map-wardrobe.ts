@@ -14,8 +14,14 @@ import type {
 // Ordered fallback lists — first match in `owned` wins.
 const BASE_MAP: Record<BaseKind, { slugs: WardrobeSlug[]; label: string } | null> = {
   diaper_only: null,
-  sleeveless: { slugs: ["sleeveless_bodysuit", "short_sleeve_bodysuit"], label: "Sleeveless bodysuit" },
-  short_sleeve: { slugs: ["short_sleeve_bodysuit", "sleeveless_bodysuit"], label: "Short-sleeve bodysuit" },
+  sleeveless: {
+    slugs: ["sleeveless_bodysuit", "short_sleeve_bodysuit"],
+    label: "Sleeveless bodysuit",
+  },
+  short_sleeve: {
+    slugs: ["short_sleeve_bodysuit", "sleeveless_bodysuit"],
+    label: "Short-sleeve bodysuit",
+  },
   long_sleeve: { slugs: ["long_sleeve_bodysuit"], label: "Long-sleeve bodysuit" },
   pajamas_light: { slugs: ["pajamas"], label: "Lightweight pajamas" },
   pajamas: { slugs: ["pajamas"], label: "Long-sleeve pajamas" },
@@ -159,10 +165,7 @@ export function mapWardrobe(
   // A one-piece that covers base and bottom together wins over the separates
   // it replaces — one garment to fetch instead of two.
   const onePiece = ONE_PIECE.find(
-    (c) =>
-      owned.has(c.slug) &&
-      c.base.includes(layers.base) &&
-      c.bottom.includes(layers.bottom),
+    (c) => owned.has(c.slug) && c.base.includes(layers.base) && c.bottom.includes(layers.bottom),
   );
 
   const midOwnsRealMatch = MID_MAP[layers.mid]?.slugs.some((s) => owned.has(s)) ?? false;

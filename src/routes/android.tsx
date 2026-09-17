@@ -25,10 +25,12 @@ function AndroidPage() {
         </header>
 
         <main>
-          <h1 className="font-serif text-3xl font-semibold leading-tight text-ink">Layerly for Android</h1>
+          <h1 className="font-serif text-3xl font-semibold leading-tight text-ink">
+            Layerly for Android
+          </h1>
           <p className="mt-4 leading-relaxed text-ink/70">
-            Layerly runs as an installable web app on Android. There is nothing to download from a store — Chrome
-            installs it directly, and it updates itself.
+            Layerly runs as an installable web app on Android. There is nothing to download from a
+            store — Chrome installs it directly, and it updates itself.
           </p>
 
           <section className="mt-10">

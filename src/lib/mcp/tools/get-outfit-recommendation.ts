@@ -15,7 +15,10 @@ export default defineTool({
     baby_id: z.string().describe("Baby profile id from list_babies."),
     situation: z.enum(["home", "walk", "car"]).describe("Where the baby will be."),
     room_temp_c: z.number().optional().describe("Room temperature in Celsius, for situation=home."),
-    home_activity: z.enum(["playing", "sleeping"]).optional().describe("Home activity, for situation=home."),
+    home_activity: z
+      .enum(["playing", "sleeping"])
+      .optional()
+      .describe("Home activity, for situation=home."),
     transport_mode: z
       .enum(["pram", "sitting-stroller", "carrier"])
       .optional()

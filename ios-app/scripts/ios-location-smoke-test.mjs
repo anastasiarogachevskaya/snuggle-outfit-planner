@@ -35,7 +35,11 @@ const EXPECTATIONS = [
     /To Native -> Geolocation getCurrentPosition|Geolocation\.getCurrentPosition\(/i,
     "getCurrentPosition reached native",
   ],
-  ["outcome", /outcome: (success|permission-|location-disabled|timeout|unavailable)/i, "flow settled with an outcome"],
+  [
+    "outcome",
+    /outcome: (success|permission-|location-disabled|timeout|unavailable)/i,
+    "flow settled with an outcome",
+  ],
 ];
 
 const seen = new Set();

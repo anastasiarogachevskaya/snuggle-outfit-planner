@@ -52,7 +52,10 @@ describe("age bands", () => {
       expect(dob).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       const ageDays = (Date.now() - new Date(dob).getTime()) / 86_400_000;
       const expected = Math.round(option.months * 30.44);
-      expect({ id: option.id, ok: Math.abs(ageDays - expected) <= 1.5 }).toEqual({ id: option.id, ok: true });
+      expect({ id: option.id, ok: Math.abs(ageDays - expected) <= 1.5 }).toEqual({
+        id: option.id,
+        ok: true,
+      });
     }
   });
 

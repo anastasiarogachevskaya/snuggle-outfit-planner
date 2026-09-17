@@ -5,7 +5,8 @@ import { errorResult, supabaseForUser, textResult } from "../supabase";
 export default defineTool({
   name: "list_babies",
   title: "List baby profiles",
-  description: "List the signed-in parent's baby profiles with age, location and temperature preference.",
+  description:
+    "List the signed-in parent's baby profiles with age, location and temperature preference.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {

@@ -23,6 +23,7 @@ Replace the current `src/routes/index.tsx` content with a compact marketing scre
 - Minimal footer: Try, Sign in, Guides (Layering, Stroller), iOS, Android, Web app
 
 Remove from the landing page:
+
 - How Layerly works
 - Why Layerly
 - Features

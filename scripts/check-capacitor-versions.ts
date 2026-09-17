@@ -22,7 +22,9 @@ function capacitorDeps(pkg: Pkg | null): Record<string, string> {
   if (!pkg) return {};
   const all = { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) };
   return Object.fromEntries(
-    Object.entries(all).filter(([name]) => name.startsWith("@capacitor/") || name.startsWith("@capacitor-community/")),
+    Object.entries(all).filter(
+      ([name]) => name.startsWith("@capacitor/") || name.startsWith("@capacitor-community/"),
+    ),
   );
 }
 
@@ -46,7 +48,8 @@ for (const [where, pkg] of [
 
 const errors: string[] = [];
 const unknown = entries.filter((e) => e.major === null);
-for (const e of unknown) errors.push(`Cannot parse version for ${e.name} (${e.where}): "${e.range}"`);
+for (const e of unknown)
+  errors.push(`Cannot parse version for ${e.name} (${e.where}): "${e.range}"`);
 
 const known = entries.filter((e) => e.major !== null);
 const majors = [...new Set(known.map((e) => e.major))];
@@ -55,7 +58,12 @@ if (majors.length > 1) {
   errors.push(
     `Capacitor packages span multiple major versions: ${majors.sort().join(", ")}.\n` +
       known
-        .filter((e) => e.name === "@capacitor/core" || e.name === "@capacitor/cli" || e.name === "@capacitor/ios")
+        .filter(
+          (e) =>
+            e.name === "@capacitor/core" ||
+            e.name === "@capacitor/cli" ||
+            e.name === "@capacitor/ios",
+        )
         .map((e) => `  ${e.where}: ${e.name}@${e.range}`)
         .join("\n") +
       "\nAll Capacitor packages (root + ios-app) must use the same major version (currently 7).",

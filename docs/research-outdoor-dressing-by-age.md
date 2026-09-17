@@ -17,7 +17,7 @@ wear in the same conditions. No source scales this by age in degrees.
 
 **Conclusion**: this matches what the engine already does. `ageAdjustmentC`'s
 small size isn't a bug — there is no bigger number to reach for. Unlike sleep
-(where a continuous adjustment was actively unsupported), here a *small*
+(where a continuous adjustment was actively unsupported), here a _small_
 continuous adjustment is roughly consistent with the guidance; it just isn't
 where the real age-driven risk lives (see Finding 2).
 
@@ -71,7 +71,7 @@ age-specific carve-out was found in the guidance beyond what's there.
 
 - [How to Dress a Baby in Winter, According to a Pediatrician — Fatherly](https://www.fatherly.com/parenting/how-to-dress-baby-cold-weather-winter-layering)
 - [How to keep your newborn baby warm in winter weather — Riley Children's Health](https://www.rileychildrens.org/connections/how-to-keep-your-newborn-baby-warm-in-winter-weather)
-- [How cold is *too cold* for a baby to go outside? — Motherly](https://www.mother.ly/baby/baby-health/how-cold-is-too-cold-for-a-baby-to-go-outside/)
+- [How cold is _too cold_ for a baby to go outside? — Motherly](https://www.mother.ly/baby/baby-health/how-cold-is-too-cold-for-a-baby-to-go-outside/)
 - [Cold Weather Safety for Children: Preventing Frostbite & Hypothermia — HealthyChildren.org (AAP)](https://www.healthychildren.org/English/safety-prevention/at-play/Pages/Cold-Weather-Safety.aspx)
 - [Cold Weather Tips for Babies and Toddlers — Happiest Baby](https://www.happiestbaby.com/blogs/baby/cold-weather-babies-toddlers)
 - [Kids and Heat — Children's Primary Care Medical Group](https://www.cpcmg.net/kids-and-heat/)

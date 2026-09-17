@@ -330,9 +330,7 @@ function buildSafety(ctx: OutdoorContext, effectiveC: number): string[] {
         "🥶 Under 2 months and below freezing — skip the outdoor trip if you can, or keep it very brief.",
       );
     } else if (ctx.feelsLikeC < TEMP.COOL) {
-      advice.push(
-        "🥶 Under 2 months in cold weather — keep outdoor time to about 10–15 minutes.",
-      );
+      advice.push("🥶 Under 2 months in cold weather — keep outdoor time to about 10–15 minutes.");
     }
   }
 

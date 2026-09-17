@@ -6,9 +6,7 @@ import { getPlatform, isNativeApp } from "@/lib/platform";
  * ambiguity about what the iOS wrapper is actually rendering.
  */
 
-export type AppSource =
-  | { kind: "remote"; origin: string }
-  | { kind: "bundled"; origin: string };
+export type AppSource = { kind: "remote"; origin: string } | { kind: "bundled"; origin: string };
 
 /** Bump when native diagnostics or release-critical bridge behavior changes. */
 export const NATIVE_INSTRUMENTATION_VERSION = "location-v2";

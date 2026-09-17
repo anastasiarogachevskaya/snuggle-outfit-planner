@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 
 import {
   Body,
@@ -12,18 +12,15 @@ import {
   Preview,
   Section,
   Text,
-} from '@react-email/components'
-import * as brand from './brand'
+} from "@react-email/components";
+import * as brand from "./brand";
 
 interface MagicLinkEmailProps {
-  siteName: string
-  confirmationUrl: string
+  siteName: string;
+  confirmationUrl: string;
 }
 
-export const MagicLinkEmail = ({
-  siteName,
-  confirmationUrl,
-}: MagicLinkEmailProps) => (
+export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Your login link for {siteName}</Preview>
@@ -46,7 +43,7 @@ export const MagicLinkEmail = ({
           </Section>
 
           <Text style={brand.mutedText}>
-            Button not working?{' '}
+            Button not working?{" "}
             <Link href={confirmationUrl} style={brand.plainLink}>
               Log in here
             </Link>
@@ -62,6 +59,6 @@ export const MagicLinkEmail = ({
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default MagicLinkEmail
+export default MagicLinkEmail;

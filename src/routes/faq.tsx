@@ -21,7 +21,7 @@ const FAQ = [
   },
   {
     q: "Can I use Layerly without creating an account?",
-    a: "Yes. Tap \"Try Layerly\" on the home screen, pick your baby's age band, share a location or city, and you get a full recommendation with a realistic default wardrobe. Nothing is saved until you decide to create an account.",
+    a: 'Yes. Tap "Try Layerly" on the home screen, pick your baby\'s age band, share a location or city, and you get a full recommendation with a realistic default wardrobe. Nothing is saved until you decide to create an account.',
   },
   {
     q: "Does Layerly work with my own wardrobe?",
@@ -90,7 +90,9 @@ function FaqPage() {
         </header>
 
         <main>
-          <h1 className="mb-4 font-serif text-3xl font-semibold leading-tight text-ink">Frequently asked questions</h1>
+          <h1 className="mb-4 font-serif text-3xl font-semibold leading-tight text-ink">
+            Frequently asked questions
+          </h1>
           <p className="mb-10 leading-relaxed text-ink/70">
             Quick answers about how Layerly decides what your baby should wear.
           </p>

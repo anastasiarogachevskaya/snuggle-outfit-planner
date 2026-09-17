@@ -98,8 +98,6 @@ describe("mapNativeError — distinct plugin failures", () => {
   }
 });
 
-
-
 describe("getCurrentLocation — native", () => {
   it("resolves with coordinates when permission is granted", async () => {
     const res = await getCurrentLocation();

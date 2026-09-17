@@ -32,10 +32,9 @@ function stalledFetch(): typeof fetch {
 describe("reverseGeocode", () => {
   it("returns a place when the geocoder answers", async () => {
     globalThis.fetch = (async () =>
-      new Response(
-        JSON.stringify({ city: "Helsinki", countryName: "Finland" }),
-        { status: 200 },
-      )) as unknown as typeof fetch;
+      new Response(JSON.stringify({ city: "Helsinki", countryName: "Finland" }), {
+        status: 200,
+      })) as unknown as typeof fetch;
 
     expect(await reverseGeocodeLabel(60.17, 24.94)).toBe("Helsinki, Finland");
   });
@@ -85,7 +84,8 @@ describe("reverseGeocode", () => {
     }) as unknown as typeof fetch;
     expect(await reverseGeocode(1, 2)).toBeNull();
 
-    globalThis.fetch = (async () => new Response("nope", { status: 500 })) as unknown as typeof fetch;
+    globalThis.fetch = (async () =>
+      new Response("nope", { status: 500 })) as unknown as typeof fetch;
     expect(await reverseGeocode(1, 2)).toBeNull();
 
     globalThis.fetch = (async () =>

@@ -43,13 +43,12 @@
   --color-activity-selected-shadow: var(--activity-selected-shadow);
 }
 
-
 :root {
   --radius: 1rem;
   /* Soft Nordic Minimal palette */
-  --canvas: oklch(0.977 0.007 85);        /* #FAF9F6 */
-  --surface: oklch(1 0 0);                 /* #FFFFFF */
-  --ink: oklch(0.28 0.005 250);            /* #2D2D2D */
+  --canvas: oklch(0.977 0.007 85); /* #FAF9F6 */
+  --surface: oklch(1 0 0); /* #FFFFFF */
+  --ink: oklch(0.28 0.005 250); /* #2D2D2D */
 
   --background: var(--canvas);
   --foreground: var(--ink);
@@ -58,30 +57,29 @@
   --popover: var(--surface);
   --popover-foreground: var(--ink);
 
-  --primary: oklch(0.62 0.055 130);        /* sage #7D8F69 */
+  --primary: oklch(0.62 0.055 130); /* sage #7D8F69 */
   --primary-foreground: oklch(0.99 0.005 85);
   --secondary: oklch(0.94 0.01 85);
   --secondary-foreground: var(--ink);
   --muted: oklch(0.94 0.01 85);
   --muted-foreground: oklch(0.5 0.01 250);
-  --accent: oklch(0.72 0.11 45);           /* clay #D48C70 */
+  --accent: oklch(0.72 0.11 45); /* clay #D48C70 */
   --accent-foreground: oklch(0.99 0.005 85);
   --destructive: oklch(0.6 0.2 25);
   --destructive-foreground: oklch(0.99 0.005 85);
   --border: oklch(0.28 0.005 250 / 8%);
   --input: oklch(0.28 0.005 250 / 12%);
   --ring: oklch(0.62 0.055 130);
-  --activity: oklch(0.94 0.015 160);          /* soft sage */
+  --activity: oklch(0.94 0.015 160); /* soft sage */
   --activity-foreground: oklch(0.55 0.04 165); /* muted sage */
-  --activity-selected: #A8B894;
-  --activity-selected-foreground: #2F3A2E;
-  --activity-selected-border: #8E9F7D;
-  --activity-selected-shadow: #8E9F7D;
+  --activity-selected: #a8b894;
+  --activity-selected-foreground: #2f3a2e;
+  --activity-selected-border: #8e9f7d;
+  --activity-selected-shadow: #8e9f7d;
 
   --font-serif: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
-
 
 /* Safe areas: 0 on the web, real insets only inside the native shell. */
 :root {
@@ -142,13 +140,15 @@ html.native-ios [contenteditable="true"] {
   font-size: 16px;
 }
 
-
 @layer base {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
     border-color: var(--color-border);
   }
-  html, body {
+  html,
+  body {
     background-color: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-sans);
@@ -182,12 +182,21 @@ html.native-ios [contenteditable="true"] {
     padding-bottom: var(--safe-area-bottom);
   }
   @supports (overflow: clip) {
-    html, body { overflow-x: clip; }
+    html,
+    body {
+      overflow-x: clip;
+    }
   }
 
-  body > * { max-width: 100%; }
+  body > * {
+    max-width: 100%;
+  }
   @media (max-width: 640px) {
-    input, select, textarea { font-size: 16px; }
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
   input[type="date"] {
     -webkit-appearance: none;
@@ -201,4 +210,3 @@ html.native-ios [contenteditable="true"] {
     margin-left: auto;
   }
 }
-

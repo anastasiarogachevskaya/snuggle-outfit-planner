@@ -63,7 +63,9 @@ function HowItWorks() {
         </header>
 
         <main>
-          <h1 className="mb-4 font-serif text-3xl font-semibold leading-tight text-ink">How Layerly works</h1>
+          <h1 className="mb-4 font-serif text-3xl font-semibold leading-tight text-ink">
+            How Layerly works
+          </h1>
           <p className="mb-10 leading-relaxed text-ink/70">
             From weather to wardrobe in a few simple steps. No guessing, no generic charts.
           </p>

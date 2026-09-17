@@ -22,7 +22,9 @@ describe("pageMeta", () => {
 
   it("mirrors title and description into OG and Twitter tags", () => {
     expect(meta[0].title).toBe("Layerly — FAQ");
-    expect(find(meta, "name", "description")).toBe("Answers about dressing your baby for the weather.");
+    expect(find(meta, "name", "description")).toBe(
+      "Answers about dressing your baby for the weather.",
+    );
     expect(find(meta, "property", "og:title")).toBe("Layerly — FAQ");
     expect(find(meta, "name", "twitter:title")).toBe("Layerly — FAQ");
     expect(find(meta, "property", "og:description")).toBe(
@@ -64,7 +66,10 @@ describe("PUBLIC_ROUTES", () => {
     const freqs = ["always", "hourly", "daily", "weekly", "monthly", "yearly", "never"];
     for (const r of PUBLIC_ROUTES) {
       const priority = Number(r.priority);
-      expect({ path: r.path, ok: priority >= 0 && priority <= 1 }).toEqual({ path: r.path, ok: true });
+      expect({ path: r.path, ok: priority >= 0 && priority <= 1 }).toEqual({
+        path: r.path,
+        ok: true,
+      });
       expect(freqs).toContain(r.changefreq);
     }
   });

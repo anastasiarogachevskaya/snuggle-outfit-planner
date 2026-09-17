@@ -25,6 +25,7 @@ Name field plus the same calendar date picker used on the signed-in profile page
 ## Wardrobe step
 
 Both options from the website:
+
 - Quick setup: one screen, common items already ticked, tap to adjust.
 - Detailed setup: the same six category screens with the progress bar.
 - Skip for now: a sensible starter set is used and can be edited any time.

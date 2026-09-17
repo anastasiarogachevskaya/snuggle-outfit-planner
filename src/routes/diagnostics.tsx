@@ -16,11 +16,7 @@ import {
   isNativePluginAvailable,
 } from "@/lib/platform";
 import { SiteFooter } from "@/components/site-footer";
-import {
-  getBuildId,
-  getBuildLabel,
-  NATIVE_INSTRUMENTATION_VERSION,
-} from "@/lib/build-info";
+import { getBuildId, getBuildLabel, NATIVE_INSTRUMENTATION_VERSION } from "@/lib/build-info";
 
 export const Route = createFileRoute("/diagnostics")({
   head: () => ({
@@ -104,7 +100,10 @@ function DiagnosticsPage() {
           <Row label="Capacitor platform" value={getPlatform()} />
           <Row label="Native shell" value={String(isNativeApp())} />
           <Row label="Native build" value={nativeBuild} />
-          <Row label="SignInWithApple registered" value={String(isNativePluginAvailable("SignInWithApple"))} />
+          <Row
+            label="SignInWithApple registered"
+            value={String(isNativePluginAvailable("SignInWithApple"))}
+          />
           <Row label="Browser registered" value={String(isNativePluginAvailable("Browser"))} />
           <Row
             label="Geolocation path"

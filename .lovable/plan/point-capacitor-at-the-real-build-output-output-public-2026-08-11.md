@@ -5,19 +5,23 @@ The root build emits static web assets to `.output/public`, but the Capacitor co
 ## Changes
 
 ### 1. `ios-app/capacitor.config.ts`
+
 - `webDir: '../dist/client'` -> `webDir: '../.output/public'`
 - Update the explanatory comment to name the correct directory.
 - `server.url: 'https://layerly.online'` and everything else (plugins, iOS block, allowNavigation) stays exactly as-is.
 
 ### 2. `ios-app/capacitor.config.local.ts`
+
 - Same `webDir` change; comment already mentions `../.output/public`, keep it consistent.
 - No other keys touched.
 
 ### 3. `ios-app/README.md`
+
 - Update the three places describing the web output location and the local-mode bundle path so the docs match reality.
 
 ### 4. `ios-app/scripts/prepare-ios.mjs`
-- No functional change needed: it already detects the output from the Nitro manifest with `.output/public` first in the fallback list, and compares it against the declared `webDir`. Its error message legitimately lists `dist/client` as a *fallback candidate*, so that mention stays.
+
+- No functional change needed: it already detects the output from the Nitro manifest with `.output/public` first in the fallback list, and compares it against the declared `webDir`. Its error message legitimately lists `dist/client` as a _fallback candidate_, so that mention stays.
 
 ## Intentionally remaining `dist/client` references
 

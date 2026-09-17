@@ -43,7 +43,9 @@ const newPodspec = oldPodspec.replace(
   "s.dependency 'GoogleSignIn', '~> 9.2'",
 );
 if (newPodspec === oldPodspec && !oldPodspec.includes("'GoogleSignIn', '~> 9.2'")) {
-  console.error("✖ Could not find the GoogleSignIn ~> 6.2.4 dependency line to patch in the podspec.");
+  console.error(
+    "✖ Could not find the GoogleSignIn ~> 6.2.4 dependency line to patch in the podspec.",
+  );
   process.exit(1);
 }
 writeFileSync(podspecPath, newPodspec);

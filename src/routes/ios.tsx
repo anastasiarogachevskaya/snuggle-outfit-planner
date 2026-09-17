@@ -25,33 +25,42 @@ function IosPage() {
         </header>
 
         <main>
-          <h1 className="font-serif text-3xl font-semibold leading-tight text-ink">Layerly for iPhone</h1>
+          <h1 className="font-serif text-3xl font-semibold leading-tight text-ink">
+            Layerly for iPhone
+          </h1>
           <p className="mt-4 leading-relaxed text-ink/70">
-            Layerly is designed mobile-first, so it already looks and behaves like an app on iPhone. The native iOS
-            build is in preparation; until it reaches the App Store you can install Layerly straight from Safari in a
-            few seconds.
+            Layerly is designed mobile-first, so it already looks and behaves like an app on iPhone.
+            The native iOS build is in preparation; until it reaches the App Store you can install
+            Layerly straight from Safari in a few seconds.
           </p>
 
           <section className="mt-10">
-            <h2 className="font-serif text-2xl font-semibold text-ink">Add Layerly to your Home Screen</h2>
+            <h2 className="font-serif text-2xl font-semibold text-ink">
+              Add Layerly to your Home Screen
+            </h2>
             <ol className="mt-4 space-y-2 text-sm leading-relaxed text-ink/70">
               <li>1. Open layerly.online in Safari on your iPhone.</li>
               <li>2. Tap the Share button in the toolbar.</li>
               <li>3. Choose "Add to Home Screen", then tap Add.</li>
             </ol>
             <p className="mt-3 text-sm leading-relaxed text-ink/70">
-              Layerly then opens full screen with its own icon, no browser bars, and respects the iPhone safe areas and
-              notch.
+              Layerly then opens full screen with its own icon, no browser bars, and respects the
+              iPhone safe areas and notch.
             </p>
           </section>
 
           <section className="mt-10">
             <h2 className="font-serif text-2xl font-semibold text-ink">What you get on iOS</h2>
             <ul className="mt-4 space-y-3 text-sm leading-relaxed text-ink/70">
-              <li>· Native location permission for accurate local weather, or a manual city picker.</li>
+              <li>
+                · Native location permission for accurate local weather, or a manual city picker.
+              </li>
               <li>· Full-screen standalone layout with safe-area and keyboard handling.</li>
               <li>· Sign in with Apple, Google or email.</li>
-              <li>· The same recommendation engine as the web app, including sleep and TOG sleep sacks.</li>
+              <li>
+                · The same recommendation engine as the web app, including sleep and TOG sleep
+                sacks.
+              </li>
             </ul>
           </section>
 

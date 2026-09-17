@@ -32,6 +32,7 @@ New script `ios-app/scripts/check-launch-assets.mjs` that fails with a non-zero 
 - the logo image view is missing `accessibilityIdentifier="LaunchLogo"`
 
 Wired in as:
+
 - `check:launch-assets` script in `ios-app/package.json`
 - a step in `ios-app/.github/workflows/build-ios.yml`, placed before `cap sync`, so a broken launch screen fails fast
 

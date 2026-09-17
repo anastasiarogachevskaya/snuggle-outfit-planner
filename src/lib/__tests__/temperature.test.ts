@@ -30,7 +30,15 @@ describe("bandFor", () => {
   }
 
   it("thresholds are strictly descending", () => {
-    const values = [TEMP.VERY_HOT, TEMP.HOT, TEMP.WARM, TEMP.MILD, TEMP.COOL, TEMP.COLD, TEMP.FREEZING];
+    const values = [
+      TEMP.VERY_HOT,
+      TEMP.HOT,
+      TEMP.WARM,
+      TEMP.MILD,
+      TEMP.COOL,
+      TEMP.COLD,
+      TEMP.FREEZING,
+    ];
     for (let i = 1; i < values.length; i++) {
       expect(values[i - 1]).toBeGreaterThan(values[i]);
     }

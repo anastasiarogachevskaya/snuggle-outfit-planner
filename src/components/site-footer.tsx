@@ -22,7 +22,10 @@ export function SiteFooter({
   variant?: "full" | "compact";
   className?: string;
 }) {
-  let links = variant === "compact" ? LINKS.filter((l) => (COMPACT as readonly string[]).includes(l.to)) : LINKS;
+  let links =
+    variant === "compact"
+      ? LINKS.filter((l) => (COMPACT as readonly string[]).includes(l.to))
+      : LINKS;
   // Apple guideline 2.3.10: no third-party platform references reachable from
   // inside the iOS app. The /ios and /android pages themselves stay live for
   // browser visitors — only the native build's footer drops both links,

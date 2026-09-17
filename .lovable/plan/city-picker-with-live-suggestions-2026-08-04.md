@@ -5,6 +5,7 @@ Guests who deny GPS (or prefer typing) currently type a free-text city and tap "
 ## What changes
 
 **Guest location step (`/try`)**
+
 - Typing 2+ characters queries the geocoding service (debounced ~250ms) and shows up to 5 matching places in a dropdown under the field.
 - Each suggestion shows city name plus region and country so "Springfield" is disambiguable.
 - The location is only set by tapping a suggestion — no more blind "Set" button guessing. Keyboard Enter picks the highlighted suggestion.
@@ -12,6 +13,7 @@ Guests who deny GPS (or prefer typing) currently type a free-text city and tap "
 - After GPS is denied, the step shows a short line ("No problem — search for your city instead") and focuses the search field, so the manual path is an obvious continuation rather than a fallback the user has to find.
 
 **Baby profile location field (signed-in)**
+
 - Same picker component, so the manual path behaves identically in both places.
 
 ## Technical notes

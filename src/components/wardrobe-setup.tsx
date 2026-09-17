@@ -24,9 +24,7 @@ export function WardrobeSetup({
 }) {
   const [mode, setMode] = useState<WardrobeSetupMode>("chooser");
   const [step, setStep] = useState(0);
-  const [selected, setSelected] = useState<Set<WardrobeSlug>>(
-    () => new Set(initialSelected ?? []),
-  );
+  const [selected, setSelected] = useState<Set<WardrobeSlug>>(() => new Set(initialSelected ?? []));
 
   useEffect(() => {
     if (mode === "quick") setSelected(new Set(QUICK_SETUP_OWNED));

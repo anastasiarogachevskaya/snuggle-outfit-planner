@@ -47,21 +47,20 @@ Xcode prints, all prefixed `[Layerly Diagnostics]`:
 - `webView isHidden / alpha / frame / window` plus any visible native view
   stacked above the WebView
 - `page state {readyState, href, textLength, childCount, bodyBackground,
-  bodyVisibility, bodyOpacity, rootChildren}`
+bodyVisibility, bodyOpacity, rootChildren}`
 
 Read it like this:
 
-| Console shows | Root cause |
-| --- | --- |
-| no `navigation completed`, JS/NSError reported | the URL never loaded (DNS/TLS/navigation policy) |
-| completed but `textLength: 0` | HTML loaded, React never hydrated |
-| completed, text present, but a view is stacked above / `isHidden` / `alpha 0` | a native or web layer is covering the page |
+| Console shows                                                                 | Root cause                                       |
+| ----------------------------------------------------------------------------- | ------------------------------------------------ |
+| no `navigation completed`, JS/NSError reported                                | the URL never loaded (DNS/TLS/navigation policy) |
+| completed but `textLength: 0`                                                 | HTML loaded, React never hydrated                |
+| completed, text present, but a view is stacked above / `isHidden` / `alpha 0` | a native or web layer is covering the page       |
 
 If nothing completes within five seconds, a DEBUG-only fallback screen shows the
 reason. All of this is excluded from Release/App Store builds by `#if DEBUG`.
 
 No `ios/` folder is committed — you generate it on a Mac.
-
 
 ## Which source does the app load?
 
@@ -75,9 +74,6 @@ Layerly ios source: https://layerly.online (build f25075e)
 or `... source: bundled ...` when running from bundled assets. If it says
 `bundled` while `capacitor.config.ts` declares a `server.url`, the native project
 is out of sync — re-run `bun run prepare:ios`, which now fails on that mismatch.
-
-
-
 
 ## Prerequisites (Mac)
 
@@ -103,19 +99,18 @@ In Xcode: select the **App** target → Signing & Capabilities → set your Appl
 
 ## Scripts
 
-| Script | What it does |
-| --- | --- |
-| `bun run check:capacitor` | Validates that root + ios-app Capacitor packages share one major version |
-| `bun run build:web` | Builds the root Layerly web app (static output detected from the build manifest) |
-| `bun run sync:ios` | `cap sync ios` (requires `ios/` to exist) |
-| `bun run open:ios` | Opens the Xcode workspace |
-| `bun run prepare:ios` | Runs the Capacitor version check, installs root deps if needed, builds the web app, detects the static output from the build manifest, then runs `cap sync ios` only if `ios/` exists — otherwise prints the `npx cap add ios` instruction |
+| Script                    | What it does                                                                                                                                                                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `bun run check:capacitor` | Validates that root + ios-app Capacitor packages share one major version                                                                                                                                                                   |
+| `bun run build:web`       | Builds the root Layerly web app (static output detected from the build manifest)                                                                                                                                                           |
+| `bun run sync:ios`        | `cap sync ios` (requires `ios/` to exist)                                                                                                                                                                                                  |
+| `bun run open:ios`        | Opens the Xcode workspace                                                                                                                                                                                                                  |
+| `bun run prepare:ios`     | Runs the Capacitor version check, installs root deps if needed, builds the web app, detects the static output from the build manifest, then runs `cap sync ios` only if `ios/` exists — otherwise prints the `npx cap add ios` instruction |
 
 During the current navigation diagnostic, production `allowNavigation` is
 intentionally limited to `layerly.online` and `*.layerly.online`. OAuth and
 other external hosts therefore open outside the WebView instead of being
 allowlisted as in-app navigation.
-
 
 ## Dependency rules & troubleshooting
 
@@ -148,14 +143,12 @@ bun run check:capacitor
 
 This never requires deleting the native `ios/` directory.
 
-
 ## Two config modes
 
 - **Default (`capacitor.config.ts`)** — loads the live site from `https://layerly.online`. Web deploys ship instantly; no App Store release needed for content changes. iOS renders the exact same TanStack routes/components as the website — there is **no separate native landing, login or onboarding screen**.
 - **Local (`capacitor.config.local.ts`)** — bundles the staged static output (`ios-app/www`) into the app. Because Layerly is server-rendered, this mode requires a prerendered/static build to have an `index.html`; without one the WebView shows stale, non-hydrating markup (buttons appear but nothing is clickable). Use it only for deliberate offline experiments.
 
 Switch by copying whichever config over `capacitor.config.ts` before `bun run sync:ios`. Never switch implicitly — `prepare:ios` verifies the synced native config matches.
-
 
 ## Deep links
 
@@ -183,7 +176,6 @@ or the `location` background mode — Layerly never tracks location in the backg
 The permission prompt only appears when the user taps **Use my current location** on the baby
 profile screen; nothing is requested at launch. `@capacitor/geolocation` is installed here and is
 picked up automatically by `bun run sync:ios`.
-
 
 ## App icon
 
@@ -292,4 +284,3 @@ after you tap **Use my current location**: `getCurrentLocation entered`,
    (the saved location must never short-circuit the request).
 9. Deny the permission on a clean install and confirm the outcome is
    `permission-denied` and the spinner clears.
-

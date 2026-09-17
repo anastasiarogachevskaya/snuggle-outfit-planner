@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react";
 
 import {
   Body,
@@ -12,14 +12,14 @@ import {
   Preview,
   Section,
   Text,
-} from '@react-email/components'
-import * as brand from './brand'
+} from "@react-email/components";
+import * as brand from "./brand";
 
 interface SignupEmailProps {
-  siteName: string
-  siteUrl: string
-  recipient: string
-  confirmationUrl: string
+  siteName: string;
+  siteUrl: string;
+  recipient: string;
+  confirmationUrl: string;
 }
 
 export const SignupEmail = ({
@@ -40,14 +40,14 @@ export const SignupEmail = ({
         <Container style={brand.card}>
           <Heading style={brand.h1}>Confirm your email</Heading>
           <Text style={brand.text}>
-            Thanks for signing up for{' '}
+            Thanks for signing up for{" "}
             <Link href={siteUrl} style={brand.link}>
               {siteName}
             </Link>
-            . Confirm{' '}
+            . Confirm{" "}
             <Link href={`mailto:${recipient}`} style={brand.link}>
               {recipient}
-            </Link>{' '}
+            </Link>{" "}
             to start getting weather-ready outfit picks for your baby.
           </Text>
 
@@ -58,7 +58,7 @@ export const SignupEmail = ({
           </Section>
 
           <Text style={brand.mutedText}>
-            Button not working?{' '}
+            Button not working?{" "}
             <Link href={confirmationUrl} style={brand.plainLink}>
               Confirm your email here
             </Link>
@@ -74,6 +74,6 @@ export const SignupEmail = ({
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default SignupEmail
+export default SignupEmail;

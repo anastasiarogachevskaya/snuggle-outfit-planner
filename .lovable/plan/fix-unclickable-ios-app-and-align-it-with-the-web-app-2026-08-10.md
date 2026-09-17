@@ -20,28 +20,34 @@ Step 1 of the work is to confirm this rather than act on it.
 ## Plan
 
 ### 1. Make the loaded source unambiguous and self-reporting
+
 - Add a small `src/lib/build-info.ts` that exposes the runtime source (`window.location.origin` vs `capacitor://` / `file://` scheme) and a build id from a Vite-defined constant.
 - Log once at startup in dev/native: `Layerly iOS source: https://layerly.online` or `Layerly iOS source: bundled`.
 - This immediately answers Part 4 and Part 6 in the simulator console.
 
 ### 2. Confirm the blocked-tap cause
+
 - With the indicator above, check in the simulator whether the WebView is on the remote origin or `capacitor://localhost`.
 - If bundled: the cause is confirmed as stale/non-hydrating bundled assets, and the fix is the config work in step 3 — no CSS change needed.
 - If remote: run an `elementFromPoint` probe over the CTA to identify the intercepting node before changing anything. No global `pointer-events: auto` workaround.
 
 ### 3. Single, unambiguous iOS source
+
 - Make `ios-app/capacitor.config.ts` the only production config: keep `server.url = https://layerly.online`, and point `webDir` at a directory that always exists so `cap sync` is valid.
 - Update `ios-app/scripts/prepare-ios.mjs` to fail loudly (not warn) when the synced `ios/App/App/capacitor.config.json` does not contain the expected `server.url`, so a silent fallback to bundled assets can never happen again.
 - Document in `ios-app/README.md`: production = live web, local = explicit opt-in by copying `capacitor.config.local.ts`, and that local mode requires a prerendered build.
 
 ### 4. Dev-only build indicator (Part 7)
+
 - Extend the existing `PlatformDebugBadge` (it already exists and is pointer-events-none) to show `iOS • production web • <build id>` or `iOS • bundled • <build id>`.
 - Keep it behind `import.meta.env.DEV || VITE_SHOW_PLATFORM_DEBUG`, so it never ships in App Store / production builds.
 
 ### 5. Safety check on `keyboard-open`
+
 - `resyncKeyboardState()` already clears the class on resume; add the same clear once at native startup so a class can never survive a cold launch.
 
 ### 6. Verification
+
 - `bun run build`, `bun run prepare:ios`, and the existing test suite.
 - Simulator pass over: Log in, Sign up, Forgot password, email/password fields and focus, password visibility toggle, primary CTA, footer links, and after login the Home / Walk / Car selector.
 
