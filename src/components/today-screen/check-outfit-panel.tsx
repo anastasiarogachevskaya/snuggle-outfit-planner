@@ -320,18 +320,18 @@ export function CheckOutfitPanel({
           )}
         </div>
 
-        {result && (
-          <div className="mt-6 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-center font-medium">
+        {result ? (
+          <div className="mt-6 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-4 text-center font-medium">
             {VERDICT_COPY[result.verdict].emoji} {VERDICT_COPY[result.verdict].title}
           </div>
+        ) : (
+          <button
+            onClick={checkOutfit}
+            className="mt-6 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20"
+          >
+            Check outfit
+          </button>
         )}
-
-        <button
-          onClick={checkOutfit}
-          className="mt-6 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20"
-        >
-          {result ? "Check again" : "Check outfit"}
-        </button>
       </div>
     </section>
   );
