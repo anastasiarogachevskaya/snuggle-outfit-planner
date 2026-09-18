@@ -115,13 +115,32 @@ function BlogPostPage() {
                 {section.heading ? (
                   <h2 className="mb-3 text-lg font-medium text-ink">{section.heading}</h2>
                 ) : null}
-                <div className="space-y-4">
-                  {section.paragraphs.map((p) => (
-                    <p key={p.slice(0, 40)} className="leading-relaxed text-ink/70">
-                      {p}
-                    </p>
-                  ))}
-                </div>
+                {section.paragraphs ? (
+                  <div className="space-y-4">
+                    {section.paragraphs.map((p) => (
+                      <p key={p.slice(0, 40)} className="leading-relaxed text-ink/70">
+                        {p}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+                {section.image ? (
+                  <figure className="mt-6">
+                    <div className="overflow-hidden rounded-2xl border border-ink/5 bg-surface shadow-sm sm:max-w-md sm:mx-auto">
+                      <img
+                        src={section.image.src}
+                        alt={section.image.alt}
+                        loading="lazy"
+                        className="w-full"
+                      />
+                    </div>
+                    {section.image.caption ? (
+                      <figcaption className="mt-2 text-center text-sm text-ink/50">
+                        {section.image.caption}
+                      </figcaption>
+                    ) : null}
+                  </figure>
+                ) : null}
               </section>
             ))}
           </div>

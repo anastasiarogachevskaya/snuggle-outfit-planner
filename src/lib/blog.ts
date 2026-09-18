@@ -1,6 +1,13 @@
+export type BlogImage = {
+  src: string;
+  alt: string;
+  caption?: string;
+};
+
 export type BlogSection = {
   heading?: string;
-  paragraphs: string[];
+  paragraphs?: string[];
+  image?: BlogImage;
 };
 
 export type BlogPost = {
@@ -26,6 +33,11 @@ export const BLOG_POSTS: BlogPost[] = [
           "Layerly has always answered one question: what should my baby wear today? But plenty of mornings start the other way round. Baby is already half-dressed, the bodysuit and the fleece are on, and the real question is whether that is enough for the weather outside.",
           "That is what Layer up is for. It sits right under the recommendation on the Today screen, and instead of handing you an outfit, it lets you build one.",
         ],
+        image: {
+          src: "/blog/layer-up/today-card.png",
+          alt: "The Today screen in Layerly, showing the Layer up card below the daily outfit recommendation.",
+          caption: "Layer up lives right under today's recommendation.",
+        },
       },
       {
         heading: "How it works",
@@ -33,6 +45,23 @@ export const BLOG_POSTS: BlogPost[] = [
           "Tap Layer up and you get your own wardrobe, laid out layer by layer: base layer, bottoms, mid layer, outer layer, and the accessories — hat, mittens, socks. Tick what your baby has on. Layerly compares your combination with what today's weather, your baby's age and the situation you picked would call for, and tells you where the two differ.",
           "You might learn the outfit is fine as it is. You might learn it needs one more mid layer for a 40-minute walk, or that the pramsuit is too much for a short trip to the car. Either way, the answer is about the clothes in front of you, not a generic chart.",
         ],
+        image: {
+          src: "/blog/layer-up/picker-empty.png",
+          alt: "The Layer up outfit picker, showing empty slot rows for each clothing layer.",
+          caption: "One row per layer — only the clothes you have told Layerly you own.",
+        },
+      },
+      {
+        heading: "A live verdict",
+        paragraphs: [
+          "Every tap updates the verdict card at the top. It shows the current temperature and wind, and whether the outfit is too light, just right or too warm for the situation you picked.",
+          "If something needs to change, Layerly marks the exact row: the layer to remove gets a clay outline, the layer to add gets a sage outline. There is no button to press — the answer is there as soon as you tap.",
+        ],
+        image: {
+          src: "/blog/layer-up/picker-verdict.png",
+          alt: "The Layer up picker with garments selected and a 'Too light' verdict card.",
+          caption: "The verdict updates instantly as you build the outfit.",
+        },
       },
       {
         heading: "Why we added it",
@@ -40,6 +69,11 @@ export const BLOG_POSTS: BlogPost[] = [
           "A recommendation you have to follow exactly is a recommendation most parents ignore. Real mornings involve a favourite jumper, a coat that is already in the hallway, and a baby who will not tolerate one more layer. Being able to check your own choice keeps Layerly useful on those days too.",
           "It also makes the advice easier to trust. When you can see why an outfit is a little light or a little heavy, the next day's recommendation makes more sense — and you start to need it less, which is exactly the point.",
         ],
+        image: {
+          src: "/blog/layer-up/picker-done.png",
+          alt: "The bottom of the Layer up picker, showing accessory toggles and the Done button.",
+          caption: "Tap Done when you are finished and head back to the recommendation.",
+        },
       },
     ],
   },
