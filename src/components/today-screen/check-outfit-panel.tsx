@@ -71,12 +71,9 @@ function SlotRow<T extends WardrobeSlug | "none">({
   onChange: (v: T) => void;
   adjustment?: SlotAdjustment;
 }) {
-  const noneClassName =
-    value === "none"
-      ? adjustment?.type === "add"
-        ? CHIP_SUGGESTED
-        : CHIP_SELECTED
-      : CHIP_DEFAULT;
+  // "None" stays plainly selected even when the row needs an addition — the
+  // dashed hint belongs on the garment to add, not on the empty option.
+  const noneClassName = value === "none" ? CHIP_SELECTED : CHIP_DEFAULT;
 
   return (
     <section>
