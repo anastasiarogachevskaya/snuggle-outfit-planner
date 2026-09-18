@@ -240,6 +240,16 @@ function slotAdjustment(
  * different items filling the same slot (e.g. ideal wants a sweater, actual
  * has a cardigan) isn't flagged — any garment covering that slot is treated
  * as satisfying it.
+ *
+ * Clothing adjustments are only meaningful when the overall verdict says
+ * something's actually off — a pajama-and-overall combo can land on the
+ * same total warmth as recommend()'s bodysuit-and-layers pick despite being
+ * structurally a totally different outfit, and flagging every one of those
+ * differences as "add this, remove that" right next to "Just right for
+ * today" reads as contradictory rather than helpful. Transport extras don't
+ * carry that risk — they're not clo-scored, so "you own a footmuff, want to
+ * use it?" is just a reminder, never a claim the outfit itself is wrong —
+ * so those are still surfaced even when the outfit is already just right.
  */
 export function compareOutfits(
   ideal: ActualOutfit,
@@ -252,6 +262,12 @@ export function compareOutfits(
   missingTransportExtras: WardrobeSlug[];
 } {
   const { verdict, diff } = verdictFor(outfitClo(actual), outfitClo(ideal));
+
+  const missingTransportExtras = ideal.transportExtras.filter(
+    (slug) => !actual.transportExtras.includes(slug),
+  );
+
+  if (verdict === "just_right") return { verdict, diff, adjustments: [], missingTransportExtras };
 
   const adjustments: SlotAdjustment[] = [];
   const push = (a: SlotAdjustment | null) => {
@@ -271,10 +287,6 @@ export function compareOutfits(
 
   if (ideal.mittens && !actual.mittens) adjustments.push({ slot: "mittens", type: "add" });
   else if (!ideal.mittens && actual.mittens) adjustments.push({ slot: "mittens", type: "remove" });
-
-  const missingTransportExtras = ideal.transportExtras.filter(
-    (slug) => !actual.transportExtras.includes(slug),
-  );
 
   return { verdict, diff, adjustments, missingTransportExtras };
 }

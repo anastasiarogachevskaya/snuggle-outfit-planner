@@ -178,6 +178,31 @@ describe("compareOutfits", () => {
     expect(result.missingTransportExtras).toHaveLength(0);
   });
 
+  it("doesn't suggest swapping to a structurally different but equally warm outfit", () => {
+    // A pajama + fleece overall (1.05 clo total) is a totally different
+    // shape from a bodysuit + pants + sweater + hat + socks (also 1.05),
+    // but both keep baby just as warm — so flagging "remove the pajama,
+    // add a bodysuit" next to "Just right for today" would be confusing.
+    const ideal: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      bodysuit: "long_sleeve_bodysuit",
+      bottom: "pants",
+      mid: "sweater",
+      hat: "warm_hat",
+      socks: "cotton_socks",
+    };
+    const actual: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      sleepsuit: "pajamas",
+      outer: "fleece_overall",
+      hat: "warm_hat",
+    };
+    expect(outfitClo(ideal)).toBeCloseTo(outfitClo(actual));
+    const result = compareOutfits(ideal, actual);
+    expect(result.verdict).toBe("just_right");
+    expect(result.adjustments).toHaveLength(0);
+  });
+
   it("flags a recommended, owned transport extra (e.g. footmuff) as missing when not marked in use", () => {
     const rec = recommend({
       feelsLikeC: -2,
