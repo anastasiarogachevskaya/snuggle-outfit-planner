@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { breadcrumbLd, pageMeta } from "@/lib/seo";
 import { BLOG_POSTS, formatPostDate } from "@/lib/blog";
 import { SiteFooter } from "@/components/site-footer";
+import { BlogCardIllustration } from "@/components/blog-card-illustration";
 
 const TITLE = "Blog — Layerly";
 const DESCRIPTION =
@@ -26,8 +27,8 @@ export const Route = createFileRoute("/blog/")({
 function BlogIndex() {
   return (
     <div className="min-h-screen bg-canvas">
-      <div className="mx-auto max-w-md px-6 py-10 font-sans">
-        <header className="mb-10 flex items-center justify-between">
+      <div className="mx-auto w-full max-w-7xl px-6 py-10 font-sans sm:px-8 lg:px-12 lg:py-14">
+        <header className="mb-12 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:justify-between">
           <Link to="/" className="font-serif text-lg font-semibold text-ink">
             Layerly
           </Link>
@@ -42,37 +43,42 @@ function BlogIndex() {
         </header>
 
         <main>
-          <h1 className="mb-4 font-serif text-3xl font-semibold leading-tight text-ink">Blog</h1>
-          <p className="mb-10 leading-relaxed text-ink/70">
+          <div className="mb-10 max-w-xl sm:mb-14">
+          <h1 className="mb-4 font-serif text-4xl font-semibold leading-tight text-ink sm:text-5xl">Layerly journal</h1>
+          <p className="leading-relaxed text-ink/70">
             What's new in Layerly, and why we built it that way.
           </p>
+          </div>
 
-          <ul className="space-y-8">
-            {BLOG_POSTS.map((post) => (
-              <li key={post.slug}>
-                <article>
-                  <p className="text-xs uppercase tracking-widest text-ink/40">
-                    <time dateTime={post.date}>{formatPostDate(post.date)}</time>
-                  </p>
-                  <h2 className="mt-1 font-serif text-xl font-semibold leading-snug text-ink">
-                    <Link to="/blog/$slug" params={{ slug: post.slug }}>
-                      {post.title}
-                    </Link>
-                  </h2>
-                  <p className="mt-1 text-sm leading-relaxed text-ink/70">{post.summary}</p>
+          <ul className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-14">
+            {BLOG_POSTS.map((post, index) => (
+              <li key={post.slug} className="min-w-0">
+                <article className="group h-full">
                   <Link
                     to="/blog/$slug"
                     params={{ slug: post.slug }}
-                    className="mt-2 inline-block text-sm font-medium text-primary"
+                    className="flex h-full flex-col rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-canvas"
                   >
-                    Read {post.title}
+                    <div className="transition-transform duration-300 ease-out motion-safe:group-hover:-translate-y-1">
+                      <BlogCardIllustration slug={post.slug} index={index} />
+                    </div>
+                    <div className="flex flex-1 flex-col pt-5">
+                  <p className="text-xs uppercase tracking-widest text-ink/40">
+                    <time dateTime={post.date}>{formatPostDate(post.date)}</time>
+                  </p>
+                  <h2 className="mt-2 font-serif text-2xl font-semibold leading-snug text-ink transition-colors group-hover:text-primary">
+                    {post.title}
+                  </h2>
+                  <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/70">{post.summary}</p>
+                  <span className="mt-4 text-sm font-medium text-primary">Read story →</span>
+                    </div>
                   </Link>
                 </article>
               </li>
             ))}
           </ul>
 
-          <div className="mt-12">
+          <div className="mx-auto mt-16 max-w-md">
             <Link
               to="/try"
               className="block w-full rounded-2xl bg-primary py-4 text-center font-medium text-primary-foreground shadow-md shadow-primary/20"

@@ -41,6 +41,10 @@
   --color-activity-selected-foreground: var(--activity-selected-foreground);
   --color-activity-selected-border: var(--activity-selected-border);
   --color-activity-selected-shadow: var(--activity-selected-shadow);
+  --color-blog-sage-soft: var(--blog-sage-soft);
+  --color-blog-clay-soft: var(--blog-clay-soft);
+  --color-blog-sky-soft: var(--blog-sky-soft);
+  --color-blog-sky: var(--blog-sky);
 }
 
 :root {
@@ -76,6 +80,10 @@
   --activity-selected-foreground: #2f3a2e;
   --activity-selected-border: #8e9f7d;
   --activity-selected-shadow: #8e9f7d;
+  --blog-sage-soft: oklch(0.94 0.025 135);
+  --blog-clay-soft: oklch(0.94 0.035 55);
+  --blog-sky-soft: oklch(0.94 0.025 225);
+  --blog-sky: oklch(0.58 0.06 225);
 
   --font-serif: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;

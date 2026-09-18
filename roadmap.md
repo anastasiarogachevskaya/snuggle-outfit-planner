@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Expand the blog for tablet and desktop with illustrated editorial preview cards
 - [x] Local-first iPhone setup: baby details, location, wardrobe, and local profile
 - [x] Polish local baby profile fields and add a confirmed local-profile reset
 - [x] Google sign-in: re-enable the screen when the in-app browser is dismissed (iOS)
