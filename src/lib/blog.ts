@@ -34,7 +34,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "That is what Layer up is for. It sits right under the recommendation on the Today screen, and instead of handing you an outfit, it lets you build one.",
         ],
         image: {
-          src: "/src/assets/blog/layer-up/today-card.png",
+          src: "/blog/layer-up/today-card.png",
           alt: "The Today screen in Layerly, showing the Layer up card below the daily outfit recommendation.",
           caption: "Layer up lives right under today's recommendation.",
         },
