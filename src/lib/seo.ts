@@ -1,22 +1,37 @@
+import { BLOG_POSTS } from "./blog";
+
 export const SITE_URL = "https://layerly.online";
 
 export const OG_IMAGE =
   "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8d945aa4-20b5-4f76-8234-267df2c9f2f6/id-preview-558ba17c--61d18b02-2730-4e31-9318-73112e9e585a.lovable.app-1783767349149.png";
 
 /** Public, indexable routes included in sitemap.xml. */
-export const PUBLIC_ROUTES: { path: string; changefreq: string; priority: string }[] = [
+export const PUBLIC_ROUTES: {
+  path: string;
+  changefreq: string;
+  priority: string;
+  lastmod?: string;
+}[] = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
   { path: "/try", changefreq: "weekly", priority: "0.9" },
   { path: "/how-it-works", changefreq: "monthly", priority: "0.8" },
   { path: "/faq", changefreq: "monthly", priority: "0.8" },
   { path: "/guide/baby-layering", changefreq: "monthly", priority: "0.8" },
   { path: "/guide/stroller-walks", changefreq: "monthly", priority: "0.8" },
+  { path: "/blog", changefreq: "weekly", priority: "0.7" },
+  ...BLOG_POSTS.map((post) => ({
+    path: `/blog/${post.slug}`,
+    changefreq: "yearly",
+    priority: "0.6",
+    lastmod: post.date,
+  })),
   { path: "/web-app", changefreq: "monthly", priority: "0.6" },
   { path: "/ios", changefreq: "monthly", priority: "0.6" },
   { path: "/android", changefreq: "monthly", priority: "0.6" },
   { path: "/auth", changefreq: "monthly", priority: "0.4" },
   { path: "/privacy", changefreq: "yearly", priority: "0.3" },
 ];
+
 
 export function pageMeta(opts: {
   title: string;

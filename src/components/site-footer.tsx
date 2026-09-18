@@ -5,8 +5,10 @@ const LINKS = [
   { to: "/", label: "Home" },
   { to: "/how-it-works", label: "How it works" },
   { to: "/faq", label: "FAQ" },
+  { to: "/blog", label: "Blog" },
   { to: "/guide/baby-layering", label: "Layering guide" },
   { to: "/guide/stroller-walks", label: "Stroller guide" },
+
   { to: "/ios", label: "iOS" },
   { to: "/android", label: "Android" },
   { to: "/web-app", label: "Web app" },
