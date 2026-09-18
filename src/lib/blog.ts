@@ -46,7 +46,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "You might learn the outfit is fine as it is. You might learn it needs one more mid layer for a 40-minute walk, or that the pramsuit is too much for a short trip to the car. Either way, the answer is about the clothes in front of you, not a generic chart.",
         ],
         image: {
-          src: "/src/assets/blog/layer-up/picker-empty.png",
+          src: "/blog/layer-up/picker-empty.png",
           alt: "The Layer up outfit picker, showing empty slot rows for each clothing layer.",
           caption: "One row per layer — only the clothes you have told Layerly you own.",
         },
@@ -58,7 +58,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "If something needs to change, Layerly marks the exact row: the layer to remove gets a clay outline, the layer to add gets a sage outline. There is no button to press — the answer is there as soon as you tap.",
         ],
         image: {
-          src: "/src/assets/blog/layer-up/picker-verdict.png",
+          src: "/blog/layer-up/picker-verdict.png",
           alt: "The Layer up picker with garments selected and a 'Too light' verdict card.",
           caption: "The verdict updates instantly as you build the outfit.",
         },
@@ -70,7 +70,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "It also makes the advice easier to trust. When you can see why an outfit is a little light or a little heavy, the next day's recommendation makes more sense — and you start to need it less, which is exactly the point.",
         ],
         image: {
-          src: "/src/assets/blog/layer-up/picker-done.png",
+          src: "/blog/layer-up/picker-done.png",
           alt: "The bottom of the Layer up picker, showing accessory toggles and the Done button.",
           caption: "Tap Done when you are finished and head back to the recommendation.",
         },
