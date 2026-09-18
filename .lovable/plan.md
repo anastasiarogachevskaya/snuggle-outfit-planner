@@ -11,21 +11,20 @@ A public blog at `/blog` where each release gets its own post. Posts are written
 
 ## Retroactive posts I'd write
 
-Dated from the project history, ~300–400 words each, written as "what changed and why", with no invented numbers or dates beyond what the project record shows.
+Each post is a product milestone told from a parent's point of view — what became possible and why it matters — not a changelog. ~300–400 words each, no invented numbers.
 
-1. **3 Aug — Try Layerly without an account.** Why the first screen shouldn't ask for an email: pick an age band, share a location, get a full outfit.
-2. **4 Aug — Type your city, get the weather.** Live city suggestions for parents who don't want to share GPS.
-3. **5 Aug — Layerly goes public: what should my baby wear today?** The launch post: the problem (over- and under-dressing), how the recommendation is built from weather, age, situation and your own wardrobe. Also the first guides — layering by temperature, and stroller walks.
-4. **6–7 Aug — A clearer front page and help on every screen.** The rewritten landing page plus How it works, FAQ and guides reachable from everywhere.
-5. **9 Aug — Testing the advice behind the advice.** Regression tests over the temperature bands, so a change to one band can't quietly break another.
-6. **11 Aug — Layerly on the iPhone.** The native app: full-screen layout, safe areas, real location permission prompts.
-7. **24 Aug — Fixing "Locating…" that never finished.** The GPS watchdog, a diagnostics screen, and forcing a fresh fix instead of a stale one.
-8. **1 Sep — Sign-in that actually works on a phone.** Apple and Google sign-in done natively, plus fixed confirmation emails.
-9. **12 Sep — Knowing where parents get stuck (without tracking them).** What Layerly measures, what it deliberately doesn't (no ads, no third-party trackers, no IP or fingerprinting), 90-day deletion and the privacy page.
-10. **15 Sep — Set up on the iPhone without an email or password.** The local-first setup: baby, location, wardrobe stored on the device; create an account later and everything, including comfort ratings, comes across.
-11. **17 Sep — "Layer up": build your own outfit.** The renamed, restyled button for checking or composing an outfit yourself.
+1. **3 Aug — Layerly is live: what should my baby wear today?** The launch post. The daily guesswork of over- and under-dressing, and the idea behind Layerly: today's weather plus your baby's age plus the clothes you actually own, turned into one clear outfit.
+2. **5 Aug — Try it before you sign up.** You can get a full recommendation without an account or an email — pick an age, share a location or type a city, and see the outfit.
+3. **7 Aug — Dressing guides for real situations.** The layering guide by temperature and the stroller-walk guide, plus plain answers to the questions parents kept asking.
+4. **11 Aug — Layerly in your pocket.** The iPhone app: made for one-handed use on the way out the door, with weather from where you actually are.
+5. **24 Aug — Advice that arrives before you leave.** Getting the weather fast and reliably, so the morning answer is there in seconds instead of spinning.
+6. **1 Sep — One tap to sign in.** Continue with Apple or Google, so nothing stands between you and your baby's profile.
+7. **12 Sep — Private by design.** No ads, no third-party trackers, no selling data — what Layerly stores, why, and how long it keeps it.
+8. **15 Sep — Start with no email, no password.** Set up baby, location and wardrobe straight on your iPhone; create an account later and everything, including comfort ratings, comes with you.
+9. **17 Sep — Build your own outfit.** Layer up lets you put together what your baby is actually wearing and see whether it suits today.
 
-If a post feels too thin or too internal (5 and 7 are the candidates), say so and I'll merge or drop it.
+Tell me if any milestone is missing, or if you'd rather merge a couple so the blog reads as fewer, bigger moments.
+
 
 ## Technical notes
 
