@@ -8,6 +8,8 @@ import {
   VERDICT_TOLERANCE,
   CLO_BY_SLUG,
   EMPTY_OUTFIT,
+  MID_SLUGS,
+  OUTER_SLUGS,
   type ActualOutfit,
 } from "../warmth";
 import { recommend } from "../../recommend";
@@ -85,6 +87,38 @@ describe("idealOutfitFrom", () => {
     }
     const bottomSlug = rec.babyClothing.find((l) => l.slot === "bottom")?.slug;
     if (bottomSlug) expect(ideal.bottom).toBe(bottomSlug);
+  });
+
+  it("puts a fleece/wool overall picked as the mid-layer substitute in a slot the picker actually offers it in", () => {
+    // On a frosty day, map-wardrobe.ts's MID_MAP.fleece will use an owned
+    // fleece_overall as a stand-in for a plain fleece top when no such top
+    // exists, and pushes it with slot: "mid" — never slot: "outer". If
+    // warmth.ts's own MID_SLUGS/OUTER_SLUGS classification disagreed with
+    // that, the picker would offer this exact garment only under "Outer
+    // layer", so "Mid layer" would demand an item nobody could ever select.
+    const noOtherMidOptions = new Set<WardrobeSlug>([
+      "long_sleeve_bodysuit",
+      "pants",
+      "fleece_overall",
+      "winter_overall",
+      "warm_hat",
+      "wool_socks",
+    ]);
+    const rec = recommend({
+      feelsLikeC: 2,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      durationMin: 30,
+      owned: noOtherMidOptions,
+    })!;
+    const midLayer = rec.babyClothing.find((l) => l.slot === "mid");
+    expect(midLayer?.slug).toBe("fleece_overall");
+
+    const ideal = idealOutfitFrom(rec);
+    expect(ideal.mid).toBe("fleece_overall");
+    expect(MID_SLUGS).toContain("fleece_overall");
+    expect(OUTER_SLUGS).not.toContain("fleece_overall");
   });
 
   it("carries over owned transport extras recommend() calls for (e.g. a footmuff on a cold pram walk)", () => {

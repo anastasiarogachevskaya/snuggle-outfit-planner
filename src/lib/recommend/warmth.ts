@@ -28,17 +28,19 @@ export const CLO_BY_SLUG: Partial<Record<WardrobeSlug, number>> = {
   tights: 0.2,
   wool_leggings: 0.35,
 
-  // Mid
+  // Mid — fleece/wool overalls are one-piece stand-ins for a plain fleece
+  // top (see map-wardrobe.ts's MID_MAP.fleece), worn as the mid layer with
+  // an outer layer over them, not as the outer layer itself.
   sweater: 0.35,
   cardigan: 0.35,
   hoodie: 0.35,
   fleece_layer: 0.5,
   wool_layer: 0.5,
+  fleece_overall: 0.5,
+  wool_overall: 0.5,
 
   // Outer
   light_overall: 0.4,
-  fleece_overall: 0.5,
-  wool_overall: 0.5,
   softshell_overall: 0.6,
   rain_overall: 0.3,
   winter_overall: 1.2,
@@ -102,18 +104,24 @@ export const BOTTOM_SLUGS: WardrobeSlug[] = [
   "tights",
   "wool_leggings",
 ];
+// fleece_overall/wool_overall belong here, not in OUTER_SLUGS: map-wardrobe.ts's
+// MID_MAP.fleece picks them as substitutes for a plain fleece top and pushes
+// them with slot: "mid". idealOutfitFrom() trusts that slot directly, so if
+// this list disagreed, the picker would offer the item under the wrong row —
+// "Mid layer" would demand an item it never lets you pick, while "Outer
+// layer" would flag the very item recommend() wants as one to remove.
 export const MID_SLUGS: WardrobeSlug[] = [
   "sweater",
   "cardigan",
   "hoodie",
   "fleece_layer",
   "wool_layer",
+  "fleece_overall",
+  "wool_overall",
 ];
 /** Snow pants excluded here — it's the independent add-on below. */
 export const OUTER_SLUGS: WardrobeSlug[] = [
   "light_overall",
-  "fleece_overall",
-  "wool_overall",
   "softshell_overall",
   "rain_overall",
   "winter_overall",
