@@ -10,11 +10,13 @@ export const Route = createFileRoute("/sitemap.xml")({
           [
             `  <url>`,
             `    <loc>${SITE_URL}${e.path}</loc>`,
+            ...(e.lastmod ? [`    <lastmod>${e.lastmod}</lastmod>`] : []),
             `    <changefreq>${e.changefreq}</changefreq>`,
             `    <priority>${e.priority}</priority>`,
             `  </url>`,
           ].join("\n"),
         );
+
 
         const xml = [
           `<?xml version="1.0" encoding="UTF-8"?>`,
