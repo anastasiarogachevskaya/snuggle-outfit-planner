@@ -1,6 +1,13 @@
+export type BlogImage = {
+  src: string;
+  alt: string;
+  caption?: string;
+};
+
 export type BlogSection = {
   heading?: string;
-  paragraphs: string[];
+  paragraphs?: string[];
+  image?: BlogImage;
 };
 
 export type BlogPost = {
