@@ -206,7 +206,12 @@ export function TodayScreen({
             TOG-rated sleep sacks, so this replaces the recommendation card
             only while awake — during sleep there's nothing to check. */}
         {rec && checkingOutfit ? (
-          <CheckOutfitPanel rec={rec} owned={owned} onBack={() => setCheckingOutfit(false)} />
+          <CheckOutfitPanel
+            rec={rec}
+            owned={owned}
+            weather={weatherQ.data}
+            onBack={() => setCheckingOutfit(false)}
+          />
         ) : (
           rec && <OutfitResult rec={rec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
         )}
