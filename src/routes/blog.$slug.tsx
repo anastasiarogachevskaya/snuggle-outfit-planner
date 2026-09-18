@@ -126,7 +126,7 @@ function BlogPostPage() {
                 ) : null}
                 {section.image ? (
                   <figure className="mt-6">
-                    <div className="overflow-hidden rounded-2xl border border-ink/5 bg-surface shadow-sm">
+                    <div className="overflow-hidden rounded-2xl border border-ink/5 bg-surface shadow-sm sm:max-w-md sm:mx-auto">
                       <img
                         src={section.image.src}
                         alt={section.image.alt}
