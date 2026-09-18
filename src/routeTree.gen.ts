@@ -32,6 +32,8 @@ import { Route as AuthenticatedBabyRouteImport } from './routes/_authenticated/b
 import { Route as AuthenticatedInsightsRouteImport } from './routes/_authenticated/insights'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedWardrobeRouteImport } from './routes/_authenticated/wardrobe'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as GuideBabyLayeringRouteImport } from './routes/guide.baby-layering'
 import { Route as GuideStrollerWalksRouteImport } from './routes/guide.stroller-walks'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -156,6 +158,16 @@ const AuthenticatedWardrobeRoute = AuthenticatedWardrobeRouteImport.update({
   path: '/wardrobe',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuideBabyLayeringRoute = GuideBabyLayeringRouteImport.update({
   id: '/guide/baby-layering',
   path: '/guide/baby-layering',
@@ -217,8 +229,10 @@ export interface FileRoutesByFullPath {
   '/insights': typeof AuthenticatedInsightsRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
   '/guide/stroller-walks': typeof GuideStrollerWalksRoute
+  '/blog/': typeof BlogIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
@@ -248,8 +262,10 @@ export interface FileRoutesByTo {
   '/insights': typeof AuthenticatedInsightsRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
   '/guide/stroller-walks': typeof GuideStrollerWalksRoute
+  '/blog': typeof BlogIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
@@ -281,8 +297,10 @@ export interface FileRoutesById {
   '/_authenticated/insights': typeof AuthenticatedInsightsRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
   '/guide/stroller-walks': typeof GuideStrollerWalksRoute
+  '/blog/': typeof BlogIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/onboarding/wardrobe': typeof AuthenticatedOnboardingWardrobeRoute
@@ -314,8 +332,10 @@ export interface FileRouteTypes {
     | '/insights'
     | '/today'
     | '/wardrobe'
+    | '/blog/$slug'
     | '/guide/baby-layering'
     | '/guide/stroller-walks'
+    | '/blog/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/onboarding/wardrobe'
@@ -345,8 +365,10 @@ export interface FileRouteTypes {
     | '/insights'
     | '/today'
     | '/wardrobe'
+    | '/blog/$slug'
     | '/guide/baby-layering'
     | '/guide/stroller-walks'
+    | '/blog'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/onboarding/wardrobe'
@@ -377,8 +399,10 @@ export interface FileRouteTypes {
     | '/_authenticated/insights'
     | '/_authenticated/today'
     | '/_authenticated/wardrobe'
+    | '/blog/$slug'
     | '/guide/baby-layering'
     | '/guide/stroller-walks'
+    | '/blog/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/onboarding/wardrobe'
@@ -405,8 +429,10 @@ export interface RootRouteChildren {
   WebAppRoute: typeof WebAppRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   GuideBabyLayeringRoute: typeof GuideBabyLayeringRoute
   GuideStrollerWalksRoute: typeof GuideStrollerWalksRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -576,6 +602,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWardrobeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guide/baby-layering': {
       id: '/guide/baby-layering'
       path: '/guide/baby-layering'
@@ -669,8 +709,10 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  BlogSlugRoute: BlogSlugRoute,
   GuideBabyLayeringRoute: GuideBabyLayeringRoute,
   GuideStrollerWalksRoute: GuideStrollerWalksRoute,
+  BlogIndexRoute: BlogIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
