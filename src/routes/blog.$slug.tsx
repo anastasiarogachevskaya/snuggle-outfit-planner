@@ -99,25 +99,25 @@ function BlogPostPage() {
 
   return (
     <Shell>
-      <main>
+      <main className="mx-auto max-w-3xl">
         <article>
           <p className="text-xs uppercase tracking-widest text-ink/40">
             <time dateTime={post.date}>{formatPostDate(post.date)}</time>
           </p>
-          <h1 className="mt-2 font-serif text-3xl font-semibold leading-tight text-ink">
+          <h1 className="mt-2 font-serif text-3xl font-semibold leading-tight text-ink sm:text-4xl lg:text-5xl">
             {post.title}
           </h1>
-          <p className="mt-3 leading-relaxed text-ink/70">{post.summary}</p>
+          <p className="mt-3 text-lg leading-relaxed text-ink/70">{post.summary}</p>
 
-          <div className="mt-8 space-y-8">
+          <div className="mt-10 space-y-10">
             {post.sections.map((section, i) => (
               <section key={section.heading ?? i}>
                 {section.heading ? (
-                  <h2 className="mb-2 font-medium text-ink">{section.heading}</h2>
+                  <h2 className="mb-3 text-lg font-medium text-ink">{section.heading}</h2>
                 ) : null}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {section.paragraphs.map((p) => (
-                    <p key={p.slice(0, 40)} className="text-sm leading-relaxed text-ink/70">
+                    <p key={p.slice(0, 40)} className="leading-relaxed text-ink/70">
                       {p}
                     </p>
                   ))}
@@ -127,16 +127,16 @@ function BlogPostPage() {
           </div>
         </article>
 
-        <div className="mt-12">
+        <div className="mt-14 flex flex-col gap-4 sm:flex-row">
           <Link
             to="/try"
-            className="block w-full rounded-2xl bg-primary py-4 text-center font-medium text-primary-foreground shadow-md shadow-primary/20"
+            className="block flex-1 rounded-2xl bg-primary py-4 text-center font-medium text-primary-foreground shadow-md shadow-primary/20"
           >
             Try Layerly — no account needed
           </Link>
           <Link
             to="/blog"
-            className="mt-4 block w-full rounded-2xl border border-primary/25 py-3.5 text-center text-sm font-medium text-primary"
+            className="block flex-1 rounded-2xl border border-primary/25 py-3.5 text-center font-medium text-primary"
           >
             All posts
           </Link>
