@@ -55,8 +55,8 @@ export const Route = createFileRoute("/blog/$slug")({
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-canvas">
-      <div className="mx-auto max-w-md px-6 py-10 font-sans">
-        <header className="mb-10 flex items-center justify-between">
+      <div className="mx-auto w-full max-w-7xl px-6 py-10 font-sans sm:px-8 lg:px-12 lg:py-14">
+        <header className="mb-12 flex items-center justify-between">
           <Link to="/" className="font-serif text-lg font-semibold text-ink">
             Layerly
           </Link>
