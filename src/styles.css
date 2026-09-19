@@ -94,8 +94,8 @@
   --blog-sky: oklch(0.58 0.06 225);
 
   /* Warmth markers */
-  --warmth-light: oklch(0.52 0.1 220);
-  --warmth-light-bg: oklch(0.93 0.03 220);
+  --warmth-light: oklch(0.55 0.05 240);
+  --warmth-light-bg: oklch(0.92 0.015 240);
   --warmth-medium: oklch(0.5 0.08 140);
   --warmth-medium-bg: oklch(0.93 0.025 140);
   --warmth-warm: oklch(0.55 0.11 50);
