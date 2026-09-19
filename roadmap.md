@@ -12,7 +12,8 @@
 ## Open
 
 - [x] Make temperature preference readable and include it in iPhone and web profile setup
-- [ ] Clarify clothing warmth and examples in setup, Profile wardrobe, and Layer up
+- [x] Clarify clothing warmth and examples in setup, Profile wardrobe, and Layer up
+- [x] Balance the two-column wardrobe setup cards and move longer guidance below the grid
 
 ## Open (needs the user)
 

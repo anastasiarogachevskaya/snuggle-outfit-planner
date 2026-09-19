@@ -3,6 +3,7 @@ import {
   WARDROBE_STEPS,
   QUICK_SETUP_OWNED,
   warmthTagClasses,
+  type WardrobeItem,
   type WardrobeSlug,
   type WardrobeWarmth,
 } from "@/lib/wardrobe-catalog";
@@ -101,7 +102,6 @@ export function WardrobeSetup({
                     label={i.label}
                     hint={i.hint}
                     warmth={i.warmth}
-                    explanation={i.explanation}
                     slug={i.slug}
                     selected={selected.has(i.slug)}
                     onClick={() => toggle(i.slug)}
@@ -109,6 +109,7 @@ export function WardrobeSetup({
                   />
                 ))}
               </div>
+               <GuidancePanel items={s.items} compact />
             </section>
           ))}
         </div>
@@ -154,13 +155,14 @@ export function WardrobeSetup({
             label={i.label}
             hint={i.hint}
             warmth={i.warmth}
-            explanation={i.explanation}
             slug={i.slug}
             selected={selected.has(i.slug)}
             onClick={() => toggle(i.slug)}
           />
         ))}
       </div>
+
+       <GuidancePanel items={current.items} />
 
       <FooterNote />
 
@@ -251,7 +253,6 @@ function Tile({
   label,
   hint,
   warmth,
-  explanation,
   slug,
   selected,
   onClick,
@@ -260,7 +261,6 @@ function Tile({
   label: string;
   hint: string;
   warmth?: WardrobeWarmth;
-  explanation?: string;
   slug: WardrobeSlug;
   selected: boolean;
   onClick: () => void;
@@ -270,8 +270,8 @@ function Tile({
     <button
       onClick={onClick}
       className={
-        "relative text-left rounded-2xl border transition-all " +
-        (compact ? "p-3 " : "p-4 ") +
+        "relative flex h-full min-w-0 flex-col text-left rounded-2xl border transition-all " +
+        (compact ? "min-h-32 p-3 " : "min-h-40 p-4 ") +
         (selected
           ? "bg-primary/5 border-primary shadow-sm"
           : "bg-surface border-black/5 hover:border-black/20")
@@ -282,11 +282,11 @@ function Tile({
           ✓
         </span>
       )}
-      <div className={(compact ? "mb-1 " : "mb-2 ") + (selected ? "text-primary" : "text-ink/60")}>
+      <div className={(compact ? "mb-2 " : "mb-3 ") + (selected ? "text-primary" : "text-ink/60")}>
         <ClothingIcon slug={slug} size={compact ? 28 : 34} />
       </div>
-      <div className="flex items-start justify-between gap-2">
-        <p className={"font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>{label}</p>
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+        <p className={"min-w-0 font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>{label}</p>
         {warmth && (
           <span
             className={
@@ -298,13 +298,27 @@ function Tile({
           </span>
         )}
       </div>
-      <p className="mt-1 text-[10px] leading-snug text-ink/55">{hint}</p>
-      {explanation && !compact && (
-        <p className="mt-2 border-t border-black/5 pt-2 text-[10px] leading-snug text-ink/60">
-          <span className="font-semibold text-ink/70">What counts? </span>{explanation}
-        </p>
-      )}
+      <p className="mt-2 text-[10px] leading-snug text-ink/55">{hint}</p>
     </button>
+  );
+}
+
+function GuidancePanel({ items, compact = false }: { items: WardrobeItem[]; compact?: boolean }) {
+  const explainedItems = items.filter((item) => item.explanation);
+  if (explainedItems.length === 0) return null;
+
+  return (
+    <aside className={(compact ? "mt-3 " : "mt-4 ") + "rounded-2xl border border-primary/15 bg-primary/5 p-4"}>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-primary/75">What counts?</p>
+      <div className="mt-2 space-y-2">
+        {explainedItems.map((item) => (
+          <p key={item.slug} className="text-[11px] leading-relaxed text-ink/60">
+            <span className="font-semibold text-ink/75">{item.label}: </span>
+            {item.explanation}
+          </p>
+        ))}
+      </div>
+    </aside>
   );
 }
 
