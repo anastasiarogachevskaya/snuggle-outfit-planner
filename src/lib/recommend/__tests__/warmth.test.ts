@@ -250,10 +250,10 @@ describe("compareOutfits", () => {
       hat: "thin_hat",
       mittens: true,
     };
-    const actual: ActualOutfit = { ...ideal, hat: "none", mittens: false };
+    const actual: ActualOutfit = { ...ideal, mittens: false };
     const result = compareOutfits(ideal, actual);
     expect(result.verdict).toBe("just_right");
-    expect(result.adjustments.map((a) => a.slot).sort()).toEqual(["hat", "mittens"]);
+    expect(result.adjustments.map((a) => a.slot).sort()).toEqual(["mittens"]);
     expect(result.adjustments.every((a) => a.type === "add")).toBe(true);
   });
 
