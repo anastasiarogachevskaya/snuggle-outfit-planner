@@ -274,3 +274,20 @@ export const QUICK_SETUP_OWNED: WardrobeSlug[] = [
 
 // Minimum defaults if user skips onboarding entirely
 export const DEFAULT_OWNED: WardrobeSlug[] = QUICK_SETUP_OWNED;
+
+/**
+ * Tailwind class pair for a warmth tag so Light/Medium/Warm/Very warm are
+ * visually distinct but still soft against Layerly's canvas.
+ */
+export function warmthTagClasses(warmth: WardrobeWarmth): string {
+  switch (warmth) {
+    case "Light":
+      return "bg-warmth-light-bg text-warmth-light";
+    case "Medium":
+      return "bg-warmth-medium-bg text-warmth-medium";
+    case "Warm":
+      return "bg-warmth-warm-bg text-warmth-warm";
+    case "Very warm":
+      return "bg-warmth-very-warm-bg text-warmth-very-warm";
+  }
+}
