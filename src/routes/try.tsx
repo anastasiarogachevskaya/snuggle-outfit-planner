@@ -34,6 +34,7 @@ import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 import { logEvent } from "@/lib/analytics";
 import { isIOSApp } from "@/lib/platform";
+import { TemperaturePreference } from "@/components/temperature-preference";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
@@ -104,9 +105,9 @@ function TryPage() {
   if (step === "baby") {
     return (
       <BabyStep
-        onDone={(name, dob) => {
+        onDone={(name, dob, temperaturePref) => {
           logEvent("try_age_selected", { input: "date_of_birth" });
-          const p = createLocalProfile(name, dob);
+          const p = createLocalProfile(name, dob, temperaturePref);
           writeGuestProfile(p);
           setProfile(p);
           setStep("location");
@@ -321,9 +322,14 @@ function TryPage() {
   );
 }
 
-function BabyStep({ onDone }: { onDone: (name: string, dob: string) => void }) {
+function BabyStep({
+  onDone,
+}: {
+  onDone: (name: string, dob: string, temperaturePref: number) => void;
+}) {
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
+  const [temperaturePref, setTemperaturePref] = useState(3);
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -333,7 +339,7 @@ function BabyStep({ onDone }: { onDone: (name: string, dob: string) => void }) {
         onSubmit={(event) => {
           event.preventDefault();
           successHaptic();
-          onDone(name, dob);
+          onDone(name, dob, temperaturePref);
         }}
       >
         <label className="block">
@@ -364,6 +370,7 @@ function BabyStep({ onDone }: { onDone: (name: string, dob: string) => void }) {
             onChange={(e) => setDob(e.target.value)}
           />
         </label>
+        <TemperaturePreference value={temperaturePref} onChange={setTemperaturePref} />
         <button className="w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20">
           Continue
         </button>
@@ -551,22 +558,7 @@ function LocalProfile({
               onChange={(e) => setDob(e.target.value)}
             />
           </label>
-          <label className="block text-sm font-medium">
-            Temperature preference
-            <input
-              type="range"
-              min={1}
-              max={5}
-              className="mt-3 w-full accent-primary"
-              value={temperaturePref}
-              onChange={(e) => setTemperaturePref(Number(e.target.value))}
-            />
-            <span className="mt-1 flex justify-between text-xs font-normal text-ink/40">
-              <span>Runs warm</span>
-              <span>Average</span>
-              <span>Runs cold</span>
-            </span>
-          </label>
+          <TemperaturePreference value={temperaturePref} onChange={setTemperaturePref} />
           <div>
             <p className="mb-2 text-sm font-medium">Location</p>
             <CitySearch

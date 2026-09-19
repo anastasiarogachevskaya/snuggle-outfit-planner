@@ -106,13 +106,13 @@ export function createGuestProfile(band: GuestAgeBand): GuestProfile {
  * A profile started from the app's own setup, where the parent types the
  * baby's name and picks a real date of birth instead of an age band.
  */
-export function createLocalProfile(name: string, dob: string): GuestProfile {
+export function createLocalProfile(name: string, dob: string, temperaturePref = 3): GuestProfile {
   return {
     setupComplete: false,
     onboardingStep: "location",
     dob,
     name: name.trim() || "Baby",
-    temperaturePref: 3,
+    temperaturePref,
     latitude: null,
     longitude: null,
     locationLabel: null,

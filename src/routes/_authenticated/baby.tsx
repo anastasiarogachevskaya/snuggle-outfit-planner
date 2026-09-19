@@ -15,9 +15,10 @@ import {
 import { CitySearch } from "@/components/city-search";
 import { reverseGeocodeLabel, coordinateLabel } from "@/lib/reverse-geocode";
 import { SiteFooter } from "@/components/site-footer";
-import { lightHaptic, selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
+import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { isNativeApp } from "@/lib/platform";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
+import { TemperaturePreference } from "@/components/temperature-preference";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
@@ -189,23 +190,7 @@ function BabyPage() {
             />
           </Field>
 
-          <Field label={`Temperature preference: ${prefLabel(pref)}`}>
-            <input
-              type="range"
-              min={1}
-              max={5}
-              value={pref}
-              onChange={(e) => setPref(Number(e.target.value))}
-              onPointerUp={() => selectionHaptic()}
-              onKeyUp={() => selectionHaptic()}
-              className="w-full accent-primary"
-            />
-            <div className="flex justify-between text-[11px] text-ink/40 mt-1">
-              <span>Runs warm</span>
-              <span>Average</span>
-              <span>Runs cold</span>
-            </div>
-          </Field>
+          <TemperaturePreference value={pref} onChange={setPref} />
 
           <Field label="Location">
             <CitySearch
@@ -391,6 +376,3 @@ function NavCard({
   );
 }
 
-function prefLabel(n: number) {
-  return ["Very warm", "Warm", "Average", "Cool", "Very cool"][n - 1];
-}
