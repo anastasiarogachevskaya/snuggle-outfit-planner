@@ -35,12 +35,41 @@ export type Layer = {
   usingLabel?: string;
 };
 export type Accessory = { slug: WardrobeSlug; label: string; usingLabel?: string };
+/** A transport extra that isn't recommended today but still fits the trip. */
+export type OptionalAccessory = Accessory & { owned: boolean };
+
+const TRANSPORT_EXTRA_LABELS: Record<string, string> = {
+  rain_cover: "Rain cover",
+  footmuff: "Footmuff",
+  blanket: "Blanket",
+  babywearing_cover: "Babywearing cover",
+  car_seat_blanket: "Car seat blanket",
+};
+
+/**
+ * Every transport extra that makes sense for a trip, regardless of today's
+ * weather. Layer up uses this so parents can build any outfit, not just the
+ * recommended one.
+ */
+export function transportExtraCandidates(
+  situation: Situation,
+  transportMode?: TransportMode,
+): WardrobeSlug[] {
+  if (situation === "car") return ["blanket", "car_seat_blanket"];
+  if (situation !== "walk") return [];
+  if (transportMode === "carrier") return ["babywearing_cover", "blanket"];
+  if (transportMode === "pram" || transportMode === "sitting-stroller")
+    return ["rain_cover", "footmuff", "blanket"];
+  return [];
+}
 
 export type Recommendation = {
   babyClothing: Layer[];
   accessories: Accessory[];
   sleepAccessories: Accessory[];
   transportExtras: Accessory[];
+  /** Extras that fit the trip but aren't recommended for today's weather. */
+  optionalTransportExtras: OptionalAccessory[];
   missingHelpfulItems: Accessory[];
   missing: WardrobeSlug[]; // missing baby clothing / accessory items only
   reason: string;
@@ -71,6 +100,7 @@ export function recommend(input: RecommendInput): Recommendation {
       accessories: mapped.accessories,
       sleepAccessories,
       transportExtras: [],
+      optionalTransportExtras: [],
       missingHelpfulItems,
       missing: mapped.missing,
       reason: home.reason,
@@ -130,11 +160,26 @@ export function recommend(input: RecommendInput): Recommendation {
 
   const reason = buildReason(input, out.effectiveC, usedExtras);
 
+  // Everything else that fits this trip: shown as quiet, optional choices so a
+  // parent can build any outfit in Layer up, not only the recommended one.
+  const shown = new Set<WardrobeSlug>([...usedExtras, ...missingExtras]);
+  const optionalTransportExtras: OptionalAccessory[] = transportExtraCandidates(
+    input.situation,
+    input.transportMode,
+  )
+    .filter((slug) => !shown.has(slug))
+    .map((slug) => ({
+      slug,
+      label: TRANSPORT_EXTRA_LABELS[slug] ?? slug,
+      owned: input.owned.has(slug),
+    }));
+
   return {
     babyClothing: mapped.babyClothing,
     accessories: mapped.accessories,
     sleepAccessories: [],
     transportExtras,
+    optionalTransportExtras,
     missingHelpfulItems,
     missing: mapped.missing,
     reason,
