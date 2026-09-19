@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   WARDROBE_STEPS,
   QUICK_SETUP_OWNED,
+  warmthTagClasses,
   type WardrobeSlug,
   type WardrobeWarmth,
 } from "@/lib/wardrobe-catalog";
