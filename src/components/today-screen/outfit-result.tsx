@@ -2,14 +2,6 @@ import { type recommend } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { ClothingIcon } from "@/components/icons";
 
-/**
- * The row label names the layer kind ("Sleeveless bodysuit"); when the engine
- * matched a stand-in instead, say which garment that actually is.
- */
-function usingHint(usingLabel: string | undefined) {
-  return usingLabel ? `Using your ${usingLabel.toLowerCase()}` : "";
-}
-
 export function OutfitResult({
   rec,
   owned,
@@ -53,13 +45,6 @@ export function OutfitResult({
                 slug={isSynthetic ? undefined : (l.slug as WardrobeSlug)}
                 chip={l.slot.slice(0, 3).toUpperCase()}
                 label={l.label}
-                hint={
-                  isSynthetic
-                    ? ""
-                    : isOwned
-                      ? usingHint(l.usingLabel) || "In your wardrobe"
-                      : "Not in your wardrobe"
-                }
                 dim={!isSynthetic && !isOwned}
               />
             );
@@ -70,7 +55,6 @@ export function OutfitResult({
               slug={a.slug}
               chip="+"
               label={a.label}
-              hint={owned.has(a.slug) ? usingHint(a.usingLabel) : "Not in your wardrobe"}
               accent
               dim={!owned.has(a.slug)}
             />
@@ -89,7 +73,6 @@ export function OutfitResult({
                   slug={a.slug}
                   chip="ZZ"
                   label={a.label}
-                  hint="From your wardrobe"
                 />
               ))}
             </div>
@@ -108,7 +91,6 @@ export function OutfitResult({
                   slug={a.slug}
                   chip="+"
                   label={a.label}
-                  hint="From your wardrobe"
                 />
               ))}
             </div>
@@ -145,7 +127,6 @@ export function OutfitResult({
                   slug={a.slug}
                   chip="?"
                   label={a.label}
-                  hint="Not in your wardrobe"
                   accent
                   dim
                 />
@@ -167,14 +148,12 @@ export function OutfitResult({
 function Row({
   chip,
   label,
-  hint,
   accent,
   dim,
   slug,
 }: {
   chip: string;
   label: string;
-  hint?: string;
   accent?: boolean;
   dim?: boolean;
   slug?: WardrobeSlug;
@@ -199,7 +178,6 @@ function Row({
       </div>
       <div className="min-w-0">
         <p className="break-words text-sm font-medium">{label}</p>
-        {hint && <p className="text-[11px] text-ink/40">{hint}</p>}
       </div>
     </div>
   );
