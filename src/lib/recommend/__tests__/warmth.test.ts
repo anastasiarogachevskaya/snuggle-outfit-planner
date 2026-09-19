@@ -291,4 +291,32 @@ describe("compareOutfits", () => {
     const result = compareOutfits(ideal, ideal);
     expect(result.missingTransportExtras).toHaveLength(0);
   });
+
+  it("uses a footmuff to replace more missing clothing warmth than a blanket", () => {
+    const ideal: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      bodysuit: "long_sleeve_bodysuit",
+      bottom: "pants",
+      mid: "sweater",
+      hat: "thin_hat",
+      socks: "cotton_socks",
+      transportExtras: ["blanket"],
+    };
+    const withBlanket: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      transportExtras: ["blanket"],
+    };
+    const withFootmuff: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      transportExtras: ["footmuff"],
+    };
+
+    const blanketResult = compareOutfits(ideal, withBlanket);
+    const footmuffResult = compareOutfits(ideal, withFootmuff);
+
+    expect(blanketResult.adjustments.some((item) => item.slot === "mid")).toBe(true);
+    expect(footmuffResult.adjustments.some((item) => item.slot === "mid")).toBe(false);
+    expect(footmuffResult.adjustments.length).toBeLessThan(blanketResult.adjustments.length);
+    expect(footmuffResult.missingTransportExtras).toHaveLength(0);
+  });
 });
