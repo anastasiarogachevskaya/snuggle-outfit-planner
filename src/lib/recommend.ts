@@ -160,11 +160,26 @@ export function recommend(input: RecommendInput): Recommendation {
 
   const reason = buildReason(input, out.effectiveC, usedExtras);
 
+  // Everything else that fits this trip: shown as quiet, optional choices so a
+  // parent can build any outfit in Layer up, not only the recommended one.
+  const shown = new Set<WardrobeSlug>([...usedExtras, ...missingExtras]);
+  const optionalTransportExtras: OptionalAccessory[] = transportExtraCandidates(
+    input.situation,
+    input.transportMode,
+  )
+    .filter((slug) => !shown.has(slug))
+    .map((slug) => ({
+      slug,
+      label: TRANSPORT_EXTRA_LABELS[slug] ?? slug,
+      owned: input.owned.has(slug),
+    }));
+
   return {
     babyClothing: mapped.babyClothing,
     accessories: mapped.accessories,
     sleepAccessories: [],
     transportExtras,
+    optionalTransportExtras,
     missingHelpfulItems,
     missing: mapped.missing,
     reason,
