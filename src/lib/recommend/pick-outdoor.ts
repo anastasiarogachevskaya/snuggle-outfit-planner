@@ -352,16 +352,16 @@ function buildSafety(ctx: OutdoorContext, effectiveC: number): string[] {
         ? "☀️ Keep baby in the shade and out of direct sunlight."
         : "☀️ Seek shade where you can, and apply broad-spectrum SPF 30+ to exposed skin.",
     );
-    if (uv !== undefined && uv >= 8) {
-      advice.push("☀️ Very strong UV today. Minimize direct sun exposure.");
-    } else if (uv !== undefined && uv >= 6) {
-      advice.push("☀️ Strong sun today. Keep baby in the shade when possible.");
-    } else if (hot) {
+    if (hot) {
       advice.push(
         infant
           ? "☀️ Dress baby in lightweight clothing and always use a sun hat if available."
           : "☀️ Use a sun hat to keep the sun off baby's face and neck.",
       );
+    } else if (uv !== undefined && uv >= 8) {
+      advice.push("☀️ Very strong UV today. Minimize direct sun exposure.");
+    } else if (uv !== undefined && uv >= 6) {
+      advice.push("☀️ Strong sun today. Keep baby in the shade when possible.");
     } else {
       // Bright winter days hit UV 4+ at freezing temperatures, where "lightweight
       // clothing" would contradict the warm layers the engine just picked.
