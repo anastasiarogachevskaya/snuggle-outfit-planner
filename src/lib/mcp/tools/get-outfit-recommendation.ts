@@ -78,6 +78,7 @@ export default defineTool({
       homeActivity: input.home_activity as HomeActivity | undefined,
       ageMonths,
       uvIndex: weather?.uvIndex,
+      cloudCoverPct: weather?.cloudCoverPct,
     });
 
     const result = {
