@@ -127,7 +127,6 @@ export function OutfitResult({
                   slug={a.slug}
                   chip="?"
                   label={a.label}
-                  hint="Not in your wardrobe"
                   accent
                   dim
                 />
