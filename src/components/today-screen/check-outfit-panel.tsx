@@ -139,11 +139,16 @@ function ToggleTile({
   value,
   onChange,
   adjustment,
+  muted = false,
+  note,
 }: {
   label: string;
   value: boolean;
   onChange: (v: boolean) => void;
   adjustment?: Pick<SlotAdjustment, "type">;
+  /** Quieter styling for options that aren't recommended for today. */
+  muted?: boolean;
+  note?: string;
 }) {
   const highlight = adjustment
     ? adjustment.type === "add"
