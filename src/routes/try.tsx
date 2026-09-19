@@ -7,6 +7,7 @@ import {
   GUEST_DEFAULT_WARDROBE,
   createGuestProfile,
   createLocalProfile,
+  dobFromAgeBand,
   useGuestProfile,
   writeGuestProfile,
   type GuestAgeBand,
