@@ -87,6 +87,18 @@ describe("createGuestProfile", () => {
   });
 });
 
+describe("createLocalProfile", () => {
+  it("keeps the temperature preference chosen during setup", async () => {
+    const { createLocalProfile } = await import("../guest-profile");
+    expect(createLocalProfile("Leo", "2026-06-01", 5).temperaturePref).toBe(5);
+  });
+
+  it("defaults to average for older callers", async () => {
+    const { createLocalProfile } = await import("../guest-profile");
+    expect(createLocalProfile("Leo", "2026-06-01").temperaturePref).toBe(3);
+  });
+});
+
 describe("guest profile storage", () => {
   it("round-trips through localStorage", () => {
     const p = createGuestProfile("6-12m");

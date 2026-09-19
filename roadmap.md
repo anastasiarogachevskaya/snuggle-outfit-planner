@@ -11,7 +11,7 @@
 
 ## Open
 
-- [ ] Make temperature preference readable and include it in iPhone and web profile setup
+- [x] Make temperature preference readable and include it in iPhone and web profile setup
 
 ## Open (needs the user)
 
