@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { WARDROBE_CATALOG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { WARDROBE_CATALOG, warmthTagClasses, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import { ClothingIcon } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
