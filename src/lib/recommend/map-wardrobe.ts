@@ -36,7 +36,10 @@ const BOTTOM_MAP: Record<BottomKind, { slugs: WardrobeSlug[]; label: string } | 
 
 const MID_MAP: Record<MidKind, { slugs: WardrobeSlug[]; label: string } | null> = {
   none: null,
-  sweater: { slugs: ["sweater", "cardigan", "hoodie"], label: "Sweater" },
+  sweater: {
+    slugs: ["sweater", "light_merino_layer", "cardigan", "hoodie"],
+    label: "Sweater",
+  },
   fleece: {
     slugs: ["fleece_overall", "fleece_layer", "wool_overall", "wool_layer", "sweater"],
     label: "Fleece overall",

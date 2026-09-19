@@ -185,7 +185,25 @@ function WardrobePage() {
                       >
                         <ClothingIcon slug={item.slug as WardrobeSlug} size={22} />
                       </span>
-                      <span className="min-w-0 break-words text-sm font-medium">{item.label}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="break-words text-sm font-medium">{item.label}</span>
+                          {item.warmth && (
+                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                              {item.warmth}
+                            </span>
+                          )}
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-snug text-ink/55">
+                          {item.hint}
+                        </span>
+                        {item.explanation && (
+                          <span className="mt-1 block text-[11px] leading-snug text-ink/45">
+                            <span className="font-semibold text-ink/60">What counts? </span>
+                            {item.explanation}
+                          </span>
+                        )}
+                      </span>
                     </button>
                   );
                 })}

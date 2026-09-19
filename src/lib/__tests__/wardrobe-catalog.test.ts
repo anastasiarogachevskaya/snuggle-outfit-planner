@@ -4,6 +4,7 @@ import {
   WARDROBE_STEPS,
   WARDROBE_CATALOG,
   LABEL_BY_SLUG,
+  ITEM_BY_SLUG,
   QUICK_SETUP_OWNED,
   DEFAULT_OWNED,
 } from "../wardrobe-catalog";
@@ -28,6 +29,13 @@ describe("wardrobe catalog", () => {
         ok: true,
       });
     }
+  });
+
+  it("distinguishes light merino from warm wool in plain language", () => {
+    expect(ITEM_BY_SLUG.light_merino_layer.warmth).toBe("Light");
+    expect(ITEM_BY_SLUG.light_merino_layer.hint).toContain("Thin");
+    expect(ITEM_BY_SLUG.wool_layer.label).toBe("Warm wool layer");
+    expect(ITEM_BY_SLUG.wool_layer.hint).toContain("Thick");
   });
 
   it("every step has an id, title, question and at least one item", () => {

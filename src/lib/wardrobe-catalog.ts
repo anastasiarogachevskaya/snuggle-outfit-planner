@@ -13,6 +13,7 @@ export type WardrobeSlug =
   | "shorts"
   // Mid
   | "sweater"
+  | "light_merino_layer"
   | "fleece_layer"
   | "wool_layer"
   | "cardigan"
@@ -56,7 +57,18 @@ export type WardrobeStep = {
   id: string;
   title: string;
   question: string;
-  items: { slug: WardrobeSlug; label: string; hint: string; emoji: string }[];
+  items: WardrobeItem[];
+};
+
+export type WardrobeWarmth = "Light" | "Medium" | "Warm" | "Very warm";
+
+export type WardrobeItem = {
+  slug: WardrobeSlug;
+  label: string;
+  hint: string;
+  emoji: string;
+  warmth?: WardrobeWarmth;
+  explanation?: string;
 };
 
 export const WARDROBE_STEPS: WardrobeStep[] = [
@@ -104,11 +116,50 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
     title: "Mid layers",
     question: "Which mid layers do you have?",
     items: [
-      { slug: "sweater", label: "Sweater", hint: "Mid layer", emoji: "🧶" },
-      { slug: "fleece_layer", label: "Fleece layer", hint: "Warm mid", emoji: "🧥" },
-      { slug: "wool_layer", label: "Wool layer", hint: "Warm mid", emoji: "🐏" },
-      { slug: "cardigan", label: "Cardigan", hint: "Mid layer", emoji: "👚" },
-      { slug: "hoodie", label: "Hoodie", hint: "Mid layer", emoji: "🎽" },
+      {
+        slug: "sweater",
+        label: "Sweater",
+        hint: "Everyday knitted top",
+        emoji: "🧶",
+        warmth: "Medium",
+      },
+      {
+        slug: "light_merino_layer",
+        label: "Light merino layer",
+        hint: "Thin, smooth merino jersey",
+        emoji: "🐑",
+        warmth: "Light",
+        explanation: "A separate thin top or suit worn over a bodysuit—not a merino bodysuit itself.",
+      },
+      {
+        slug: "fleece_layer",
+        label: "Fleece layer",
+        hint: "Soft, fluffy fleece",
+        emoji: "🧥",
+        warmth: "Warm",
+      },
+      {
+        slug: "wool_layer",
+        label: "Warm wool layer",
+        hint: "Thick knit or boiled wool",
+        emoji: "🐏",
+        warmth: "Warm",
+        explanation: "A chunky knit or dense boiled-wool layer, similar in warmth to fleece.",
+      },
+      {
+        slug: "cardigan",
+        label: "Cardigan",
+        hint: "Buttoned knitted top",
+        emoji: "👚",
+        warmth: "Medium",
+      },
+      {
+        slug: "hoodie",
+        label: "Hoodie",
+        hint: "Cotton sweatshirt",
+        emoji: "🎽",
+        warmth: "Medium",
+      },
     ],
   },
   {
@@ -192,8 +243,12 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
 ];
 
 export const WARDROBE_CATALOG = WARDROBE_STEPS.flatMap((s) =>
-  s.items.map((i) => ({ slug: i.slug, label: i.label, group: s.title })),
+  s.items.map((i) => ({ ...i, group: s.title })),
 );
+
+export const ITEM_BY_SLUG: Record<WardrobeSlug, WardrobeItem> = Object.fromEntries(
+  WARDROBE_STEPS.flatMap((s) => s.items).map((i) => [i.slug, i]),
+) as Record<WardrobeSlug, WardrobeItem>;
 
 export const LABEL_BY_SLUG: Record<WardrobeSlug, string> = Object.fromEntries(
   WARDROBE_STEPS.flatMap((s) => s.items).map((i) => [i.slug, i.label]),

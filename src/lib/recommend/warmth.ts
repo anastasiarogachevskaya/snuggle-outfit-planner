@@ -32,6 +32,7 @@ export const CLO_BY_SLUG: Partial<Record<WardrobeSlug, number>> = {
   // top (see map-wardrobe.ts's MID_MAP.fleece), worn as the mid layer with
   // an outer layer over them, not as the outer layer itself.
   sweater: 0.35,
+  light_merino_layer: 0.35,
   cardigan: 0.35,
   hoodie: 0.35,
   fleece_layer: 0.5,
@@ -112,6 +113,7 @@ export const BOTTOM_SLUGS: WardrobeSlug[] = [
 // layer" would flag the very item recommend() wants as one to remove.
 export const MID_SLUGS: WardrobeSlug[] = [
   "sweater",
+  "light_merino_layer",
   "cardigan",
   "hoodie",
   "fleece_layer",
