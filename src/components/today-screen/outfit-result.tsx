@@ -148,14 +148,12 @@ export function OutfitResult({
 function Row({
   chip,
   label,
-  hint,
   accent,
   dim,
   slug,
 }: {
   chip: string;
   label: string;
-  hint?: string;
   accent?: boolean;
   dim?: boolean;
   slug?: WardrobeSlug;
@@ -180,7 +178,6 @@ function Row({
       </div>
       <div className="min-w-0">
         <p className="break-words text-sm font-medium">{label}</p>
-        {hint && <p className="text-[11px] text-ink/40">{hint}</p>}
       </div>
     </div>
   );
