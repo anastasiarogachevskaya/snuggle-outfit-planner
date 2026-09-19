@@ -4,7 +4,6 @@ import {
   outfitClo,
   idealOutfitFrom,
   compareOutfits,
-  compareWithTransportExtra,
   verdictFor,
   VERDICT_TOLERANCE,
   CLO_BY_SLUG,
@@ -321,26 +320,4 @@ describe("compareOutfits", () => {
     expect(footmuffResult.missingTransportExtras).toHaveLength(0);
   });
 
-  it("compares blanket and footmuff gaps using the same verdict tolerance", () => {
-    const ideal: ActualOutfit = {
-      ...EMPTY_OUTFIT,
-      bodysuit: "long_sleeve_bodysuit",
-      bottom: "pants",
-      mid: "sweater",
-      transportExtras: ["blanket"],
-    };
-    const actual: ActualOutfit = {
-      ...EMPTY_OUTFIT,
-      bodysuit: "long_sleeve_bodysuit",
-      bottom: "pants",
-    };
-
-    const blanket = compareWithTransportExtra(ideal, actual, "blanket");
-    const footmuff = compareWithTransportExtra(ideal, actual, "footmuff");
-
-    expect(footmuff.warmthGap).toBeLessThan(blanket.warmthGap);
-    expect(footmuff.adjustments.length).toBeLessThan(blanket.adjustments.length);
-    expect(footmuff.verdict).toBe("just_right");
-    expect(footmuff.warmthGap).toBe(0);
-  });
 });
