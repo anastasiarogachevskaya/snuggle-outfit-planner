@@ -43,7 +43,7 @@ describe("fetchWeather", () => {
     expect(url.searchParams.get("longitude")).toBe("24.94");
     expect(url.searchParams.get("wind_speed_unit")).toBe("kmh");
     expect(url.searchParams.get("current")).toBe(
-      "temperature_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index",
+      "temperature_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index,cloud_cover",
     );
     expect(url.searchParams.get("hourly")).toBe("apparent_temperature");
     expect(url.searchParams.get("forecast_days")).toBe("2");

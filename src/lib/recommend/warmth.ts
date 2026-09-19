@@ -59,6 +59,20 @@ export const CLO_BY_SLUG: Partial<Record<WardrobeSlug, number>> = {
   sun_hat: 0,
 };
 
+/**
+ * Transport gear isn't worn on baby's body, but a footmuff or blanket is a
+ * real part of how warm the trip feels — and recommend() already dresses
+ * baby lighter when it expects them in use. Scored separately (and more
+ * roughly) than clothing so toggling one actually moves the verdict.
+ */
+export const TRANSPORT_CLO_BY_SLUG: Partial<Record<WardrobeSlug, number>> = {
+  footmuff: 0.6,
+  blanket: 0.3,
+  car_seat_blanket: 0.3,
+  babywearing_cover: 0.4,
+  rain_cover: 0.2,
+};
+
 export type OutfitVerdict = "too_cold" | "just_right" | "too_warm";
 
 /**
@@ -172,6 +186,7 @@ export function outfitClo(o: ActualOutfit): number {
   let total = single.reduce((sum, s) => sum + (s === "none" ? 0 : (CLO_BY_SLUG[s] ?? 0)), 0);
   if (o.snowPants) total += CLO_BY_SLUG.snow_pants ?? 0;
   if (o.mittens) total += CLO_BY_SLUG.mittens ?? 0;
+  for (const slug of o.transportExtras) total += TRANSPORT_CLO_BY_SLUG[slug] ?? 0;
   return total;
 }
 
