@@ -68,6 +68,8 @@ export type Recommendation = {
   accessories: Accessory[];
   sleepAccessories: Accessory[];
   transportExtras: Accessory[];
+  /** Extras that fit the trip but aren't recommended for today's weather. */
+  optionalTransportExtras: OptionalAccessory[];
   missingHelpfulItems: Accessory[];
   missing: WardrobeSlug[]; // missing baby clothing / accessory items only
   reason: string;
