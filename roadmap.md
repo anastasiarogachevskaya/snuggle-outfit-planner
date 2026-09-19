@@ -9,6 +9,10 @@
 - [x] Auth email webhook builds lazily; LOVABLE_API_KEY resolves at runtime (webhook now returns 401 on unsigned test, not a crash)
 - [x] Apple + Google providers confirmed enabled in Cloud auth
 
+## Open
+
+- [ ] Make temperature preference readable and include it in iPhone and web profile setup
+
 ## Open (needs the user)
 
 - [ ] Real-iPhone TestFlight walkthrough of Continue with Apple / Continue with Google
