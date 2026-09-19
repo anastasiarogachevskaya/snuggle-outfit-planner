@@ -45,6 +45,14 @@
   --color-blog-clay-soft: var(--blog-clay-soft);
   --color-blog-sky-soft: var(--blog-sky-soft);
   --color-blog-sky: var(--blog-sky);
+  --color-warmth-light: var(--warmth-light);
+  --color-warmth-light-bg: var(--warmth-light-bg);
+  --color-warmth-medium: var(--warmth-medium);
+  --color-warmth-medium-bg: var(--warmth-medium-bg);
+  --color-warmth-warm: var(--warmth-warm);
+  --color-warmth-warm-bg: var(--warmth-warm-bg);
+  --color-warmth-very-warm: var(--warmth-very-warm);
+  --color-warmth-very-warm-bg: var(--warmth-very-warm-bg);
 }
 
 :root {
