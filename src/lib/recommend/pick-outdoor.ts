@@ -12,6 +12,8 @@ export type OutdoorContext = {
   durationMin?: number;
   ageMonths?: number | null;
   uvIndex?: number;
+  /** Cloud cover 0–100%; heavy cloud suppresses moderate-UV sun advice. */
+  cloudCoverPct?: number;
   /** Forecast "feels like" for roughly `durationMin` minutes from now. */
   feelsLikeAtEndC?: number;
 };
