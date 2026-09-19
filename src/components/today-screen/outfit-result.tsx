@@ -55,7 +55,6 @@ export function OutfitResult({
               slug={a.slug}
               chip="+"
               label={a.label}
-              hint={owned.has(a.slug) ? usingHint(a.usingLabel) : "Not in your wardrobe"}
               accent
               dim={!owned.has(a.slug)}
             />
