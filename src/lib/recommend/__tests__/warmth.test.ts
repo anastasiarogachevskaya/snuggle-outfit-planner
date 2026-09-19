@@ -247,7 +247,7 @@ describe("compareOutfits", () => {
       bodysuit: "long_sleeve_bodysuit",
       bottom: "pants",
       mid: "sweater",
-      hat: "warm_hat",
+      hat: "thin_hat",
       mittens: true,
     };
     const actual: ActualOutfit = { ...ideal, hat: "none", mittens: false };
