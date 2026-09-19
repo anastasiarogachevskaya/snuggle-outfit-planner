@@ -211,6 +211,8 @@ export function TodayScreen({
             rec={rec}
             owned={owned}
             weather={weatherQ.data}
+            situation={situation}
+            transportMode={transportMode}
             onBack={() => setCheckingOutfit(false)}
           />
         ) : (
