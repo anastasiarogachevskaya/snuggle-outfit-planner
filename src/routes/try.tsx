@@ -84,6 +84,21 @@ function TryPage() {
     if (!loaded) return;
     const ios = isIOSApp();
     setLocalFirst(ios);
+
+    // `?step=wardrobe` opens the wardrobe setup straight away, with no sign-up
+    // and no baby/location questions first — handy for demos and testing.
+    const wantsWardrobe =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("step") === "wardrobe";
+    if (wantsWardrobe) {
+      if (!profile) {
+        const p = createLocalProfile("Baby", dobFromAgeBand("3-6m"));
+        writeGuestProfile(p);
+        setProfile(p);
+      }
+      return setStep("wardrobe-setup");
+    }
+
     if (!profile) return setStep(ios ? "baby" : "age");
     if (ios) {
       if (profile.setupComplete || profile.onboardingStep === "complete") return setStep("today");
