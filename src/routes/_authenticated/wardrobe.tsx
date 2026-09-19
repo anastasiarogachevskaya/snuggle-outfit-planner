@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { WARDROBE_CATALOG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { WARDROBE_CATALOG, warmthTagClasses, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import { ClothingIcon } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
@@ -189,7 +189,12 @@ function WardrobePage() {
                         <span className="flex flex-wrap items-center gap-2">
                           <span className="break-words text-sm font-medium">{item.label}</span>
                           {item.warmth && (
-                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                            <span
+                              className={
+                                "rounded-full px-2 py-0.5 text-[10px] font-semibold " +
+                                warmthTagClasses(item.warmth)
+                              }
+                            >
                               {item.warmth}
                             </span>
                           )}

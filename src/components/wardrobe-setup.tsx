@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   WARDROBE_STEPS,
   QUICK_SETUP_OWNED,
+  warmthTagClasses,
   type WardrobeSlug,
   type WardrobeWarmth,
 } from "@/lib/wardrobe-catalog";
@@ -287,7 +288,12 @@ function Tile({
       <div className="flex items-start justify-between gap-2">
         <p className={"font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>{label}</p>
         {warmth && (
-          <span className="shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
+          <span
+            className={
+              "shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold " +
+              warmthTagClasses(warmth)
+            }
+          >
             {warmth}
           </span>
         )}

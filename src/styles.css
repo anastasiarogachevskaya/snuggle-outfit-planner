@@ -45,6 +45,14 @@
   --color-blog-clay-soft: var(--blog-clay-soft);
   --color-blog-sky-soft: var(--blog-sky-soft);
   --color-blog-sky: var(--blog-sky);
+  --color-warmth-light: var(--warmth-light);
+  --color-warmth-light-bg: var(--warmth-light-bg);
+  --color-warmth-medium: var(--warmth-medium);
+  --color-warmth-medium-bg: var(--warmth-medium-bg);
+  --color-warmth-warm: var(--warmth-warm);
+  --color-warmth-warm-bg: var(--warmth-warm-bg);
+  --color-warmth-very-warm: var(--warmth-very-warm);
+  --color-warmth-very-warm-bg: var(--warmth-very-warm-bg);
 }
 
 :root {
@@ -84,6 +92,16 @@
   --blog-clay-soft: oklch(0.94 0.035 55);
   --blog-sky-soft: oklch(0.94 0.025 225);
   --blog-sky: oklch(0.58 0.06 225);
+
+  /* Warmth markers */
+  --warmth-light: oklch(0.52 0.1 220);
+  --warmth-light-bg: oklch(0.93 0.03 220);
+  --warmth-medium: oklch(0.5 0.08 140);
+  --warmth-medium-bg: oklch(0.93 0.025 140);
+  --warmth-warm: oklch(0.55 0.11 50);
+  --warmth-warm-bg: oklch(0.93 0.035 50);
+  --warmth-very-warm: oklch(0.55 0.13 25);
+  --warmth-very-warm-bg: oklch(0.9 0.04 25);
 
   --font-serif: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;

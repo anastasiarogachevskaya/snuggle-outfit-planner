@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ITEM_BY_SLUG, LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { ITEM_BY_SLUG, LABEL_BY_SLUG, warmthTagClasses, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import type { Recommendation } from "@/lib/recommend";
 import {
   BODYSUIT_SLUGS,
@@ -127,7 +127,11 @@ function SlotRow<T extends WardrobeSlug | "none">({
             >
               <span className="block">{LABEL_BY_SLUG[slug]}</span>
               {label === "Mid layer" && item.warmth && (
-                <span className="mt-0.5 block text-[9px] font-medium opacity-65">
+                <span
+                  className={
+                    "mt-0.5 block text-[9px] font-medium " + warmthTagClasses(item.warmth)
+                  }
+                >
                   {item.warmth} · {item.hint}
                 </span>
               )}
