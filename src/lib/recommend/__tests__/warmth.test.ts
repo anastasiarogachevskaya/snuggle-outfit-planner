@@ -234,8 +234,29 @@ describe("compareOutfits", () => {
     expect(outfitClo(ideal)).toBeCloseTo(outfitClo(actual));
     const result = compareOutfits(ideal, actual);
     expect(result.verdict).toBe("just_right");
-    expect(result.adjustments).toHaveLength(0);
+    // Structural clothing swaps stay quiet; only the missing socks (an
+    // accessory too light to move the verdict) is surfaced.
+    expect(result.adjustments).toEqual([
+      { slot: "socks", type: "add", idealSlug: "cotton_socks" },
+    ]);
   });
+
+  it("still flags missing mittens/hat when the outfit is otherwise just right", () => {
+    const ideal: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      bodysuit: "long_sleeve_bodysuit",
+      bottom: "pants",
+      mid: "sweater",
+      hat: "thin_hat",
+      mittens: true,
+    };
+    const actual: ActualOutfit = { ...ideal, mittens: false };
+    const result = compareOutfits(ideal, actual);
+    expect(result.verdict).toBe("just_right");
+    expect(result.adjustments.map((a) => a.slot).sort()).toEqual(["mittens"]);
+    expect(result.adjustments.every((a) => a.type === "add")).toBe(true);
+  });
+
 
   it("flags a recommended, owned transport extra (e.g. footmuff) as missing when not marked in use", () => {
     const rec = recommend({

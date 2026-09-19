@@ -275,7 +275,20 @@ export function compareOutfits(
     (slug) => !actual.transportExtras.includes(slug),
   );
 
-  if (verdict === "just_right") return { verdict, diff, adjustments: [], missingTransportExtras };
+  // Accessories (hat, socks, mittens) weigh less than VERDICT_TOLERANCE, so a
+  // missing hat or mittens never moves the verdict off "just right" — but on a
+  // freezing walk they're exactly the things that matter. Surface those as
+  // "add" reminders even when the overall warmth checks out. Structural
+  // clothing differences stay suppressed in that case (see doc comment).
+  if (verdict === "just_right") {
+    const accessoryAdds: SlotAdjustment[] = [];
+    const hat = slotAdjustment("hat", ideal.hat, actual.hat);
+    if (hat?.type === "add") accessoryAdds.push(hat);
+    const socks = slotAdjustment("socks", ideal.socks, actual.socks);
+    if (socks?.type === "add") accessoryAdds.push(socks);
+    if (ideal.mittens && !actual.mittens) accessoryAdds.push({ slot: "mittens", type: "add" });
+    return { verdict, diff, adjustments: accessoryAdds, missingTransportExtras };
+  }
 
   const adjustments: SlotAdjustment[] = [];
   const push = (a: SlotAdjustment | null) => {
