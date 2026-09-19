@@ -166,14 +166,22 @@ function ToggleTile({
         "flex min-h-14 items-center justify-between gap-2 rounded-2xl border p-4 text-left transition-colors duration-150 motion-reduce:transition-none " +
         (value
           ? "border-primary/20 bg-primary/5"
-          : "border-black/5 bg-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)]") +
+          : muted
+            ? "border-dashed border-black/10 bg-surface/60"
+            : "border-black/5 bg-surface shadow-[0_2px_8px_rgba(0,0,0,0.02)]") +
         highlight
       }
     >
-      <span
-        className={"text-[12px] font-semibold " + (value ? "text-primary" : "text-ink/80")}
-      >
-        {label}
+      <span className="min-w-0">
+        <span
+          className={
+            "block text-[12px] font-semibold " +
+            (value ? "text-primary" : muted ? "text-ink/55" : "text-ink/80")
+          }
+        >
+          {label}
+        </span>
+        {note && <span className="mt-0.5 block text-[10px] text-ink/45">{note}</span>}
       </span>
       <span
         className={
