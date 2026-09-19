@@ -269,12 +269,10 @@ function slotAdjustment(
  * Clothing adjustments are only meaningful when the overall verdict says
  * something's actually off — a pajama-and-overall combo can land on the
  * same total warmth as recommend()'s bodysuit-and-layers pick despite being
- * structurally a totally different outfit, and flagging every one of those
- * differences as "add this, remove that" right next to "Just right for
- * today" reads as contradictory rather than helpful. Transport extras don't
- * carry that risk — they're not clo-scored, so "you own a footmuff, want to
- * use it?" is just a reminder, never a claim the outfit itself is wrong —
- * so those are still surfaced even when the outfit is already just right.
+ * structurally a totally different outfit. When an outfit is too light, only
+ * enough missing layers are highlighted to close the actual warmth gap. This
+ * matters for transport gear: a footmuff can replace more clothing warmth
+ * than a blanket, so the two choices must not produce identical guidance.
  */
 export function compareOutfits(
   ideal: ActualOutfit,
@@ -288,9 +286,15 @@ export function compareOutfits(
 } {
   const { verdict, diff } = verdictFor(outfitClo(actual), outfitClo(ideal));
 
-  const missingTransportExtras = ideal.transportExtras.filter(
-    (slug) => !actual.transportExtras.includes(slug),
+  const actualTransportWarmth = actual.transportExtras.reduce(
+    (sum, slug) => sum + (TRANSPORT_CLO_BY_SLUG[slug] ?? 0),
+    0,
   );
+  const missingTransportExtras = ideal.transportExtras.filter((slug) => {
+    if (actual.transportExtras.includes(slug)) return false;
+    const neededWarmth = TRANSPORT_CLO_BY_SLUG[slug] ?? 0;
+    return actualTransportWarmth < neededWarmth;
+  });
 
   // Accessories (hat, socks, mittens) weigh less than VERDICT_TOLERANCE, so a
   // missing hat or mittens never moves the verdict off "just right" — but on a
@@ -308,16 +312,39 @@ export function compareOutfits(
   }
 
   const adjustments: SlotAdjustment[] = [];
-  const push = (a: SlotAdjustment | null) => {
-    if (a) adjustments.push(a);
-  };
-  push(slotAdjustment("bodysuit", ideal.bodysuit, actual.bodysuit));
-  push(slotAdjustment("sleepsuit", ideal.sleepsuit, actual.sleepsuit));
-  push(slotAdjustment("bottom", ideal.bottom, actual.bottom));
-  push(slotAdjustment("mid", ideal.mid, actual.mid));
-  push(slotAdjustment("outer", ideal.outer, actual.outer));
-  push(slotAdjustment("hat", ideal.hat, actual.hat));
-  push(slotAdjustment("socks", ideal.socks, actual.socks));
+  const structural = [
+    slotAdjustment("bodysuit", ideal.bodysuit, actual.bodysuit),
+    slotAdjustment("sleepsuit", ideal.sleepsuit, actual.sleepsuit),
+    slotAdjustment("bottom", ideal.bottom, actual.bottom),
+    slotAdjustment("mid", ideal.mid, actual.mid),
+    slotAdjustment("outer", ideal.outer, actual.outer),
+  ].filter((item): item is SlotAdjustment => item !== null);
+
+  const accessories = [
+    slotAdjustment("hat", ideal.hat, actual.hat),
+    slotAdjustment("socks", ideal.socks, actual.socks),
+  ].filter((item): item is SlotAdjustment => item !== null);
+
+  if (verdict === "too_cold") {
+    // Keep recommended accessories visible, then suggest only as many body
+    // layers as are needed. The selected transport extra is already included
+    // in outfitClo(actual), so warmer gear naturally shortens this list.
+    const accessoryAdds = accessories.filter((item) => item.type === "add");
+    adjustments.push(...accessoryAdds);
+    let projectedClo = outfitClo(actual);
+    for (const item of accessoryAdds) {
+      if (item.idealSlug) projectedClo += CLO_BY_SLUG[item.idealSlug] ?? 0;
+    }
+    const targetClo = outfitClo(ideal) - VERDICT_TOLERANCE;
+    for (const item of structural) {
+      if (item.type !== "add") continue;
+      if (projectedClo >= targetClo) break;
+      adjustments.push(item);
+      if (item.idealSlug) projectedClo += CLO_BY_SLUG[item.idealSlug] ?? 0;
+    }
+  } else {
+    adjustments.push(...structural, ...accessories);
+  }
 
   if (ideal.snowPants && !actual.snowPants) adjustments.push({ slot: "snowPants", type: "add" });
   else if (!ideal.snowPants && actual.snowPants)
