@@ -35,6 +35,33 @@ export type Layer = {
   usingLabel?: string;
 };
 export type Accessory = { slug: WardrobeSlug; label: string; usingLabel?: string };
+/** A transport extra that isn't recommended today but still fits the trip. */
+export type OptionalAccessory = Accessory & { owned: boolean };
+
+const TRANSPORT_EXTRA_LABELS: Record<string, string> = {
+  rain_cover: "Rain cover",
+  footmuff: "Footmuff",
+  blanket: "Blanket",
+  babywearing_cover: "Babywearing cover",
+  car_seat_blanket: "Car seat blanket",
+};
+
+/**
+ * Every transport extra that makes sense for a trip, regardless of today's
+ * weather. Layer up uses this so parents can build any outfit, not just the
+ * recommended one.
+ */
+export function transportExtraCandidates(
+  situation: Situation,
+  transportMode?: TransportMode,
+): WardrobeSlug[] {
+  if (situation === "car") return ["blanket", "car_seat_blanket"];
+  if (situation !== "walk") return [];
+  if (transportMode === "carrier") return ["babywearing_cover", "blanket"];
+  if (transportMode === "pram" || transportMode === "sitting-stroller")
+    return ["rain_cover", "footmuff", "blanket"];
+  return [];
+}
 
 export type Recommendation = {
   babyClothing: Layer[];
