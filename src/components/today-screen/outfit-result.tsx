@@ -45,13 +45,6 @@ export function OutfitResult({
                 slug={isSynthetic ? undefined : (l.slug as WardrobeSlug)}
                 chip={l.slot.slice(0, 3).toUpperCase()}
                 label={l.label}
-                hint={
-                  isSynthetic
-                    ? ""
-                    : isOwned
-                      ? usingHint(l.usingLabel) || "In your wardrobe"
-                      : "Not in your wardrobe"
-                }
                 dim={!isSynthetic && !isOwned}
               />
             );
