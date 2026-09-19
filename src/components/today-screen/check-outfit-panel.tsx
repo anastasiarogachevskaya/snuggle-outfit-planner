@@ -254,7 +254,16 @@ export function CheckOutfitPanel({
   const adjustmentBySlot: Partial<Record<SlotKey, SlotAdjustment>> = {};
   for (const a of result?.adjustments ?? []) adjustmentBySlot[a.slot] = a;
 
-  const copy = result ? VERDICT_COPY[result.verdict] : null;
+  const baseCopy = result ? VERDICT_COPY[result.verdict] : null;
+  // Warmth can check out while a hat/mittens/socks are still missing — say so
+  // instead of a bare "Just right!".
+  const copy =
+    baseCopy && result?.verdict === "just_right" && result.adjustments.length > 0
+      ? {
+          title: "Almost there",
+          body: "The layers look right — just add the highlighted items below before heading out.",
+        }
+      : baseCopy;
 
   return (
     <section className="mb-10">
