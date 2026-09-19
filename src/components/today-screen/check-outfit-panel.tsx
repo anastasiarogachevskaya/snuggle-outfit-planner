@@ -421,22 +421,43 @@ export function CheckOutfitPanel({
             </section>
           )}
 
-          {rec.transportExtras.length > 0 && (
+          {(rec.transportExtras.length > 0 || rec.optionalTransportExtras.length > 0) && (
             <section>
               <h3 className={SLOT_LABEL}>Transport extras</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {rec.transportExtras.map((e) => (
-                  <ToggleTile
-                    key={e.slug}
-                    label={e.label}
-                    value={actual.transportExtras.includes(e.slug)}
-                    onChange={() => toggleTransportExtra(e.slug)}
-                    adjustment={
-                      result?.missingTransportExtras.includes(e.slug) ? { type: "add" } : undefined
-                    }
-                  />
-                ))}
-              </div>
+              {rec.transportExtras.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                  {rec.transportExtras.map((e) => (
+                    <ToggleTile
+                      key={e.slug}
+                      label={e.label}
+                      value={actual.transportExtras.includes(e.slug)}
+                      onChange={() => toggleTransportExtra(e.slug)}
+                      adjustment={
+                        result?.missingTransportExtras.includes(e.slug)
+                          ? { type: "add" }
+                          : undefined
+                      }
+                    />
+                  ))}
+                </div>
+              )}
+              {rec.optionalTransportExtras.length > 0 && (
+                <>
+                  <p className="mt-3 text-[11px] text-ink/50">Other options</p>
+                  <div className="mt-2 grid grid-cols-2 gap-3">
+                    {rec.optionalTransportExtras.map((e) => (
+                      <ToggleTile
+                        key={e.slug}
+                        label={e.label}
+                        muted
+                        note={e.owned ? undefined : "Not in your wardrobe"}
+                        value={actual.transportExtras.includes(e.slug)}
+                        onChange={() => toggleTransportExtra(e.slug)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </section>
           )}
         </div>
