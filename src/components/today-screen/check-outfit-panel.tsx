@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
-import type { Recommendation, Situation, TransportMode } from "@/lib/recommend";
+import type { Recommendation } from "@/lib/recommend";
 import {
   BODYSUIT_SLUGS,
   SLEEPSUIT_SLUGS,
@@ -12,7 +12,6 @@ import {
   EMPTY_OUTFIT,
   idealOutfitFrom,
   compareOutfits,
-  compareWithTransportExtra,
   type ActualOutfit,
   type OutfitVerdict,
   type SlotAdjustment,
@@ -59,12 +58,6 @@ const CHIP_SUGGESTED = `${CHIP_BASE} border-2 border-dashed border-primary bg-su
 
 const SLOT_LABEL = "mb-3 ml-1 text-[10px] font-bold uppercase tracking-[0.15em] text-accent";
 
-const VERDICT_SHORT: Record<OutfitVerdict, string> = {
-  too_cold: "Too light",
-  just_right: "Just right",
-  too_warm: "Too warm",
-};
-
 const SLOT_FALLBACK: Record<SlotKey, string> = {
   bodysuit: "Bodysuit",
   sleepsuit: "Sleepsuit",
@@ -80,11 +73,6 @@ const SLOT_FALLBACK: Record<SlotKey, string> = {
 function adjustmentLabel(adjustment: SlotAdjustment): string {
   const slug = adjustment.type === "add" ? adjustment.idealSlug : adjustment.actualSlug;
   return slug ? LABEL_BY_SLUG[slug] : SLOT_FALLBACK[adjustment.slot];
-}
-
-function gapLabel(diff: number, warmthGap: number): string {
-  if (warmthGap === 0) return "No warmth gap";
-  return `${warmthGap.toFixed(2)} ${diff < 0 ? "short" : "over"}`;
 }
 
 function SlotRow<T extends WardrobeSlug | "none">({
@@ -254,15 +242,11 @@ export function CheckOutfitPanel({
   rec,
   owned,
   weather,
-  situation,
-  transportMode,
   onBack,
 }: {
   rec: Recommendation;
   owned: Set<WardrobeSlug>;
   weather?: PanelWeather;
-  situation: Situation;
-  transportMode: TransportMode;
   onBack: () => void;
 }) {
   const [actual, setActual] = useState<ActualOutfit>(EMPTY_OUTFIT);
@@ -278,15 +262,6 @@ export function CheckOutfitPanel({
       transportExtras: prev.transportExtras.includes(slug)
         ? prev.transportExtras.filter((s) => s !== slug)
         : [...prev.transportExtras, slug],
-    }));
-
-  const selectComparedExtra = (slug: "footmuff" | "blanket") =>
-    setActual((prev) => ({
-      ...prev,
-      transportExtras: [
-        ...prev.transportExtras.filter((item) => item !== "footmuff" && item !== "blanket"),
-        slug,
-      ],
     }));
 
   // Nothing picked yet isn't "too cold" — it's just an unanswered question.
@@ -319,20 +294,6 @@ export function CheckOutfitPanel({
           body: "The layers look right — just add the highlighted items below before heading out.",
         }
       : baseCopy;
-
-  const ideal = useMemo(() => idealOutfitFrom(rec), [rec]);
-  const transportComparison = useMemo(
-    () => ({
-      footmuff: compareWithTransportExtra(ideal, actual, "footmuff"),
-      blanket: compareWithTransportExtra(ideal, actual, "blanket"),
-    }),
-    [ideal, actual],
-  );
-  const showTransportComparison =
-    situation === "walk" &&
-    (transportMode === "pram" || transportMode === "sitting-stroller") &&
-    [...rec.transportExtras, ...rec.optionalTransportExtras].some((item) => item.slug === "footmuff") &&
-    [...rec.transportExtras, ...rec.optionalTransportExtras].some((item) => item.slug === "blanket");
 
   return (
     <section className="mb-10">
@@ -480,66 +441,6 @@ export function CheckOutfitPanel({
           {(rec.transportExtras.length > 0 || rec.optionalTransportExtras.length > 0) && (
             <section>
               <h3 className={SLOT_LABEL}>Transport extras</h3>
-              {showTransportComparison && (
-                <div className="mb-4">
-                  <p className="mb-2 text-[11px] font-semibold text-ink/65">
-                    Footmuff vs blanket
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(["footmuff", "blanket"] as const).map((slug) => {
-                      const comparison = transportComparison[slug];
-                      const selected = actual.transportExtras.includes(slug);
-                      return (
-                        <button
-                          key={slug}
-                          type="button"
-                          aria-pressed={selected}
-                          onClick={() => {
-                            selectionHaptic();
-                            selectComparedExtra(slug);
-                          }}
-                          className={
-                            "min-w-0 rounded-2xl border p-3 text-left transition-colors duration-150 motion-reduce:transition-none " +
-                            (selected
-                              ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                              : "border-black/10 bg-surface")
-                          }
-                        >
-                          <span className="block truncate text-xs font-bold text-ink">
-                            {LABEL_BY_SLUG[slug]}
-                          </span>
-                          <span className="mt-1 block text-[10px] font-semibold text-accent">
-                            {gapLabel(comparison.diff, comparison.warmthGap)}
-                          </span>
-                          <span className="mt-2 block text-[11px] font-bold text-ink">
-                            {VERDICT_SHORT[comparison.verdict]}
-                          </span>
-                          <span className="mt-2 block border-t border-black/5 pt-2">
-                            {comparison.adjustments.length === 0 ? (
-                              <span className="block text-[10px] leading-snug text-ink/50">
-                                No layer changes
-                              </span>
-                            ) : (
-                              comparison.adjustments.map((adjustment) => (
-                                <span
-                                  key={`${adjustment.slot}-${adjustment.type}`}
-                                  className={
-                                    "block text-[10px] leading-snug " +
-                                    (adjustment.type === "add" ? "text-primary" : "text-destructive")
-                                  }
-                                >
-                                  {adjustment.type === "add" ? "+ Add " : "− Remove "}
-                                  {adjustmentLabel(adjustment)}
-                                </span>
-                              ))
-                            )}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
               {rec.transportExtras.length > 0 && (
                 <div className="grid grid-cols-2 gap-3">
                   {rec.transportExtras.map((e) => (

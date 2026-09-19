@@ -356,29 +356,3 @@ export function compareOutfits(
   return { verdict, diff, adjustments, missingTransportExtras };
 }
 
-export type TransportComparison = ReturnType<typeof compareOutfits> & {
-  /** Absolute distance from the ideal warmth; zero when inside the comfort band. */
-  warmthGap: number;
-};
-
-/**
- * Compare the currently selected clothes with exactly one of the two stroller
- * warmth options. Other extras (for example a rain cover) remain in place.
- */
-export function compareWithTransportExtra(
-  ideal: ActualOutfit,
-  actual: ActualOutfit,
-  extra: "footmuff" | "blanket",
-): TransportComparison {
-  const transportExtras = actual.transportExtras.filter(
-    (slug) => slug !== "footmuff" && slug !== "blanket",
-  );
-  const result = compareOutfits(ideal, {
-    ...actual,
-    transportExtras: [...transportExtras, extra],
-  });
-  return {
-    ...result,
-    warmthGap: Math.abs(result.diff) <= VERDICT_TOLERANCE ? 0 : Math.abs(result.diff),
-  };
-}
