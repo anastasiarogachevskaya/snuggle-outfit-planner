@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ITEM_BY_SLUG, LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { ITEM_BY_SLUG, LABEL_BY_SLUG, warmthTagClasses, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import type { Recommendation } from "@/lib/recommend";
 import {
   BODYSUIT_SLUGS,
