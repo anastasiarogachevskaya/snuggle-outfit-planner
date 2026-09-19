@@ -20,6 +20,8 @@ export type RecommendInput = {
   homeActivity?: HomeActivity;
   ageMonths?: number | null;
   uvIndex?: number;
+  /** Cloud cover 0–100%, used to soften sun advice under overcast skies. */
+  cloudCoverPct?: number;
   /** Forecast "feels like" for roughly `durationMin` minutes from now. */
   feelsLikeAtEndC?: number;
 };
@@ -87,6 +89,7 @@ export function recommend(input: RecommendInput): Recommendation {
     durationMin: input.durationMin,
     ageMonths: input.ageMonths,
     uvIndex: input.uvIndex,
+    cloudCoverPct: input.cloudCoverPct,
     feelsLikeAtEndC: input.feelsLikeAtEndC,
   };
   const out = pickOutdoor(ctx);

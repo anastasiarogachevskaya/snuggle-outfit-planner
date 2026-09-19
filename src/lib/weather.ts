@@ -5,6 +5,8 @@ export type Weather = {
   code: number;
   condition: string;
   uvIndex?: number;
+  /** Cloud cover, 0–100%. Used to soften sun advice under an overcast sky. */
+  cloudCoverPct?: number;
   /** Open-Meteo's own timestamp for `current`, used as the origin for hourly lookups. */
   asOfIso?: string;
   /** Hourly forecast, aligned index-for-index — used to look ahead from `asOfIso`. */
@@ -19,7 +21,7 @@ export async function fetchWeather(lat: number, lon: number): Promise<Weather> {
   url.searchParams.set("longitude", String(lon));
   url.searchParams.set(
     "current",
-    "temperature_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index",
+    "temperature_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index,cloud_cover",
   );
   // Only need a few hours ahead (the longest walk duration option is 90 min),
   // but 2 days covers a "now" close to midnight without extra complexity.
@@ -41,6 +43,7 @@ export async function fetchWeather(lat: number, lon: number): Promise<Weather> {
     code: c.weather_code,
     condition: describeCode(c.weather_code),
     uvIndex: uv,
+    cloudCoverPct: typeof c.cloud_cover === "number" ? c.cloud_cover : undefined,
     asOfIso: c.time,
     hourlyTimeIso: json.hourly?.time ?? [],
     hourlyFeelsLikeC: json.hourly?.apparent_temperature ?? [],

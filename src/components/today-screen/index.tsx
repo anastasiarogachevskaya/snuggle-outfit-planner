@@ -119,6 +119,7 @@ export function TodayScreen({
       homeActivity: situation === "home" ? homeActivity : undefined,
       ageMonths,
       uvIndex: weatherQ.data.uvIndex,
+      cloudCoverPct: weatherQ.data.cloudCoverPct,
       feelsLikeAtEndC:
         situation === "walk"
           ? (feelsLikeAtMinutesFromNow(weatherQ.data, duration) ?? undefined)

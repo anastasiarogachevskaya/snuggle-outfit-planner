@@ -489,6 +489,53 @@ describe("recommendation engine", () => {
     expect(slugs(r.accessories)).toContain("warm_hat");
   });
 
+  it("an overcast day with a moderate UV reading gives no sun advice", () => {
+    const r = recommend({
+      feelsLikeC: 12,
+      uvIndex: 3,
+      cloudCoverPct: 81,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "sitting-stroller",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.safetyAdvice.join(" ")).not.toMatch(/SPF|sunscreen|sun protection/i);
+  });
+
+  it("a clear day with UV 5 recommends sunscreen, once", () => {
+    const r = recommend({
+      feelsLikeC: 12,
+      uvIndex: 5,
+      cloudCoverPct: 10,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "sitting-stroller",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    const sun = r.safetyAdvice.filter((a) => a.includes("☀️"));
+    expect(sun.join(" ")).toMatch(/SPF 30\+/);
+    expect(sun.length).toBeLessThanOrEqual(2);
+  });
+
+  it("strong UV still warns through heavy cloud", () => {
+    const r = recommend({
+      feelsLikeC: 12,
+      uvIndex: 7,
+      cloudCoverPct: 85,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "sitting-stroller",
+      durationMin: 30,
+      ageMonths: 8,
+      owned: owned(),
+    });
+    expect(r.safetyAdvice.join(" ")).toMatch(/Strong sun/i);
+  });
+
   it("under 2 months and below freezing gets a skip-the-trip safety note", () => {
     const r = recommend({
       feelsLikeC: -2,
