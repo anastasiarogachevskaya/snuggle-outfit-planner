@@ -1,5 +1,17 @@
 # Make every clothing choice easier to understand
 
+## Mockup set
+
+Before implementation, show the same clothing guidance in the three places where parents will encounter it:
+
+1. **First-time wardrobe setup** — the existing **Mid layers** step shown while creating the baby profile.
+2. **Profile → Wardrobe** — the existing checklist where parents edit what they own later.
+3. **Today → Layer up** — the existing outfit builder where parents choose what baby is wearing now.
+
+Each mockup will be clearly titled with its location and shown at iPhone size. The screens will retain Layerly’s current layout and colors, so the preview reads as an update to the real app rather than a separate concept page.
+
+The mockups will use plain examples only: **Light merino layer — thin, smooth jersey worn over a bodysuit** and **Warm wool layer — thick knit or boiled wool**. They will not use fabric weights, technical measurements, or temperature claims.
+
 ## What will change
 
 - Give every wardrobe item a short plain-language explanation and a simple warmth level, such as **Light**, **Warm**, or **Very warm**.
@@ -20,6 +32,7 @@
 - Let parents tap an information icon for a short explanation when the tile needs more context.
 - In **Layer up**, keep the picker compact but show warmth beside each garment name and expose the same explanation on demand.
 - Improve vague labels such as “Warm mid” so they describe what the garment looks or feels like—for example, “Thin merino jersey” or “Thick knit / boiled wool.”
+- Keep the explanations visually compact in setup and **Layer up**; allow slightly more detail in **Profile → Wardrobe**, where there is more room to review saved items.
 
 ## Recommendation behavior
 
