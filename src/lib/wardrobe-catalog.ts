@@ -13,6 +13,7 @@ export type WardrobeSlug =
   | "shorts"
   // Mid
   | "sweater"
+  | "light_merino_layer"
   | "fleece_layer"
   | "wool_layer"
   | "cardigan"
@@ -56,7 +57,18 @@ export type WardrobeStep = {
   id: string;
   title: string;
   question: string;
-  items: { slug: WardrobeSlug; label: string; hint: string; emoji: string }[];
+  items: WardrobeItem[];
+};
+
+export type WardrobeWarmth = "Light" | "Medium" | "Warm" | "Very warm";
+
+export type WardrobeItem = {
+  slug: WardrobeSlug;
+  label: string;
+  hint: string;
+  emoji: string;
+  warmth?: WardrobeWarmth;
+  explanation?: string;
 };
 
 export const WARDROBE_STEPS: WardrobeStep[] = [
@@ -68,23 +80,26 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
       {
         slug: "sleeveless_bodysuit",
         label: "Sleeveless bodysuit",
-        hint: "Base layer",
+        hint: "No sleeves, worn next to skin",
         emoji: "🎽",
+        warmth: "Light",
       },
       {
         slug: "short_sleeve_bodysuit",
         label: "Short-sleeve bodysuit",
-        hint: "Base layer",
+        hint: "Short sleeves, worn next to skin",
         emoji: "👕",
+        warmth: "Light",
       },
       {
         slug: "long_sleeve_bodysuit",
         label: "Long-sleeve bodysuit",
-        hint: "Base layer",
+        hint: "Long sleeves, worn next to skin",
         emoji: "👶",
+        warmth: "Medium",
       },
-      { slug: "romper", label: "Romper", hint: "One piece, covers legs", emoji: "🧸" },
-      { slug: "pajamas", label: "Pajamas / sleepsuit", hint: "Base layer", emoji: "🌙" },
+      { slug: "romper", label: "Romper", hint: "One piece that covers the legs", emoji: "🧸", warmth: "Light" },
+      { slug: "pajamas", label: "Pajamas / sleepsuit", hint: "Long one-piece sleepwear", emoji: "🌙", warmth: "Medium" },
     ],
   },
   {
@@ -92,11 +107,11 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
     title: "Bottoms",
     question: "Which bottoms do you have?",
     items: [
-      { slug: "pants", label: "Pants", hint: "Bottom", emoji: "👖" },
-      { slug: "leggings", label: "Leggings", hint: "Bottom", emoji: "🧦" },
-      { slug: "tights", label: "Tights", hint: "Bottom", emoji: "🩱" },
-      { slug: "wool_leggings", label: "Wool leggings", hint: "Warm bottom", emoji: "🐑" },
-      { slug: "shorts", label: "Shorts", hint: "Summer bottom", emoji: "🩳" },
+      { slug: "pants", label: "Pants", hint: "Everyday cotton bottoms", emoji: "👖", warmth: "Medium" },
+      { slug: "leggings", label: "Leggings", hint: "Close-fitting everyday bottoms", emoji: "🧦", warmth: "Medium" },
+      { slug: "tights", label: "Tights", hint: "Thin fitted bottoms with feet", emoji: "🩱", warmth: "Light" },
+      { slug: "wool_leggings", label: "Wool leggings", hint: "Thicker wool bottoms", emoji: "🐑", warmth: "Warm" },
+      { slug: "shorts", label: "Shorts", hint: "Bare lower legs", emoji: "🩳", warmth: "Light" },
     ],
   },
   {
@@ -104,11 +119,50 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
     title: "Mid layers",
     question: "Which mid layers do you have?",
     items: [
-      { slug: "sweater", label: "Sweater", hint: "Mid layer", emoji: "🧶" },
-      { slug: "fleece_layer", label: "Fleece layer", hint: "Warm mid", emoji: "🧥" },
-      { slug: "wool_layer", label: "Wool layer", hint: "Warm mid", emoji: "🐏" },
-      { slug: "cardigan", label: "Cardigan", hint: "Mid layer", emoji: "👚" },
-      { slug: "hoodie", label: "Hoodie", hint: "Mid layer", emoji: "🎽" },
+      {
+        slug: "sweater",
+        label: "Sweater",
+        hint: "Everyday knitted top",
+        emoji: "🧶",
+        warmth: "Medium",
+      },
+      {
+        slug: "light_merino_layer",
+        label: "Light merino layer",
+        hint: "Thin, smooth merino jersey",
+        emoji: "🐑",
+        warmth: "Light",
+        explanation: "A separate thin top or suit worn over a bodysuit—not a merino bodysuit itself.",
+      },
+      {
+        slug: "fleece_layer",
+        label: "Fleece layer",
+        hint: "Soft, fluffy fleece",
+        emoji: "🧥",
+        warmth: "Warm",
+      },
+      {
+        slug: "wool_layer",
+        label: "Warm wool layer",
+        hint: "Thick knit or boiled wool",
+        emoji: "🐏",
+        warmth: "Warm",
+        explanation: "A chunky knit or dense boiled-wool layer, similar in warmth to fleece.",
+      },
+      {
+        slug: "cardigan",
+        label: "Cardigan",
+        hint: "Buttoned knitted top",
+        emoji: "👚",
+        warmth: "Medium",
+      },
+      {
+        slug: "hoodie",
+        label: "Hoodie",
+        hint: "Cotton sweatshirt",
+        emoji: "🎽",
+        warmth: "Medium",
+      },
     ],
   },
   {
@@ -116,14 +170,14 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
     title: "Outerwear",
     question: "Which outerwear do you have?",
     items: [
-      { slug: "light_overall", label: "Light overall", hint: "Spring / autumn", emoji: "🧣" },
-      { slug: "fleece_overall", label: "Fleece overall", hint: "Warm overall", emoji: "🧸" },
-      { slug: "wool_overall", label: "Wool overall", hint: "Warm overall", emoji: "🐑" },
-      { slug: "softshell_overall", label: "Softshell overall", hint: "Wind & rain", emoji: "💧" },
-      { slug: "rain_overall", label: "Rain overall", hint: "Rain protection", emoji: "☔" },
-      { slug: "winter_overall", label: "Winter overall", hint: "Cold weather", emoji: "❄️" },
-      { slug: "jacket", label: "Jacket", hint: "Outer layer", emoji: "🧥" },
-      { slug: "snow_pants", label: "Rain / snow pants", hint: "Outer bottom", emoji: "🌨️" },
+      { slug: "light_overall", label: "Light overall", hint: "Unpadded spring or autumn suit", emoji: "🧣", warmth: "Medium" },
+      { slug: "fleece_overall", label: "Fleece overall", hint: "Soft, fluffy one-piece layer", emoji: "🧸", warmth: "Warm" },
+      { slug: "wool_overall", label: "Wool overall", hint: "Thick wool one-piece layer", emoji: "🐑", warmth: "Warm" },
+      { slug: "softshell_overall", label: "Softshell overall", hint: "Blocks wind and light rain", emoji: "💧", warmth: "Warm" },
+      { slug: "rain_overall", label: "Rain overall", hint: "Waterproof shell without padding", emoji: "☔", warmth: "Light" },
+      { slug: "winter_overall", label: "Winter overall", hint: "Insulated suit for cold weather", emoji: "❄️", warmth: "Very warm" },
+      { slug: "jacket", label: "Jacket", hint: "Warm outer layer for the upper body", emoji: "🧥", warmth: "Warm" },
+      { slug: "snow_pants", label: "Rain / snow pants", hint: "Protective outer bottoms", emoji: "🌨️", warmth: "Warm" },
     ],
   },
   {
@@ -131,13 +185,13 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
     title: "Accessories",
     question: "Which accessories do you have?",
     items: [
-      { slug: "thin_hat", label: "Thin hat", hint: "Cotton hat", emoji: "🧢" },
-      { slug: "warm_hat", label: "Warm hat", hint: "Wool / fleece", emoji: "🎩" },
+      { slug: "thin_hat", label: "Thin hat", hint: "Single-layer cotton jersey", emoji: "🧢", warmth: "Light" },
+      { slug: "warm_hat", label: "Warm hat", hint: "Thick wool or fleece", emoji: "🎩", warmth: "Warm" },
       { slug: "sun_hat", label: "Sun hat", hint: "Brim for shade", emoji: "👒" },
-      { slug: "balaclava", label: "Balaclava", hint: "Head & neck", emoji: "🥶" },
-      { slug: "mittens", label: "Mittens", hint: "For cold days", emoji: "🧤" },
-      { slug: "cotton_socks", label: "Cotton socks", hint: "Everyday socks", emoji: "🧦" },
-      { slug: "wool_socks", label: "Wool socks", hint: "Warm feet", emoji: "🧦" },
+      { slug: "balaclava", label: "Balaclava", hint: "Covers head, ears and neck", emoji: "🥶", warmth: "Very warm" },
+      { slug: "mittens", label: "Mittens", hint: "Insulated hand covering", emoji: "🧤", warmth: "Warm" },
+      { slug: "cotton_socks", label: "Cotton socks", hint: "Thin everyday socks", emoji: "🧦", warmth: "Light" },
+      { slug: "wool_socks", label: "Wool socks", hint: "Thick insulating socks", emoji: "🧦", warmth: "Warm" },
       { slug: "booties", label: "Booties", hint: "Soft shoes", emoji: "👟" },
       { slug: "winter_boots", label: "Winter boots", hint: "For snow", emoji: "🥾" },
       { slug: "neck_warmer", label: "Neck warmer", hint: "Scarf alternative", emoji: "🧣" },
@@ -192,8 +246,12 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
 ];
 
 export const WARDROBE_CATALOG = WARDROBE_STEPS.flatMap((s) =>
-  s.items.map((i) => ({ slug: i.slug, label: i.label, group: s.title })),
+  s.items.map((i) => ({ ...i, group: s.title })),
 );
+
+export const ITEM_BY_SLUG: Record<WardrobeSlug, WardrobeItem> = Object.fromEntries(
+  WARDROBE_STEPS.flatMap((s) => s.items).map((i) => [i.slug, i]),
+) as Record<WardrobeSlug, WardrobeItem>;
 
 export const LABEL_BY_SLUG: Record<WardrobeSlug, string> = Object.fromEntries(
   WARDROBE_STEPS.flatMap((s) => s.items).map((i) => [i.slug, i.label]),

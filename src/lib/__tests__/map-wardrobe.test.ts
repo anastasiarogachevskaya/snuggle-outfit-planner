@@ -38,6 +38,27 @@ describe("mapWardrobe", () => {
     expect(r.missing).toEqual([]);
   });
 
+  it("uses light merino for a sweater-level need without treating it as fleece", () => {
+    const sweaterNeed = mapWardrobe(
+      { base: "diaper_only", bottom: "none", mid: "sweater", outer: "none" },
+      NO_ACCS,
+      own("light_merino_layer"),
+    );
+    expect(sweaterNeed.babyClothing.find((i) => i.slot === "mid")?.slug).toBe(
+      "light_merino_layer",
+    );
+
+    const fleeceNeed = mapWardrobe(
+      { base: "diaper_only", bottom: "none", mid: "fleece", outer: "none" },
+      NO_ACCS,
+      own("light_merino_layer"),
+    );
+    expect(fleeceNeed.babyClothing.find((i) => i.slot === "mid")?.slug).toBe(
+      "fleece_overall",
+    );
+    expect(fleeceNeed.missing).toContain("fleece_overall");
+  });
+
   it("falls back to the primary slug and reports it missing when nothing is owned", () => {
     const r = mapWardrobe(
       { base: "short_sleeve", bottom: "pants", mid: "sweater", outer: "winter_overall" },

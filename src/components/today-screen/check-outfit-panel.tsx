@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { ITEM_BY_SLUG, LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import type { Recommendation } from "@/lib/recommend";
 import {
   BODYSUIT_SLUGS,
@@ -102,6 +102,7 @@ function SlotRow<T extends WardrobeSlug | "none">({
           None
         </button>
         {options.map((slug) => {
+          const item = ITEM_BY_SLUG[slug];
           const isSelected = value === slug;
           const isRemoveTarget =
             isSelected && adjustment?.type === "remove" && adjustment.actualSlug === slug;
@@ -122,9 +123,14 @@ function SlotRow<T extends WardrobeSlug | "none">({
                 onChange(slug as T);
               }}
               aria-pressed={isSelected}
-              className={className}
+              className={className + (label === "Mid layer" ? " py-2.5" : "")}
             >
-              {LABEL_BY_SLUG[slug]}
+              <span className="block">{LABEL_BY_SLUG[slug]}</span>
+              {label === "Mid layer" && item.warmth && (
+                <span className="mt-0.5 block text-[9px] font-medium opacity-65">
+                  {item.warmth} · {item.hint}
+                </span>
+              )}
             </button>
           );
         })}
@@ -362,6 +368,11 @@ export function CheckOutfitPanel({
             onChange={(v) => set("mid", v)}
             adjustment={adjustmentBySlot.mid}
           />
+          <p className="-mt-4 ml-1 text-[11px] leading-relaxed text-ink/50">
+            <span className="font-semibold text-ink/65">What counts? </span>
+            Light merino is thin, smooth jersey worn over a bodysuit. Warm wool is thick knit or
+            boiled wool.
+          </p>
           <SlotRow
             label="Outer layer"
             options={owns(OUTER_SLUGS)}

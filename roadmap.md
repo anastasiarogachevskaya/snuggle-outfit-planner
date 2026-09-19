@@ -12,6 +12,7 @@
 ## Open
 
 - [x] Make temperature preference readable and include it in iPhone and web profile setup
+- [ ] Clarify clothing warmth and examples in setup, Profile wardrobe, and Layer up
 
 ## Open (needs the user)
 

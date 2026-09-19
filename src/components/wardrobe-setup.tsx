@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { WARDROBE_STEPS, QUICK_SETUP_OWNED, type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import {
+  WARDROBE_STEPS,
+  QUICK_SETUP_OWNED,
+  type WardrobeSlug,
+  type WardrobeWarmth,
+} from "@/lib/wardrobe-catalog";
 import { selectionHaptic } from "@/lib/haptics";
 import { ClothingIcon } from "@/components/icons";
 import { logEvent } from "@/lib/analytics";
@@ -94,6 +99,8 @@ export function WardrobeSetup({
                     key={i.slug}
                     label={i.label}
                     hint={i.hint}
+                    warmth={i.warmth}
+                    explanation={i.explanation}
                     slug={i.slug}
                     selected={selected.has(i.slug)}
                     onClick={() => toggle(i.slug)}
@@ -145,6 +152,8 @@ export function WardrobeSetup({
             key={i.slug}
             label={i.label}
             hint={i.hint}
+            warmth={i.warmth}
+            explanation={i.explanation}
             slug={i.slug}
             selected={selected.has(i.slug)}
             onClick={() => toggle(i.slug)}
@@ -240,6 +249,8 @@ function ChoiceCard({
 function Tile({
   label,
   hint,
+  warmth,
+  explanation,
   slug,
   selected,
   onClick,
@@ -247,6 +258,8 @@ function Tile({
 }: {
   label: string;
   hint: string;
+  warmth?: WardrobeWarmth;
+  explanation?: string;
   slug: WardrobeSlug;
   selected: boolean;
   onClick: () => void;
@@ -271,8 +284,20 @@ function Tile({
       <div className={(compact ? "mb-1 " : "mb-2 ") + (selected ? "text-primary" : "text-ink/60")}>
         <ClothingIcon slug={slug} size={compact ? 28 : 34} />
       </div>
-      <p className={"font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>{label}</p>
-      <p className="text-[10px] text-ink/40 mt-0.5">{hint}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className={"font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>{label}</p>
+        {warmth && (
+          <span className="shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
+            {warmth}
+          </span>
+        )}
+      </div>
+      <p className="mt-1 text-[10px] leading-snug text-ink/55">{hint}</p>
+      {explanation && !compact && (
+        <p className="mt-2 border-t border-black/5 pt-2 text-[10px] leading-snug text-ink/60">
+          <span className="font-semibold text-ink/70">What counts? </span>{explanation}
+        </p>
+      )}
     </button>
   );
 }

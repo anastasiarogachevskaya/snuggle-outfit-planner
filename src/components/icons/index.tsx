@@ -454,6 +454,7 @@ export const iconMap: Record<WardrobeSlug, (p: IconProps) => ReactElement> = {
   wool_leggings: WoolLeggingsIcon,
   shorts: ShortsIcon,
   sweater: SweaterIcon,
+  light_merino_layer: WoolLayerIcon,
   fleece_layer: FleeceIcon,
   wool_layer: WoolLayerIcon,
   cardigan: CardiganIcon,

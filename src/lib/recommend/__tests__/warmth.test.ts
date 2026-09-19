@@ -38,6 +38,11 @@ function owned(): Set<WardrobeSlug> {
 }
 
 describe("outfitClo", () => {
+  it("scores light merino below warm wool", () => {
+    expect(CLO_BY_SLUG.light_merino_layer).toBeLessThan(CLO_BY_SLUG.wool_layer ?? 0);
+    expect(MID_SLUGS).toContain("light_merino_layer");
+  });
+
   it("sums the clo values of every filled slot", () => {
     const outfit: ActualOutfit = {
       ...EMPTY_OUTFIT,
