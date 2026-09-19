@@ -332,6 +332,7 @@ describe("compareOutfits", () => {
     const actual: ActualOutfit = {
       ...EMPTY_OUTFIT,
       bodysuit: "long_sleeve_bodysuit",
+      bottom: "pants",
     };
 
     const blanket = compareWithTransportExtra(ideal, actual, "blanket");
