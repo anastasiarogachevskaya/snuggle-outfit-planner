@@ -91,7 +91,6 @@ export function OutfitResult({
                   slug={a.slug}
                   chip="+"
                   label={a.label}
-                  hint="From your wardrobe"
                 />
               ))}
             </div>
