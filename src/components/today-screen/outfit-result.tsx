@@ -2,14 +2,6 @@ import { type recommend } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { ClothingIcon } from "@/components/icons";
 
-/**
- * The row label names the layer kind ("Sleeveless bodysuit"); when the engine
- * matched a stand-in instead, say which garment that actually is.
- */
-function usingHint(usingLabel: string | undefined) {
-  return usingLabel ? `Using your ${usingLabel.toLowerCase()}` : "";
-}
-
 export function OutfitResult({
   rec,
   owned,
