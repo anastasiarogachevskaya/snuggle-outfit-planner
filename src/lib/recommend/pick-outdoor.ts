@@ -337,39 +337,36 @@ function buildSafety(ctx: OutdoorContext, effectiveC: number): string[] {
   }
 
   const uv = ctx.uvIndex;
-  const sunny = uv !== undefined && uv >= 3;
+  const cloud = ctx.cloudCoverPct;
+  const overcast = cloud !== undefined && cloud >= 70;
+  // A moderate UV reading under a thick overcast sky isn't worth a sunscreen
+  // card; strong UV (6+) can still burn through broken cloud.
+  const sunny = uv !== undefined && (uv >= 6 || (uv >= 4 && !overcast));
   const hot = ctx.feelsLikeC >= TEMP.HOT;
   const infant = ageUnder(ctx.ageMonths, 6);
 
+  // At most two sun lines: what to do, then how strong it is.
   if (hot || sunny) {
-    if (infant) {
-      advice.push("☀️ Keep baby in the shade whenever possible.");
-      advice.push("☀️ Avoid direct sunlight.");
-    } else {
-      advice.push(
-        "☀️ Seek shade whenever possible, and apply broad-spectrum SPF 30+ to exposed skin before going outside.",
-      );
-      advice.push(
-        "☀️ Reapply sunscreen per product instructions, especially after sweating or getting wet.",
-      );
-    }
-    // Bright winter days hit UV 3+ at freezing temperatures, where a sun hat
-    // and "lightweight clothing" would directly contradict the warm hat and
-    // layers the engine just picked.
-    if (hot) {
+    advice.push(
+      infant
+        ? "☀️ Keep baby in the shade and out of direct sunlight."
+        : "☀️ Seek shade where you can, and apply broad-spectrum SPF 30+ to exposed skin.",
+    );
+    if (uv !== undefined && uv >= 8) {
+      advice.push("☀️ Very strong UV today. Minimize direct sun exposure.");
+    } else if (uv !== undefined && uv >= 6) {
+      advice.push("☀️ Strong sun today. Keep baby in the shade when possible.");
+    } else if (hot) {
       advice.push(
         infant
           ? "☀️ Dress baby in lightweight clothing and always use a sun hat if available."
           : "☀️ Use a sun hat to keep the sun off baby's face and neck.",
       );
     } else {
+      // Bright winter days hit UV 4+ at freezing temperatures, where "lightweight
+      // clothing" would contradict the warm layers the engine just picked.
       advice.push("☀️ Bright but cold — keep the sun off baby's face without losing any layers.");
     }
-  }
-  if (uv !== undefined) {
-    if (uv >= 8) advice.push("☀️ Very strong UV today. Minimize direct sun exposure.");
-    else if (uv >= 6) advice.push("☀️ Strong sun today. Keep baby in the shade when possible.");
-    else if (uv >= 3) advice.push("☀️ Sun protection is recommended.");
   }
   return advice;
 }
