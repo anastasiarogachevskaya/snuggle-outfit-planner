@@ -186,6 +186,7 @@ export function outfitClo(o: ActualOutfit): number {
   let total = single.reduce((sum, s) => sum + (s === "none" ? 0 : (CLO_BY_SLUG[s] ?? 0)), 0);
   if (o.snowPants) total += CLO_BY_SLUG.snow_pants ?? 0;
   if (o.mittens) total += CLO_BY_SLUG.mittens ?? 0;
+  for (const slug of o.transportExtras) total += TRANSPORT_CLO_BY_SLUG[slug] ?? 0;
   return total;
 }
 
