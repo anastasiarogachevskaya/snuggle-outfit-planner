@@ -100,6 +100,7 @@ export function recommend(input: RecommendInput): Recommendation {
       accessories: mapped.accessories,
       sleepAccessories,
       transportExtras: [],
+      optionalTransportExtras: [],
       missingHelpfulItems,
       missing: mapped.missing,
       reason: home.reason,
