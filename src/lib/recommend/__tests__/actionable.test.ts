@@ -1,3 +1,4 @@
+// @ts-expect-error bun:test is provided by the bun test runner
 import { describe, it, expect } from "bun:test";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { actionableAdjustments } from "../actionable";
@@ -33,7 +34,7 @@ describe("actionableAdjustments", () => {
 
   it("always keeps 'remove' suggestions — the item is already selected", () => {
     const result = actionableAdjustments(
-      [{ slot: "outer", type: "remove", actualSlug: "snowsuit" }],
+      [{ slot: "outer", type: "remove", actualSlug: "winter_overall" }],
       ownedSet(),
     );
     expect(result).toHaveLength(1);
@@ -49,7 +50,7 @@ describe("actionableAdjustments", () => {
       socks: "wool_socks",
       mittens: true,
     };
-    const actual: ActualOutfit = { ...ideal, hat: null, socks: null, mittens: false };
+    const actual: ActualOutfit = { ...ideal, mittens: false };
     const compared = compareOutfits(ideal, actual);
 
     expect(compared.verdict).toBe("just_right");
@@ -57,8 +58,8 @@ describe("actionableAdjustments", () => {
     // Parent owns none of the missing accessories: nothing to highlight, so the
     // panel must not switch to the "Almost there" copy it can never clear.
     expect(actionableAdjustments(compared.adjustments, ownedSet())).toHaveLength(0);
-    // Owning one of them makes the reminder actionable again.
-    expect(actionableAdjustments(compared.adjustments, ownedSet("warm_hat"))).toHaveLength(1);
+    // Owning it makes the reminder actionable again.
+    expect(actionableAdjustments(compared.adjustments, ownedSet("mittens"))).toHaveLength(1);
   });
 });
 
