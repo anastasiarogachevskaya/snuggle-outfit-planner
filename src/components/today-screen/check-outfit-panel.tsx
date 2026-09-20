@@ -17,6 +17,7 @@ import {
   type SlotAdjustment,
   type SlotKey,
 } from "@/lib/recommend/warmth";
+import { actionableAdjustments } from "@/lib/recommend/actionable";
 import { lightHaptic, selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 
 export type PanelWeather = {
