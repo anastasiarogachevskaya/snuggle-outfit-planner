@@ -292,6 +292,19 @@ describe("compareOutfits", () => {
     expect(result.missingTransportExtras).toHaveLength(0);
   });
 
+  it("keeps a recommended rain cover flagged even when a footmuff or blanket is in use", () => {
+    const ideal: ActualOutfit = {
+      ...EMPTY_OUTFIT,
+      bodysuit: "long_sleeve_bodysuit",
+      mid: "sweater",
+      transportExtras: ["rain_cover", "footmuff"],
+    };
+    for (const extras of [["footmuff"], ["blanket"]] as ActualOutfit["transportExtras"][]) {
+      const result = compareOutfits(ideal, { ...ideal, transportExtras: extras });
+      expect(result.missingTransportExtras).toContain("rain_cover");
+    }
+  });
+
   it("uses a footmuff to replace more missing clothing warmth than a blanket", () => {
     const ideal: ActualOutfit = {
       ...EMPTY_OUTFIT,
