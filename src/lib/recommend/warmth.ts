@@ -73,6 +73,9 @@ export const TRANSPORT_CLO_BY_SLUG: Partial<Record<WardrobeSlug, number>> = {
   rain_cover: 0.2,
 };
 
+/** Transport gear that protects from weather, not cold — never substitutable. */
+export const PROTECTIVE_TRANSPORT_SLUGS: WardrobeSlug[] = ["rain_cover"];
+
 export type OutfitVerdict = "too_cold" | "just_right" | "too_warm";
 
 /**
@@ -292,8 +295,14 @@ export function compareOutfits(
   );
   const missingTransportExtras = ideal.transportExtras.filter((slug) => {
     if (actual.transportExtras.includes(slug)) return false;
-    const neededWarmth = TRANSPORT_CLO_BY_SLUG[slug] ?? 0;
-    return actualTransportWarmth < neededWarmth;
+    // Rain protection isn't interchangeable with warmth — a footmuff keeps
+    // baby warm but still leaves the pram open to the rain, so a recommended
+    // rain cover stays flagged regardless of how warm the other gear is.
+    if (!PROTECTIVE_TRANSPORT_SLUGS.includes(slug)) {
+      const neededWarmth = TRANSPORT_CLO_BY_SLUG[slug] ?? 0;
+      if (actualTransportWarmth >= neededWarmth) return false;
+    }
+    return true;
   });
 
   // Accessories (hat, socks, mittens) weigh less than VERDICT_TOLERANCE, so a
