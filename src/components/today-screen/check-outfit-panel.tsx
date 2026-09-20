@@ -17,6 +17,7 @@ import {
   type SlotAdjustment,
   type SlotKey,
 } from "@/lib/recommend/warmth";
+import { actionableAdjustments } from "@/lib/recommend/actionable";
 import { lightHaptic, selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 
 export type PanelWeather = {
@@ -283,12 +284,7 @@ export function CheckOutfitPanel({
 
   // Only show adjustments the parent can act on — an "add" pointing at an item
   // they don't own would highlight nothing and never let the check clear.
-  const actionable = (result?.adjustments ?? []).filter((a) => {
-    if (a.type !== "add") return true;
-    if (a.slot === "mittens") return owned.has("mittens");
-    if (a.slot === "snowPants") return owned.has("snow_pants");
-    return a.idealSlug ? owned.has(a.idealSlug) : true;
-  });
+  const actionable = actionableAdjustments(result?.adjustments ?? [], owned);
 
   const adjustmentBySlot: Partial<Record<SlotKey, SlotAdjustment>> = {};
   for (const a of actionable) adjustmentBySlot[a.slot] = a;
