@@ -281,14 +281,23 @@ export function CheckOutfitPanel({
     prevVerdict.current = v;
   }, [result?.verdict]);
 
+  // Only show adjustments the parent can act on — an "add" pointing at an item
+  // they don't own would highlight nothing and never let the check clear.
+  const actionable = (result?.adjustments ?? []).filter((a) => {
+    if (a.type !== "add") return true;
+    if (a.slot === "mittens") return owned.has("mittens");
+    if (a.slot === "snowPants") return owned.has("snow_pants");
+    return a.idealSlug ? owned.has(a.idealSlug) : true;
+  });
+
   const adjustmentBySlot: Partial<Record<SlotKey, SlotAdjustment>> = {};
-  for (const a of result?.adjustments ?? []) adjustmentBySlot[a.slot] = a;
+  for (const a of actionable) adjustmentBySlot[a.slot] = a;
 
   const baseCopy = result ? VERDICT_COPY[result.verdict] : null;
   // Warmth can check out while a hat/mittens/socks are still missing — say so
   // instead of a bare "Just right!".
   const copy =
-    baseCopy && result?.verdict === "just_right" && result.adjustments.length > 0
+    baseCopy && result?.verdict === "just_right" && actionable.length > 0
       ? {
           title: "Almost there",
           body: "The layers look right — just add the highlighted items below before heading out.",
