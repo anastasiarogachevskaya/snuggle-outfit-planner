@@ -73,6 +73,9 @@ export const TRANSPORT_CLO_BY_SLUG: Partial<Record<WardrobeSlug, number>> = {
   rain_cover: 0.2,
 };
 
+/** Transport gear that protects from weather, not cold — never substitutable. */
+export const PROTECTIVE_TRANSPORT_SLUGS: WardrobeSlug[] = ["rain_cover"];
+
 export type OutfitVerdict = "too_cold" | "just_right" | "too_warm";
 
 /**
