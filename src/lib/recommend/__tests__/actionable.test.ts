@@ -32,6 +32,16 @@ describe("actionableAdjustments", () => {
     expect(result).toHaveLength(3);
   });
 
+  it("keeps a slot hint (without the unowned suggestion) when another garment in that slot is owned", () => {
+    const result = actionableAdjustments(
+      [{ slot: "mid", type: "add", idealSlug: "fleece_layer" }],
+      ownedSet("cardigan"),
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]!.slot).toBe("mid");
+    expect(result[0]!.idealSlug).toBeUndefined();
+  });
+
   it("always keeps 'remove' suggestions — the item is already selected", () => {
     const result = actionableAdjustments(
       [{ slot: "outer", type: "remove", actualSlug: "winter_overall" }],
