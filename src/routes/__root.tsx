@@ -29,6 +29,8 @@ import { parseAuthDeepLink, processAuthDeepLink } from "@/lib/native-auth-link";
 import { closeAuthBrowser } from "@/lib/native-social-auth";
 
 import { PlatformDebugBadge } from "@/components/platform-debug-badge";
+import { LaunchDiagnosticsOverlay } from "@/components/launch-diagnostics-overlay";
+import { logLaunch } from "@/lib/launch-diagnostics";
 import { BOOT_GATE_SCRIPT, releaseBootHold } from "@/lib/boot-gate";
 
 export function NotFoundComponent() {
@@ -179,6 +181,7 @@ function RootComponent() {
 
   // Any screen other than the landing page is always safe to show.
   useEffect(() => {
+    logLaunch(`route → ${pathname}`);
     if (pathname !== "/") releaseBootHold();
   }, [pathname]);
 
@@ -234,6 +237,7 @@ function RootComponent() {
       <Outlet />
       <Toaster position="top-center" closeButton richColors />
       <PlatformDebugBadge />
+      <LaunchDiagnosticsOverlay />
     </QueryClientProvider>
   );
 }
