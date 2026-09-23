@@ -107,6 +107,17 @@
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* App launch: keep the brand colour on screen until the app knows where to go,
+   so the marketing page never flashes inside the iPhone app. */
+html[data-app-boot="hold"] {
+  background-color: #a8b894;
+}
+
+html[data-app-boot="hold"] body {
+  visibility: hidden;
+  background-color: #a8b894;
+}
+
 /* Safe areas: 0 on the web, real insets only inside the native shell. */
 :root {
   --safe-area-top: 0px;
