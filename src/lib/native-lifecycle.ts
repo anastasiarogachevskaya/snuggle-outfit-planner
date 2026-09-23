@@ -91,15 +91,6 @@ async function register() {
   }
 }
 
-async function hideSplash() {
-  try {
-    const { SplashScreen } = await import("@capacitor/splash-screen");
-    await SplashScreen.hide();
-  } catch {
-    /* splash plugin not installed */
-  }
-}
-
 /** Idempotent: safe under React StrictMode and HMR. */
 export function initNativeLifecycle(): void {
   if (initialized) return;
@@ -112,7 +103,7 @@ export function initNativeLifecycle(): void {
   document.documentElement.classList.remove("keyboard-open");
 
   void register();
-  void hideSplash();
+  // The splash is hidden by releaseBootHold() once the right screen is ready.
   preloadNativeSocialAuth();
 }
 
