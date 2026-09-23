@@ -74,7 +74,10 @@ type Step =
 function TryPage() {
   const navigate = useNavigate();
   const { profile, loaded, setProfile, update } = useGuestProfile();
-  const [step, setStep] = useState<Step>("age");
+  // Null until the saved profile has been read, so a returning parent never
+  // sees the first setup question flash before Today appears.
+  const [step, setStepState] = useState<Step | null>(null);
+  const setStep = setStepState as (next: Step) => void;
   const [localFirst, setLocalFirst] = useState(false);
   const [prompt, setPrompt] = useState<SavePromptKind>(null);
   const [confirmation, setConfirmation] = useState<null | "cold" | "comfortable" | "warm">(null);
@@ -116,7 +119,7 @@ function TryPage() {
     if (step === "today") logEvent("try_recommendation_viewed");
   }, [step]);
 
-  if (!loaded) return <div className="min-h-screen bg-canvas" />;
+  if (!loaded || step === null) return <div className="min-h-screen bg-canvas" />;
 
   if (step === "baby") {
     return (

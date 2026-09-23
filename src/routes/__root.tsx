@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -28,6 +29,7 @@ import { parseAuthDeepLink, processAuthDeepLink } from "@/lib/native-auth-link";
 import { closeAuthBrowser } from "@/lib/native-social-auth";
 
 import { PlatformDebugBadge } from "@/components/platform-debug-badge";
+import { BOOT_GATE_SCRIPT, releaseBootHold } from "@/lib/boot-gate";
 
 export function NotFoundComponent() {
   return (
@@ -129,6 +131,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "manifest", href: "/manifest.webmanifest" },
     ],
     scripts: [
+      { children: BOOT_GATE_SCRIPT },
       {
         type: "application/ld+json",
         children: JSON.stringify({
@@ -172,6 +175,13 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Any screen other than the landing page is always safe to show.
+  useEffect(() => {
+    if (pathname !== "/") releaseBootHold();
+  }, [pathname]);
+
 
   useEffect(() => {
     initPlatform();
