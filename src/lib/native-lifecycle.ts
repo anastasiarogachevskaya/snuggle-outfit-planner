@@ -112,7 +112,7 @@ export function initNativeLifecycle(): void {
   document.documentElement.classList.remove("keyboard-open");
 
   void register();
-  void hideSplash();
+  // The splash is hidden by releaseBootHold() once the right screen is ready.
   preloadNativeSocialAuth();
 }
 

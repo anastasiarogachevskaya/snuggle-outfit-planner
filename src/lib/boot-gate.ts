@@ -13,7 +13,33 @@ export const BOOT_ATTR = "data-app-boot";
 export const BOOT_GATE_SCRIPT = `(function(){try{var c=window.Capacitor;var n=!!(c&&typeof c.isNativePlatform==='function'&&c.isNativePlatform());if(n&&window.location.pathname==='/'){document.documentElement.setAttribute('${BOOT_ATTR}','hold');}}catch(e){}})();`;
 
 /** Reveals the page again. Safe to call repeatedly and on the server. */
+let splashTimer: ReturnType<typeof setTimeout> | null = null;
+
 export function releaseBootHold(): void {
   if (typeof document === "undefined") return;
   document.documentElement.removeAttribute(BOOT_ATTR);
+  scheduleSplashHide();
+}
+
+/**
+ * Keeps the native launch screen up a little longer so the destination screen
+ * (Today, setup, landing) has fully painted underneath before it fades away.
+ * Native config still auto-hides after 8s as a safety net.
+ */
+function scheduleSplashHide(): void {
+  const c = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+  if (!c?.isNativePlatform?.()) return;
+  if (splashTimer) clearTimeout(splashTimer);
+  splashTimer = setTimeout(() => {
+    requestAnimationFrame(() =>
+      requestAnimationFrame(async () => {
+        try {
+          const { SplashScreen } = await import("@capacitor/splash-screen");
+          await SplashScreen.hide({ fadeOutDuration: 250 });
+        } catch {
+          /* splash plugin unavailable */
+        }
+      }),
+    );
+  }, 700);
 }
