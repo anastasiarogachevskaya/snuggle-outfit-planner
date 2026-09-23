@@ -129,6 +129,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "manifest", href: "/manifest.webmanifest" },
     ],
     scripts: [
+      { children: BOOT_GATE_SCRIPT },
       {
         type: "application/ld+json",
         children: JSON.stringify({
