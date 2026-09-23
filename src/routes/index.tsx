@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { logEvent } from "@/lib/analytics";
 import { isIOSApp } from "@/lib/platform";
 import { readGuestProfile } from "@/lib/guest-profile";
+import { releaseBootHold } from "@/lib/boot-gate";
 
 const TITLE = "Layerly – Baby Outfit Recommendations Based on Weather";
 const DESCRIPTION =
