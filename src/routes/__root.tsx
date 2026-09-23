@@ -28,6 +28,7 @@ import { parseAuthDeepLink, processAuthDeepLink } from "@/lib/native-auth-link";
 import { closeAuthBrowser } from "@/lib/native-social-auth";
 
 import { PlatformDebugBadge } from "@/components/platform-debug-badge";
+import { BOOT_GATE_SCRIPT, releaseBootHold } from "@/lib/boot-gate";
 
 export function NotFoundComponent() {
   return (
