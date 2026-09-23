@@ -7,6 +7,7 @@ import { logEvent } from "@/lib/analytics";
 import { isIOSApp } from "@/lib/platform";
 import { readGuestProfile } from "@/lib/guest-profile";
 import { releaseBootHold } from "@/lib/boot-gate";
+import { logLaunch, setLaunchDestination } from "@/lib/launch-diagnostics";
 
 const TITLE = "Layerly – Baby Outfit Recommendations Based on Weather";
 const DESCRIPTION =
@@ -42,7 +43,9 @@ function Landing() {
     // On the phone the on-device profile is the account: once setup has been
     // started, relaunching the app must land straight back in it instead of
     // showing the marketing page and a "Get Started" tap.
+    logLaunch(`landing mounted (ios=${ios}, localProfile=${!!readGuestProfile()})`);
     if (ios && readGuestProfile()) {
+      setLaunchDestination("/try (local profile)");
       navigate({ to: "/try", replace: true });
       return;
     }
@@ -50,11 +53,14 @@ function Landing() {
     let cancelled = false;
     void supabase.auth.getSession().then(({ data }) => {
       if (cancelled) return;
+      logLaunch(`session resolved: ${data.session ? "yes" : "no"}`);
       if (data.session) {
+        setLaunchDestination("/today (session)");
         navigate({ to: "/today", replace: true });
         return;
       }
       // Nowhere else to go: show the page.
+      setLaunchDestination("/ (landing)");
       releaseBootHold();
     });
     return () => {
