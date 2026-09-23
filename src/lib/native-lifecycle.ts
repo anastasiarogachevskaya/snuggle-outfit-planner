@@ -91,15 +91,6 @@ async function register() {
   }
 }
 
-async function hideSplash() {
-  try {
-    const { SplashScreen } = await import("@capacitor/splash-screen");
-    await SplashScreen.hide();
-  } catch {
-    /* splash plugin not installed */
-  }
-}
-
 /** Idempotent: safe under React StrictMode and HMR. */
 export function initNativeLifecycle(): void {
   if (initialized) return;
