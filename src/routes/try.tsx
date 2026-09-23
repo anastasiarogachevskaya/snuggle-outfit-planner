@@ -119,7 +119,7 @@ function TryPage() {
     if (step === "today") logEvent("try_recommendation_viewed");
   }, [step]);
 
-  if (!loaded) return <div className="min-h-screen bg-canvas" />;
+  if (!loaded || step === null) return <div className="min-h-screen bg-canvas" />;
 
   if (step === "baby") {
     return (
