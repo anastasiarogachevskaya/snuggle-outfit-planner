@@ -41,18 +41,29 @@ function Landing() {
     // On the phone the on-device profile is the account: once setup has been
     // started, relaunching the app must land straight back in it instead of
     // showing the marketing page and a "Get Started" tap.
-    if (ios && readGuestProfile()) navigate({ to: "/try", replace: true });
+    if (ios && readGuestProfile()) {
+      navigate({ to: "/try", replace: true });
+      return;
+    }
+
+    let cancelled = false;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (cancelled) return;
+      if (data.session) {
+        navigate({ to: "/today", replace: true });
+        return;
+      }
+      // Nowhere else to go: show the page.
+      releaseBootHold();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [navigate]);
 
   useEffect(() => {
     logEvent("landing_viewed");
   }, []);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/today", replace: true });
-    });
-  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-canvas">
