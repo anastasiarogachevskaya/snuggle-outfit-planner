@@ -91,11 +91,11 @@ function pickLayers(effectiveC: number): LayerNeed {
     case "cool":
       return { base: "long_sleeve", bottom: "pants", mid: "sweater", outer: "none" };
     case "cold":
-      return { base: "long_sleeve", bottom: "leggings", mid: "fleece", outer: "none" };
+      return { base: "long_sleeve", bottom: "warm_bottoms", mid: "fleece", outer: "none" };
     case "frost":
-      return { base: "long_sleeve", bottom: "leggings", mid: "fleece", outer: "winter_overall" };
+      return { base: "long_sleeve", bottom: "warm_bottoms", mid: "fleece", outer: "winter_overall" };
     case "freezing":
-      return { base: "long_sleeve", bottom: "leggings", mid: "fleece", outer: "winter_overall" };
+      return { base: "long_sleeve", bottom: "warm_bottoms", mid: "fleece", outer: "winter_overall" };
   }
 }
 
