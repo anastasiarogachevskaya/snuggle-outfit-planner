@@ -37,6 +37,27 @@ function owned(): Set<WardrobeSlug> {
   ]);
 }
 
+describe("bottom warmth order", () => {
+  it("scores thin cotton leggings below pants and wool leggings", () => {
+    expect(CLO_BY_SLUG.leggings).toBeLessThan(CLO_BY_SLUG.pants ?? 0);
+    expect(CLO_BY_SLUG.pants).toBeLessThan(CLO_BY_SLUG.wool_leggings ?? 0);
+    expect(CLO_BY_SLUG.shorts).toBeLessThan(CLO_BY_SLUG.leggings ?? 0);
+  });
+
+  it("picks pants over thin leggings on a cold walk when both are owned", () => {
+    const r = recommend({
+      feelsLikeC: 2,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "pram",
+      ageMonths: 8,
+      owned: owned(),
+    });
+    const bottom = r.babyClothing.find((i) => i.slot === "bottom")?.slug;
+    expect(bottom).toBe("pants");
+  });
+});
+
 describe("outfitClo", () => {
   it("scores light merino below warm wool", () => {
     expect(CLO_BY_SLUG.light_merino_layer).toBeLessThan(CLO_BY_SLUG.wool_layer ?? 0);
