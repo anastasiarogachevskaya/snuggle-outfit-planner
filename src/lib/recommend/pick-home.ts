@@ -142,7 +142,7 @@ export function pickHome(ctx: HomeContext): HomePick {
   } else {
     // 17 and below
     out.layers.base = "long_sleeve";
-    out.layers.bottom = "leggings";
+    out.layers.bottom = "warm_bottoms";
     out.layers.mid = "sweater";
     out.accessories.socks = roomTempC < TEMP.MILD ? "wool" : "cotton";
     out.reason = `Room is ~${round}°C — add a mid layer and socks to keep baby warm.`;

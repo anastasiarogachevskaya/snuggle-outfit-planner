@@ -29,9 +29,12 @@ const BASE_MAP: Record<BaseKind, { slugs: WardrobeSlug[]; label: string } | null
 
 const BOTTOM_MAP: Record<BottomKind, { slugs: WardrobeSlug[]; label: string } | null> = {
   none: null,
-  shorts: { slugs: ["shorts", "pants"], label: "Shorts" },
-  pants: { slugs: ["pants", "leggings"], label: "Pants" },
-  leggings: { slugs: ["leggings", "wool_leggings", "tights", "pants"], label: "Leggings" },
+  shorts: { slugs: ["shorts", "leggings", "pants"], label: "Shorts" },
+  pants: { slugs: ["pants", "leggings", "tights"], label: "Pants" },
+  warm_bottoms: {
+    slugs: ["wool_leggings", "pants", "leggings", "tights"],
+    label: "Warm bottoms",
+  },
 };
 
 const MID_MAP: Record<MidKind, { slugs: WardrobeSlug[]; label: string } | null> = {

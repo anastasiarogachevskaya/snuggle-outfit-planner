@@ -108,7 +108,7 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
     question: "Which bottoms do you have?",
     items: [
       { slug: "pants", label: "Pants", hint: "Everyday cotton bottoms", emoji: "👖", warmth: "Medium" },
-      { slug: "leggings", label: "Leggings", hint: "Close-fitting everyday bottoms", emoji: "🧦", warmth: "Medium" },
+      { slug: "leggings", label: "Leggings", hint: "Thin, stretchy cotton bottoms", emoji: "🧦", warmth: "Light" },
       { slug: "tights", label: "Tights", hint: "Thin fitted bottoms with feet", emoji: "🩱", warmth: "Light" },
       { slug: "wool_leggings", label: "Wool leggings", hint: "Thicker wool bottoms", emoji: "🐑", warmth: "Warm" },
       { slug: "shorts", label: "Shorts", hint: "Bare lower legs", emoji: "🩳", warmth: "Light" },

@@ -10,7 +10,10 @@ export type BaseKind =
   | "pajamas_light"
   | "pajamas";
 
-export type BottomKind = "none" | "shorts" | "pants" | "leggings";
+// "warm_bottoms" is the cold-weather bottom: thicker trousers or wool
+// leggings. Plain cotton leggings are thin everyday wear, lighter than
+// pants, so they are no longer the cold-weather pick.
+export type BottomKind = "none" | "shorts" | "pants" | "warm_bottoms";
 export type MidKind = "none" | "sweater" | "fleece";
 export type OuterKind = "none" | "winter_overall";
 
@@ -42,8 +45,9 @@ export const LAYER_WARMTH: Record<string, number> = {
   pajamas: 0.5,
 
   shorts: 0.1,
+  leggings: 0.15,
   pants: 0.2,
-  leggings: 0.25,
+  warm_bottoms: 0.35,
 
   sweater: 0.35,
   fleece: 0.5,
