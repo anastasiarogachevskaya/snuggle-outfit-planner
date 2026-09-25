@@ -29,7 +29,7 @@ describe("mapWardrobe", () => {
 
   it("prefers the first owned slug in a fallback list", () => {
     const r = mapWardrobe(
-      { base: "diaper_only", bottom: "leggings", mid: "fleece", outer: "none" },
+      { base: "diaper_only", bottom: "warm_bottoms", mid: "fleece", outer: "none" },
       NO_ACCS,
       own("wool_leggings", "wool_layer"),
     );

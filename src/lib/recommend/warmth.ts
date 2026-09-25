@@ -23,9 +23,11 @@ export const CLO_BY_SLUG: Partial<Record<WardrobeSlug, number>> = {
 
   // Bottoms
   shorts: 0.1,
+  // Everyday baby leggings are thin single-layer cotton jersey — lighter
+  // than pants (joggers, lined trousers), which trap much more air.
+  leggings: 0.15,
   pants: 0.2,
-  leggings: 0.25,
-  tights: 0.2,
+  tights: 0.15,
   wool_leggings: 0.35,
 
   // Mid — fleece/wool overalls are one-piece stand-ins for a plain fleece
