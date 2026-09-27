@@ -214,8 +214,14 @@ export function TodayScreen({
             onBack={() => setCheckingOutfit(false)}
           />
         ) : (
-          rec && <OutfitResult rec={rec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
+          rec && (
+            <>
+              <OutfitResult rec={rec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
+              <BottomsPreview rec={rec} owned={owned} />
+            </>
+          )
         )}
+
 
         {rec && !checkingOutfit && !(situation === "home" && homeActivity === "sleeping") && (
           <button
