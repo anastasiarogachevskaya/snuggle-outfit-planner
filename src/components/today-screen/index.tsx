@@ -11,6 +11,8 @@ import { ActivityPicker } from "./activity-picker";
 import { OutfitResult } from "./outfit-result";
 import { FeedbackPanel } from "./feedback-panel";
 import { CheckOutfitPanel } from "./check-outfit-panel";
+import { BottomsPreview } from "./bottoms-preview";
+
 
 /** Fires a selection haptic only when the value actually changes. */
 function change<T>(current: T, next: T, set: (v: T) => void) {
