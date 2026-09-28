@@ -60,6 +60,12 @@ function compensate(
     if (candidate.hat === "none" || candidate.hat === "thin_hat" || candidate.hat === "sun_hat") {
       return [{ slot: "hat", type: "add", idealSlug: "warm_hat" }];
     }
+    if ((CLO_BY_SLUG[candidate.mid as WardrobeSlug] ?? 0) < 0.5) {
+      return [{ slot: "mid", type: "add", idealSlug: pickOwned(["fleece_layer", "wool_layer", "fleece_overall", "wool_overall"], owned) }];
+    }
+    if (!candidate.snowPants && candidate.outer !== "winter_overall") {
+      return [{ slot: "snowPants", type: "add" }];
+    }
   }
   return [];
 }
@@ -149,6 +155,11 @@ export function applyBottomChoice(
             ? "mid"
             : "outer";
       if (!babyClothing.some((l) => l.slug === addSlug)) {
+        // A warmer mid layer replaces the lighter one instead of stacking.
+        if (slot === "mid") {
+          const i = babyClothing.findIndex((l) => l.slot === "mid");
+          if (i !== -1) babyClothing.splice(i, 1);
+        }
         babyClothing.push({ slot, slug: addSlug, label: LABEL_BY_SLUG[addSlug] });
       }
     } else if (a.type === "remove" && a.actualSlug) {
