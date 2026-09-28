@@ -43,9 +43,16 @@ function adjustmentText(a: SlotAdjustment): string {
 export function BottomsPreview({
   rec,
   owned,
+  appliedBottom = null,
+  onApply,
+  onReset,
 }: {
   rec: Recommendation;
   owned: Set<WardrobeSlug>;
+  /** Bottom the parent already applied to today's card, if any. */
+  appliedBottom?: WardrobeSlug | null;
+  onApply?: (slug: WardrobeSlug) => void;
+  onReset?: () => void;
 }) {
   const { options } = useMemo(() => compareBottoms(rec, owned), [rec, owned]);
   const recommended = options.find((o) => o.isRecommended);
@@ -53,7 +60,12 @@ export function BottomsPreview({
 
   if (options.length === 0) return null;
 
-  const active = options.find((o) => o.slug === selected) ?? recommended ?? options[0];
+  const active =
+    options.find((o) => o.slug === selected) ??
+    options.find((o) => o.slug === appliedBottom) ??
+    recommended ??
+    options[0];
+  const isApplied = appliedBottom === active.slug;
 
   return (
     <section className="mb-10">
