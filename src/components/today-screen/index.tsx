@@ -12,6 +12,7 @@ import { OutfitResult } from "./outfit-result";
 import { FeedbackPanel } from "./feedback-panel";
 import { CheckOutfitPanel } from "./check-outfit-panel";
 import { BottomsPreview } from "./bottoms-preview";
+import { applyBottomChoice } from "@/lib/recommend/compare-bottoms";
 
 
 /** Fires a selection haptic only when the value actually changes. */
@@ -140,6 +141,18 @@ export function TodayScreen({
     ageMonths,
   ]);
 
+  // A bottom the parent applied from the comparison. Cleared whenever the
+  // situation changes, since the outfit behind it is no longer the same.
+  const [appliedBottom, setAppliedBottom] = useState<WardrobeSlug | null>(null);
+  useEffect(() => {
+    setAppliedBottom(null);
+  }, [situation, homeActivity, transportMode, duration, roomTemp]);
+
+  const displayedRec = useMemo(() => {
+    if (!rec || !appliedBottom) return rec;
+    return applyBottomChoice(rec, appliedBottom, owned);
+  }, [rec, appliedBottom, owned]);
+
   const feedbackCtx: FeedbackContext | null =
     weatherQ.data && rec
       ? {
@@ -216,10 +229,17 @@ export function TodayScreen({
             onBack={() => setCheckingOutfit(false)}
           />
         ) : (
-          rec && (
+          rec &&
+          displayedRec && (
             <>
-              <OutfitResult rec={rec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
-              <BottomsPreview rec={rec} owned={owned} />
+              <OutfitResult rec={displayedRec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
+              <BottomsPreview
+                rec={rec}
+                owned={owned}
+                appliedBottom={appliedBottom}
+                onApply={setAppliedBottom}
+                onReset={() => setAppliedBottom(null)}
+              />
             </>
           )
         )}

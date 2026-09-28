@@ -2,8 +2,8 @@
 // pants and wool leggings aren't interchangeable. This takes the outfit
 // recommend() already picked for the current situation, swaps only the
 // bottom layer, and reports how the rest of the outfit has to change.
-import type { WardrobeSlug } from "../wardrobe-catalog";
-import type { Recommendation } from "../recommend";
+import { LABEL_BY_SLUG, type WardrobeSlug } from "../wardrobe-catalog";
+import type { Accessory, Layer, Recommendation } from "../recommend";
 import {
   CLO_BY_SLUG,
   compareOutfits,
@@ -69,4 +69,80 @@ export function compareBottoms(
 /** Rough clo of a single bottom garment, for the warmth tag in the UI. */
 export function bottomClo(slug: WardrobeSlug): number {
   return CLO_BY_SLUG[slug] ?? 0;
+}
+
+const SLOT_ORDER: Record<Layer["slot"], number> = { base: 0, bottom: 1, mid: 2, outer: 3 };
+
+/**
+ * Rewrites today's recommendation around a bottom the parent picked in the
+ * comparison, applying the same adjustments the preview promised so the
+ * outfit card and the preview never disagree.
+ */
+export function applyBottomChoice(
+  rec: Recommendation,
+  slug: WardrobeSlug,
+  owned: Set<WardrobeSlug>,
+): Recommendation {
+  const { options } = compareBottoms(rec, owned);
+  const option = options.find((o) => o.slug === slug);
+  if (!option || option.isRecommended) return rec;
+
+  const babyClothing: Layer[] = rec.babyClothing.map((l) =>
+    l.slot === "bottom" ? { slot: "bottom", slug, label: LABEL_BY_SLUG[slug] } : l,
+  );
+  let accessories: Accessory[] = [...rec.accessories];
+
+  for (const a of option.adjustments) {
+    if (a.slot === "hat" || a.slot === "socks" || a.slot === "mittens") {
+      const accSlug = a.type === "add" ? a.idealSlug : a.actualSlug;
+      if (a.type === "add") {
+        if (accSlug && !accessories.some((x) => x.slug === accSlug)) {
+          accessories.push({ slug: accSlug, label: LABEL_BY_SLUG[accSlug] });
+        }
+      } else if (accSlug) {
+        accessories = accessories.filter((x) => x.slug !== accSlug);
+      }
+      continue;
+    }
+
+    if (a.type === "add" && a.idealSlug) {
+      const addSlug = a.idealSlug;
+      const slot: Layer["slot"] =
+        a.slot === "bodysuit" || a.slot === "sleepsuit"
+          ? "base"
+          : a.slot === "mid"
+            ? "mid"
+            : "outer";
+      if (!babyClothing.some((l) => l.slug === addSlug)) {
+        babyClothing.push({ slot, slug: addSlug, label: LABEL_BY_SLUG[addSlug] });
+      }
+    } else if (a.type === "remove" && a.actualSlug) {
+      const removeSlug = a.actualSlug;
+      const index = babyClothing.findIndex((l) => l.slug === removeSlug);
+      if (index !== -1) babyClothing.splice(index, 1);
+    } else if (a.slot === "snowPants") {
+      if (a.type === "add" && !babyClothing.some((l) => l.slug === "snow_pants")) {
+        babyClothing.push({ slot: "outer", slug: "snow_pants", label: LABEL_BY_SLUG.snow_pants });
+      }
+      if (a.type === "remove") {
+        const index = babyClothing.findIndex((l) => l.slug === "snow_pants");
+        if (index !== -1) babyClothing.splice(index, 1);
+      }
+    }
+  }
+
+  babyClothing.sort((a, b) => SLOT_ORDER[a.slot] - SLOT_ORDER[b.slot]);
+
+  const allSlugs = [
+    ...babyClothing.map((l) => l.slug),
+    ...accessories.map((a) => a.slug),
+  ].filter((s): s is WardrobeSlug => s !== "diaper_only");
+
+  return {
+    ...rec,
+    babyClothing,
+    accessories,
+    missing: allSlugs.filter((s) => !owned.has(s)),
+    notes: [...rec.notes, `Adjusted for ${LABEL_BY_SLUG[slug].toLowerCase()} instead of today's pick.`],
+  };
 }

@@ -3,7 +3,7 @@ import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import type { Recommendation } from "@/lib/recommend";
 import type { OutfitVerdict, SlotAdjustment, SlotKey } from "@/lib/recommend/warmth";
 import { compareBottoms } from "@/lib/recommend/compare-bottoms";
-import { selectionHaptic } from "@/lib/haptics";
+import { lightHaptic, selectionHaptic } from "@/lib/haptics";
 
 const SLOT_FALLBACK: Record<SlotKey, string> = {
   bodysuit: "bodysuit",
@@ -43,9 +43,16 @@ function adjustmentText(a: SlotAdjustment): string {
 export function BottomsPreview({
   rec,
   owned,
+  appliedBottom = null,
+  onApply,
+  onReset,
 }: {
   rec: Recommendation;
   owned: Set<WardrobeSlug>;
+  /** Bottom the parent already applied to today's card, if any. */
+  appliedBottom?: WardrobeSlug | null;
+  onApply?: (slug: WardrobeSlug) => void;
+  onReset?: () => void;
 }) {
   const { options } = useMemo(() => compareBottoms(rec, owned), [rec, owned]);
   const recommended = options.find((o) => o.isRecommended);
@@ -53,7 +60,12 @@ export function BottomsPreview({
 
   if (options.length === 0) return null;
 
-  const active = options.find((o) => o.slug === selected) ?? recommended ?? options[0];
+  const active =
+    options.find((o) => o.slug === selected) ??
+    options.find((o) => o.slug === appliedBottom) ??
+    recommended ??
+    options[0];
+  const isApplied = appliedBottom === active.slug;
 
   return (
     <section className="mb-10">
@@ -104,6 +116,11 @@ export function BottomsPreview({
                 Today's pick
               </span>
             )}
+            {isApplied && (
+              <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
+                Applied to today
+              </span>
+            )}
             {!active.owned && (
               <span className="rounded-full bg-ink/5 px-3 py-1 text-[11px] font-medium text-ink/50">
                 Not in your wardrobe
@@ -127,6 +144,34 @@ export function BottomsPreview({
             </p>
           )}
         </div>
+
+        {onApply && (
+          <div className="mt-4">
+            {isApplied || (active.isRecommended && appliedBottom) ? (
+              <button
+                onClick={() => {
+                  lightHaptic();
+                  onReset?.();
+                }}
+                className="min-h-11 w-full rounded-2xl border border-black/10 bg-surface px-5 text-sm font-medium text-ink/70 transition-transform duration-150 active:scale-[0.98]"
+              >
+                Back to today's pick
+              </button>
+            ) : active.isRecommended && !appliedBottom ? (
+              <p className="text-center text-xs text-ink/50">This is today's outfit already.</p>
+            ) : (
+              <button
+                onClick={() => {
+                  lightHaptic();
+                  onApply(active.slug);
+                }}
+                className="min-h-11 w-full rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-transform duration-150 active:scale-[0.98]"
+              >
+                Use {LABEL_BY_SLUG[active.slug].toLowerCase()} for today
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
