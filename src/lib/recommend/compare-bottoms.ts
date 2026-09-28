@@ -158,11 +158,6 @@ export function applyBottomChoice(
             ? "mid"
             : "outer";
       if (!babyClothing.some((l) => l.slug === addSlug)) {
-        // A warmer mid layer replaces the lighter one instead of stacking.
-        if (slot === "mid") {
-          const i = babyClothing.findIndex((l) => l.slot === "mid");
-          if (i !== -1) babyClothing.splice(i, 1);
-        }
         babyClothing.push({ slot, slug: addSlug, label: LABEL_BY_SLUG[addSlug] });
       }
     } else if (a.type === "remove" && a.actualSlug) {
