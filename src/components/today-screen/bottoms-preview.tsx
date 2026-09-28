@@ -3,7 +3,7 @@ import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import type { Recommendation } from "@/lib/recommend";
 import type { OutfitVerdict, SlotAdjustment, SlotKey } from "@/lib/recommend/warmth";
 import { compareBottoms } from "@/lib/recommend/compare-bottoms";
-import { selectionHaptic } from "@/lib/haptics";
+import { lightHaptic, selectionHaptic } from "@/lib/haptics";
 
 const SLOT_FALLBACK: Record<SlotKey, string> = {
   bodysuit: "bodysuit",
