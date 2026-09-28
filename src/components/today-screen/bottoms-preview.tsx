@@ -116,6 +116,11 @@ export function BottomsPreview({
                 Today's pick
               </span>
             )}
+            {isApplied && (
+              <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
+                Applied to today
+              </span>
+            )}
             {!active.owned && (
               <span className="rounded-full bg-ink/5 px-3 py-1 text-[11px] font-medium text-ink/50">
                 Not in your wardrobe
