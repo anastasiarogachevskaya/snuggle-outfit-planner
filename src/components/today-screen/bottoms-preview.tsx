@@ -147,7 +147,7 @@ export function BottomsPreview({
 
         {onApply && (
           <div className="mt-4">
-            {isApplied ? (
+            {isApplied || (active.isRecommended && appliedBottom) ? (
               <button
                 onClick={() => {
                   lightHaptic();
