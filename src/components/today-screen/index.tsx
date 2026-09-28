@@ -229,10 +229,17 @@ export function TodayScreen({
             onBack={() => setCheckingOutfit(false)}
           />
         ) : (
-          rec && (
+          rec &&
+          displayedRec && (
             <>
-              <OutfitResult rec={rec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
-              <BottomsPreview rec={rec} owned={owned} />
+              <OutfitResult rec={displayedRec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
+              <BottomsPreview
+                rec={rec}
+                owned={owned}
+                appliedBottom={appliedBottom}
+                onApply={setAppliedBottom}
+                onReset={() => setAppliedBottom(null)}
+              />
             </>
           )
         )}
