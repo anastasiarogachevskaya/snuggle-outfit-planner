@@ -140,6 +140,18 @@ export function TodayScreen({
     ageMonths,
   ]);
 
+  // A bottom the parent applied from the comparison. Cleared whenever the
+  // situation changes, since the outfit behind it is no longer the same.
+  const [appliedBottom, setAppliedBottom] = useState<WardrobeSlug | null>(null);
+  useEffect(() => {
+    setAppliedBottom(null);
+  }, [situation, homeActivity, transportMode, duration, roomTemp]);
+
+  const displayedRec = useMemo(() => {
+    if (!rec || !appliedBottom) return rec;
+    return applyBottomChoice(rec, appliedBottom, owned);
+  }, [rec, appliedBottom, owned]);
+
   const feedbackCtx: FeedbackContext | null =
     weatherQ.data && rec
       ? {
