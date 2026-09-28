@@ -80,3 +80,41 @@ describe("compareBottoms", () => {
     expect(compareBottoms(rec!, owned).options).toEqual([]);
   });
 });
+
+describe("applyBottomChoice", () => {
+  test("swaps the bottom layer in the recommendation", () => {
+    for (const temp of [19, 13, 3]) {
+      const rec = recFor(temp);
+      const applied = applyBottomChoice(rec, "wool_leggings", owned);
+      const bottoms = applied.babyClothing.filter((l) => l.slot === "bottom");
+      expect(bottoms).toHaveLength(1);
+      expect(bottoms[0].slug).toBe("wool_leggings");
+    }
+  });
+
+  test("applies the same changes the comparison promised", () => {
+    const rec = recFor(13);
+    const option = compareBottoms(rec, owned).options.find((o) => o.slug === "leggings")!;
+    const applied = applyBottomChoice(rec, "leggings", owned);
+    const slugs = new Set<string>([
+      ...applied.babyClothing.map((l) => l.slug),
+      ...applied.accessories.map((a) => a.slug),
+    ]);
+    for (const a of option.adjustments) {
+      if (a.type === "add" && a.idealSlug) expect(slugs.has(a.idealSlug)).toBe(true);
+      if (a.type === "remove" && a.actualSlug) expect(slugs.has(a.actualSlug)).toBe(false);
+    }
+  });
+
+  test("leaves the recommendation untouched for today's own pick", () => {
+    const rec = recFor(13);
+    const recommended = compareBottoms(rec, owned).options.find((o) => o.isRecommended);
+    if (!recommended) return;
+    expect(applyBottomChoice(rec, recommended.slug, owned)).toBe(rec);
+  });
+
+  test("marks an unowned applied bottom as missing", () => {
+    const applied = applyBottomChoice(recFor(3), "wool_leggings", owned);
+    expect(applied.missing).toContain("wool_leggings");
+  });
+});
