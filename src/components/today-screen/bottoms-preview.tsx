@@ -144,6 +144,34 @@ export function BottomsPreview({
             </p>
           )}
         </div>
+
+        {onApply && (
+          <div className="mt-4">
+            {isApplied ? (
+              <button
+                onClick={() => {
+                  lightHaptic();
+                  onReset?.();
+                }}
+                className="min-h-11 w-full rounded-2xl border border-black/10 bg-surface px-5 text-sm font-medium text-ink/70 transition-transform duration-150 active:scale-[0.98]"
+              >
+                Back to today's pick
+              </button>
+            ) : active.isRecommended && !appliedBottom ? (
+              <p className="text-center text-xs text-ink/50">This is today's outfit already.</p>
+            ) : (
+              <button
+                onClick={() => {
+                  lightHaptic();
+                  onApply(active.slug);
+                }}
+                className="min-h-11 w-full rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-transform duration-150 active:scale-[0.98]"
+              >
+                Use {LABEL_BY_SLUG[active.slug].toLowerCase()} for today
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
