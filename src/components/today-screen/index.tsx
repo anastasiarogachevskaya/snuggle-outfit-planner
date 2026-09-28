@@ -233,13 +233,16 @@ export function TodayScreen({
           displayedRec && (
             <>
               <OutfitResult rec={displayedRec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
-              <BottomsPreview
-                rec={rec}
-                owned={owned}
-                appliedBottom={appliedBottom}
-                onApply={setAppliedBottom}
-                onReset={() => setAppliedBottom(null)}
-              />
+              {/* Compare bottoms hidden for now — owner is rethinking it. */}
+              {false && (
+                <BottomsPreview
+                  rec={rec}
+                  owned={owned}
+                  appliedBottom={appliedBottom}
+                  onApply={setAppliedBottom}
+                  onReset={() => setAppliedBottom(null)}
+                />
+              )}
             </>
           )
         )}
