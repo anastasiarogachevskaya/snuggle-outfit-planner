@@ -12,6 +12,7 @@ import { OutfitResult } from "./outfit-result";
 import { FeedbackPanel } from "./feedback-panel";
 import { CheckOutfitPanel } from "./check-outfit-panel";
 import { BottomsPreview } from "./bottoms-preview";
+import { applyBottomChoice } from "@/lib/recommend/compare-bottoms";
 
 
 /** Fires a selection haptic only when the value actually changes. */
