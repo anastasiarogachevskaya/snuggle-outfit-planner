@@ -2,8 +2,8 @@
 // pants and wool leggings aren't interchangeable. This takes the outfit
 // recommend() already picked for the current situation, swaps only the
 // bottom layer, and reports how the rest of the outfit has to change.
-import type { WardrobeSlug } from "../wardrobe-catalog";
-import type { Recommendation } from "../recommend";
+import { LABEL_BY_SLUG, type WardrobeSlug } from "../wardrobe-catalog";
+import type { Accessory, Layer, Recommendation } from "../recommend";
 import {
   CLO_BY_SLUG,
   compareOutfits,
