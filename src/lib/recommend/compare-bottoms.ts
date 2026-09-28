@@ -6,6 +6,8 @@ import { LABEL_BY_SLUG, type WardrobeSlug } from "../wardrobe-catalog";
 import type { Accessory, Layer, Recommendation } from "../recommend";
 import {
   CLO_BY_SLUG,
+  HAT_SLUGS,
+  SOCK_SLUGS,
   compareOutfits,
   idealOutfitFrom,
   outfitClo,
@@ -36,6 +38,32 @@ function withBottom(outfit: ActualOutfit, bottom: WardrobeSlug): ActualOutfit {
   return { ...outfit, bottom };
 }
 
+function pickOwned(prefs: WardrobeSlug[], owned: Set<WardrobeSlug>): WardrobeSlug {
+  return prefs.find((s) => owned.has(s)) ?? prefs[0];
+}
+
+/** One concrete change elsewhere in the outfit that offsets a lighter/warmer bottom. */
+function compensate(
+  candidate: ActualOutfit,
+  verdict: OutfitVerdict,
+  owned: Set<WardrobeSlug>,
+): SlotAdjustment[] {
+  if (verdict === "too_warm") {
+    if (candidate.mid !== "none") return [{ slot: "mid", type: "remove", actualSlug: candidate.mid }];
+    return [];
+  }
+  if (verdict === "too_cold") {
+    if (candidate.mid === "none") {
+      return [{ slot: "mid", type: "add", idealSlug: pickOwned(["sweater", "cardigan", "light_merino_layer", "hoodie", "fleece_layer"], owned) }];
+    }
+    if (candidate.socks !== "wool_socks") return [{ slot: "socks", type: "add", idealSlug: "wool_socks" }];
+    if (candidate.hat === "none" || candidate.hat === "thin_hat" || candidate.hat === "sun_hat") {
+      return [{ slot: "hat", type: "add", idealSlug: "warm_hat" }];
+    }
+  }
+  return [];
+}
+
 /**
  * Builds one entry per comparable bottom for the current recommendation.
  * Returns an empty list when the recommendation has no bottom layer at all
@@ -51,6 +79,9 @@ export function compareBottoms(
   const options = COMPARABLE_BOTTOMS.map((slug) => {
     const candidate = withBottom(ideal, slug);
     const { verdict, diff, adjustments } = compareOutfits(ideal, candidate);
+    // compareOutfits only flags empty-vs-filled slots, and a bottom swap never
+    // empties a slot — so compensate for the warmth gap explicitly.
+    const compensation = compensate(candidate, verdict, owned);
     return {
       slug,
       isRecommended: ideal.bottom === slug,
@@ -59,7 +90,9 @@ export function compareBottoms(
       diff,
       verdict,
       // The bottom itself is the thing being swapped, never an instruction.
-      adjustments: adjustments.filter((a) => a.slot !== "bottom"),
+      adjustments: [...adjustments.filter((a) => a.slot !== "bottom"), ...compensation].filter(
+        (a, i, all) => all.findIndex((b) => b.slot === a.slot && b.type === a.type) === i,
+      ),
     };
   });
 
@@ -97,6 +130,8 @@ export function applyBottomChoice(
       const accSlug = a.type === "add" ? a.idealSlug : a.actualSlug;
       if (a.type === "add") {
         if (accSlug && !accessories.some((x) => x.slug === accSlug)) {
+          const group = a.slot === "hat" ? HAT_SLUGS : a.slot === "socks" ? SOCK_SLUGS : [];
+          accessories = accessories.filter((x) => !group.includes(x.slug));
           accessories.push({ slug: accSlug, label: LABEL_BY_SLUG[accSlug] });
         }
       } else if (accSlug) {
