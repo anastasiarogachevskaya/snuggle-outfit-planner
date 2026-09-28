@@ -57,13 +57,16 @@ function compensate(
       return [{ slot: "mid", type: "add", idealSlug: pickOwned(["sweater", "cardigan", "light_merino_layer", "hoodie", "fleece_layer"], owned) }];
     }
     if (candidate.socks !== "wool_socks") return [{ slot: "socks", type: "add", idealSlug: "wool_socks" }];
-    if (candidate.hat === "none" || candidate.hat === "thin_hat" || candidate.hat === "sun_hat") {
+    const warmerMids: WardrobeSlug[] = ["fleece_layer", "wool_layer", "fleece_overall", "wool_overall"];
+    if ((CLO_BY_SLUG[candidate.mid as WardrobeSlug] ?? 0) < 0.5 && warmerMids.some((s) => owned.has(s))) {
+      return [{ slot: "mid", type: "add", idealSlug: pickOwned(warmerMids, owned) }];
+    }
+    // Hats and snow pants only make sense outdoors (an outer layer is on).
+    const outdoors = candidate.outer !== "none";
+    if (outdoors && (candidate.hat === "none" || candidate.hat === "thin_hat" || candidate.hat === "sun_hat")) {
       return [{ slot: "hat", type: "add", idealSlug: "warm_hat" }];
     }
-    if ((CLO_BY_SLUG[candidate.mid as WardrobeSlug] ?? 0) < 0.5) {
-      return [{ slot: "mid", type: "add", idealSlug: pickOwned(["fleece_layer", "wool_layer", "fleece_overall", "wool_overall"], owned) }];
-    }
-    if (!candidate.snowPants && candidate.outer !== "winter_overall") {
+    if (outdoors && owned.has("snow_pants") && !candidate.snowPants && candidate.outer !== "winter_overall") {
       return [{ slot: "snowPants", type: "add" }];
     }
   }
