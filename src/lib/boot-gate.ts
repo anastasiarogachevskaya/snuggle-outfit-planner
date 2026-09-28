@@ -12,7 +12,7 @@ import { logLaunch, markSplashHidden, markSplashScheduled } from "@/lib/launch-d
 export const BOOT_ATTR = "data-app-boot";
 
 /** Inline script injected in <head>; runs before the body paints. */
-export const BOOT_GATE_SCRIPT = `(function(){try{var c=window.Capacitor;var n=!!(c&&typeof c.isNativePlatform==='function'&&c.isNativePlatform());if(n&&window.location.pathname==='/'){document.documentElement.setAttribute('${BOOT_ATTR}','hold');}}catch(e){}})();`;
+export const BOOT_GATE_SCRIPT = `(function(){try{var c=window.Capacitor;var n=!!(c&&typeof c.isNativePlatform==='function'&&c.isNativePlatform());if(n&&window.location.pathname==='/'){var d=document.documentElement;d.setAttribute('${BOOT_ATTR}','hold');setTimeout(function(){d.removeAttribute('${BOOT_ATTR}');},6000);}}catch(e){}})();`;
 
 /** Reveals the page again. Safe to call repeatedly and on the server. */
 let splashTimer: ReturnType<typeof setTimeout> | null = null;

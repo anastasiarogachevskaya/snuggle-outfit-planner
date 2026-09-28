@@ -51,20 +51,35 @@ function Landing() {
     }
 
     let cancelled = false;
-    void supabase.auth.getSession().then(({ data }) => {
+    // Never leave the page hidden if the session check hangs (offline launch).
+    const fallback = setTimeout(() => {
       if (cancelled) return;
-      logLaunch(`session resolved: ${data.session ? "yes" : "no"}`);
-      if (data.session) {
-        setLaunchDestination("/today (session)");
-        navigate({ to: "/today", replace: true });
-        return;
-      }
-      // Nowhere else to go: show the page.
-      setLaunchDestination("/ (landing)");
+      logLaunch("session check timed out; showing landing");
       releaseBootHold();
-    });
+    }, 4000);
+    void supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (cancelled) return;
+        clearTimeout(fallback);
+        logLaunch(`session resolved: ${data.session ? "yes" : "no"}`);
+        if (data.session) {
+          setLaunchDestination("/today (session)");
+          navigate({ to: "/today", replace: true });
+          return;
+        }
+        setLaunchDestination("/ (landing)");
+        releaseBootHold();
+      })
+      .catch(() => {
+        if (cancelled) return;
+        clearTimeout(fallback);
+        setLaunchDestination("/ (landing, session error)");
+        releaseBootHold();
+      });
     return () => {
       cancelled = true;
+      clearTimeout(fallback);
     };
   }, [navigate]);
 
