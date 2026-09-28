@@ -11,7 +11,6 @@ import { ActivityPicker } from "./activity-picker";
 import { OutfitResult } from "./outfit-result";
 import { FeedbackPanel } from "./feedback-panel";
 import { CheckOutfitPanel } from "./check-outfit-panel";
-import { BottomsPreview } from "./bottoms-preview";
 import { applyBottomChoice } from "@/lib/recommend/compare-bottoms";
 
 
@@ -233,13 +232,7 @@ export function TodayScreen({
           displayedRec && (
             <>
               <OutfitResult rec={displayedRec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
-              <BottomsPreview
-                rec={rec}
-                owned={owned}
-                appliedBottom={appliedBottom}
-                onApply={setAppliedBottom}
-                onReset={() => setAppliedBottom(null)}
-              />
+              {/* Compare bottoms (BottomsPreview) hidden for now — owner is rethinking it. */}
             </>
           )
         )}
