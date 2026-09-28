@@ -138,9 +138,13 @@ export function BottomsPreview({
             </ul>
           ) : (
             <p className="mt-3 text-sm text-ink/70">
-              {active.isRecommended
-                ? "Everything else stays exactly as recommended."
-                : "The rest of the outfit can stay the same."}
+              {active.verdict === "too_cold"
+                ? "The outfit is already as warm as it gets — choose warmer bottoms, or add a footmuff or blanket."
+                : active.verdict === "too_warm"
+                  ? "Nothing else to drop — lighter bottoms would suit today better."
+                  : active.isRecommended
+                    ? "Everything else stays exactly as recommended."
+                    : "The rest of the outfit can stay the same."}
             </p>
           )}
         </div>
