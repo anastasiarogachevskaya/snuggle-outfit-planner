@@ -193,8 +193,11 @@ function lastStepReached(rows: EventRow[], steps: Array<[string, string]>): Brea
 
 export const getFunnelReport = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { days?: number }) => ({
+  .inputValidator((input: { days?: number; platform?: string }) => ({
     days: Math.min(Math.max(Math.round(input?.days ?? 30), 1), 180),
+    platform: (["all", "web", "app"].includes(input?.platform ?? "")
+      ? input!.platform
+      : "all") as "all" | "web" | "app",
   }))
   .handler(async ({ data, context }): Promise<FunnelReport> => {
     // Hide the page entirely from anyone who is not the owner. This page
@@ -216,10 +219,13 @@ export const getFunnelReport = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const since = new Date(Date.now() - data.days * 24 * 60 * 60 * 1000).toISOString();
-    const { data: rows, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("app_events")
       .select("name, user_id, session_id, props, platform, created_at")
-      .gte("created_at", since)
+      .gte("created_at", since);
+    if (data.platform === "web") query = query.eq("platform", "web");
+    if (data.platform === "app") query = query.neq("platform", "web");
+    const { data: rows, error } = await query
       .order("created_at", { ascending: false })
       .limit(20000);
     if (error) throw error;
