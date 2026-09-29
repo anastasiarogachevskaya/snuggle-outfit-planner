@@ -28,15 +28,23 @@ export const Route = createFileRoute("/_authenticated/insights")({
 });
 
 const RANGES = [7, 30, 90] as const;
+const PLATFORMS = [
+  { value: "all", label: "All" },
+  { value: "web", label: "Web" },
+  { value: "app", label: "App" },
+] as const;
+type PlatformFilter = (typeof PLATFORMS)[number]["value"];
 
 function InsightsPage() {
   const [days, setDays] = useState<number>(30);
+  const [platform, setPlatform] = useState<PlatformFilter>("all");
   const fetchReport = useServerFn(getFunnelReport);
 
   const q = useQuery({
-    queryKey: ["funnel", days],
-    queryFn: () => fetchReport({ data: { days } }),
+    queryKey: ["funnel", days, platform],
+    queryFn: () => fetchReport({ data: { days, platform } }),
     retry: false,
+    placeholderData: (prev) => prev,
   });
 
   // Non-owners get the server's notFound() thrown as a query error. Render
@@ -53,19 +61,35 @@ function InsightsPage() {
         <h1 className="mt-1 font-serif text-3xl font-semibold">Insights</h1>
         <p className="mt-2 text-sm text-ink/50">The complete path from first visit to daily use.</p>
 
-        <div className="mt-5 flex gap-2">
-          {RANGES.map((r) => (
-            <Button
-              key={r}
-              type="button"
-              variant={days === r ? "default" : "outline"}
-              onClick={() => setDays(r)}
-              aria-pressed={days === r}
-              className="h-10 flex-1 rounded-xl px-2 text-sm"
-            >
-              {r} days
-            </Button>
-          ))}
+        <div className="sticky top-0 z-10 -mx-5 mt-5 space-y-2 bg-canvas/95 px-5 py-2 backdrop-blur">
+          <div className="flex gap-2">
+            {PLATFORMS.map((p) => (
+              <Button
+                key={p.value}
+                type="button"
+                variant={platform === p.value ? "default" : "outline"}
+                onClick={() => setPlatform(p.value)}
+                aria-pressed={platform === p.value}
+                className="h-10 flex-1 rounded-xl px-2 text-sm"
+              >
+                {p.label}
+              </Button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            {RANGES.map((r) => (
+              <Button
+                key={r}
+                type="button"
+                variant={days === r ? "secondary" : "ghost"}
+                onClick={() => setDays(r)}
+                aria-pressed={days === r}
+                className="h-9 flex-1 rounded-xl px-2 text-sm"
+              >
+                {r} days
+              </Button>
+            ))}
+          </div>
         </div>
 
         {q.isPending && <p className="mt-8 text-sm text-ink/40">Loading…</p>}
