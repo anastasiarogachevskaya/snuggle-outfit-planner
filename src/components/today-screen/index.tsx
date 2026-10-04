@@ -6,7 +6,6 @@ import {
   isRainingCode,
   weatherAtMinutesFromNow,
 } from "@/lib/weather";
-import { DeparturePicker } from "./departure-picker";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { ageInMonths } from "@/lib/baby-age";
@@ -209,10 +208,6 @@ export function TodayScreen({
           </p>
         )}
 
-        {situation === "walk" && weatherQ.data && (
-          <DeparturePicker value={leaveIn} onChange={setLeaveIn} />
-        )}
-
         <section className="mb-6">
           <WeatherSummary
             weather={weather}
@@ -221,8 +216,14 @@ export function TodayScreen({
             hasLocation={baby.latitude != null && baby.longitude != null}
             onRetry={() => weatherQ.refetch()}
             onOpenProfile={onOpenProfile}
+            timeSelector={
+              situation === "walk" && weatherQ.data
+                ? { value: leaveIn, onChange: setLeaveIn }
+                : undefined
+            }
           />
         </section>
+
 
         <ActivityPicker
           situation={situation}
