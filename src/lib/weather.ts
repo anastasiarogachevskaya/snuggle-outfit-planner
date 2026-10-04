@@ -12,6 +12,10 @@ export type Weather = {
   /** Hourly forecast, aligned index-for-index — used to look ahead from `asOfIso`. */
   hourlyTimeIso: string[];
   hourlyFeelsLikeC: number[];
+  hourlyTempC?: number[];
+  hourlyCode?: number[];
+  hourlyUv?: number[];
+  hourlyCloudPct?: number[];
 };
 
 // https://open-meteo.com/en/docs — no API key.
@@ -25,7 +29,10 @@ export async function fetchWeather(lat: number, lon: number): Promise<Weather> {
   );
   // Only need a few hours ahead (the longest walk duration option is 90 min),
   // but 2 days covers a "now" close to midnight without extra complexity.
-  url.searchParams.set("hourly", "apparent_temperature");
+  url.searchParams.set(
+    "hourly",
+    "apparent_temperature,temperature_2m,weather_code,uv_index,cloud_cover",
+  );
   url.searchParams.set("forecast_days", "2");
   url.searchParams.set("timezone", "auto");
   url.searchParams.set("wind_speed_unit", "kmh");
@@ -47,6 +54,10 @@ export async function fetchWeather(lat: number, lon: number): Promise<Weather> {
     asOfIso: c.time,
     hourlyTimeIso: json.hourly?.time ?? [],
     hourlyFeelsLikeC: json.hourly?.apparent_temperature ?? [],
+    hourlyTempC: json.hourly?.temperature_2m,
+    hourlyCode: json.hourly?.weather_code,
+    hourlyUv: json.hourly?.uv_index,
+    hourlyCloudPct: json.hourly?.cloud_cover,
   };
 }
 
@@ -57,8 +68,8 @@ export async function fetchWeather(lat: number, lon: number): Promise<Weather> {
  * Returns null if there's no hourly data to look up (e.g. in tests that
  * stub a bare `current` response).
  */
-export function feelsLikeAtMinutesFromNow(weather: Weather, minutesFromNow: number): number | null {
-  if (!weather.asOfIso || weather.hourlyTimeIso.length === 0) return null;
+function closestHourIdx(weather: Weather, minutesFromNow: number): number {
+  if (!weather.asOfIso || weather.hourlyTimeIso.length === 0) return -1;
   const targetMs = new Date(weather.asOfIso).getTime() + minutesFromNow * 60_000;
   let closestIdx = -1;
   let closestDiffMs = Infinity;
@@ -69,7 +80,42 @@ export function feelsLikeAtMinutesFromNow(weather: Weather, minutesFromNow: numb
       closestIdx = i;
     }
   }
-  return closestIdx === -1 ? null : weather.hourlyFeelsLikeC[closestIdx];
+  return closestIdx;
+}
+
+export function feelsLikeAtMinutesFromNow(weather: Weather, minutesFromNow: number): number | null {
+  const i = closestHourIdx(weather, minutesFromNow);
+  return i === -1 ? null : (weather.hourlyFeelsLikeC[i] ?? null);
+}
+
+/**
+ * The forecast reshaped as a "current" reading `minutesFromNow` ahead, so the
+ * whole recommendation engine can plan for a later departure unchanged.
+ * Returns the original weather for 0 or when no hourly data exists.
+ */
+export function weatherAtMinutesFromNow(weather: Weather, minutesFromNow: number): Weather {
+  if (minutesFromNow <= 0) return weather;
+  const i = closestHourIdx(weather, minutesFromNow);
+  if (i === -1) return weather;
+  const code = weather.hourlyCode?.[i] ?? weather.code;
+  const asOfMs = new Date(weather.asOfIso!).getTime() + minutesFromNow * 60_000;
+  return {
+    ...weather,
+    tempC: weather.hourlyTempC?.[i] ?? weather.tempC,
+    feelsLikeC: weather.hourlyFeelsLikeC[i] ?? weather.feelsLikeC,
+    code,
+    condition: describeCode(code),
+    uvIndex: weather.hourlyUv?.[i] ?? weather.uvIndex,
+    cloudCoverPct: weather.hourlyCloudPct?.[i] ?? weather.cloudCoverPct,
+    asOfIso: localIso(asOfMs, weather.asOfIso!),
+  };
+}
+
+// Open-Meteo times are zone-less local strings ("2026-10-04T10:15"); keep that shape.
+function localIso(ms: number, _ref: string): string {
+  const d = new Date(ms);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 const DRIZZLE_CODES = [51, 53, 55, 56, 57];
