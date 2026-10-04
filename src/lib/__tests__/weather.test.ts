@@ -45,7 +45,7 @@ describe("fetchWeather", () => {
     expect(url.searchParams.get("current")).toBe(
       "temperature_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index,cloud_cover",
     );
-    expect(url.searchParams.get("hourly")).toBe("apparent_temperature");
+    expect(url.searchParams.get("hourly")).toBe("apparent_temperature,temperature_2m,weather_code,uv_index,cloud_cover");
     expect(url.searchParams.get("forecast_days")).toBe("2");
     expect(url.searchParams.get("timezone")).toBe("auto");
   });
