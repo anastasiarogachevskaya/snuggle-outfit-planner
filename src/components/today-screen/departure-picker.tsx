@@ -3,12 +3,12 @@ import { selectionHaptic } from "@/lib/haptics";
 /** Minutes from now until the parent heads out. 0 = now. */
 export type LeaveIn = number;
 
-function hourLabel(d: Date) {
+export function hourLabel(d: Date) {
   return `${String(d.getHours()).padStart(2, "0")}:00`;
 }
 
-/** Full hours left today, starting 3h out (1h/2h have their own buttons). */
-function laterHoursToday(now: Date): { minutes: number; label: string }[] {
+/** Full hours left today, starting 3h out (1h/2h have their own options). */
+export function laterHoursToday(now: Date): { minutes: number; label: string }[] {
   const out: { minutes: number; label: string }[] = [];
   for (let h = now.getHours() + 3; h <= 23; h++) {
     const t = new Date(now);
@@ -18,7 +18,12 @@ function laterHoursToday(now: Date): { minutes: number; label: string }[] {
   return out;
 }
 
-export function DeparturePicker({
+/**
+ * The underlined time word in the weather line — "Now", or the chosen hour.
+ * Tapping it opens the native time picker; the whole line then describes the
+ * forecast for that moment.
+ */
+export function DepartureTimeWord({
   value,
   onChange,
 }: {
@@ -33,56 +38,36 @@ export function DeparturePicker({
     selectionHaptic();
     onChange(v);
   };
-  const pill = (active: boolean) =>
-    `rounded-full px-3 py-2 text-sm font-medium transition-colors ${
-      active ? "bg-primary text-primary-foreground" : "bg-surface text-ink/70 border border-black/5"
-    }`;
+  const label =
+    value === 0 ? "Now" : hourLabel(new Date(now.getTime() + (value + 30) * 60_000));
 
   return (
-    <section className="mb-6">
-      <p className="mb-2 text-xs font-medium uppercase tracking-widest text-primary/60">Leaving</p>
-      <div className="flex flex-wrap gap-2">
-        <button className={pill(value === 0)} onClick={() => set(0)}>
-          Now
-        </button>
-        {now.getHours() <= 22 && (
-          <button className={pill(value === 60)} onClick={() => set(60)}>
-            In 1h
-          </button>
-        )}
-        {now.getHours() <= 21 && (
-          <button className={pill(value === 120)} onClick={() => set(120)}>
-            In 2h
-          </button>
-        )}
-        {later.length > 0 && (
-          <label className={`${pill(isCustom)} relative`}>
-            {isCustom
-              ? hourLabel(new Date(now.getTime() + (value + 30) * 60_000))
-              : "Set time"}{" "}
-            ▾
-            <select
-              aria-label="Pick a time later today"
-              className="absolute inset-0 opacity-0"
-              value={isCustom ? String(later.find((o) => Math.abs(o.minutes - value) < 30)?.minutes ?? "") : ""}
-              onChange={(e) => e.target.value && set(Number(e.target.value))}
-            >
-              <option value="">Pick a time</option>
-              {later.map((o) => (
-                <option key={o.minutes} value={o.minutes}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-      </div>
-      {value > 0 && (
-        <p className="mt-2 text-xs text-ink/60">
-          Weather and outfit below are for{" "}
-          {hourLabel(new Date(now.getTime() + (value + 30) * 60_000))}.
-        </p>
-      )}
-    </section>
+    <label className="relative inline-flex cursor-pointer items-baseline">
+      <span
+        aria-hidden
+        className="text-2xl font-serif font-semibold text-ink underline decoration-primary/50 decoration-[3px] underline-offset-[6px]"
+      >
+        {label}
+      </span>
+      <select
+        aria-label="Choose a time"
+        className="absolute inset-0 opacity-0"
+        value={
+          isCustom
+            ? String(later.find((o) => Math.abs(o.minutes - value) < 30)?.minutes ?? "")
+            : String(value)
+        }
+        onChange={(e) => e.target.value && set(Number(e.target.value))}
+      >
+        <option value="0">Now</option>
+        {now.getHours() <= 22 && <option value="60">In 1h</option>}
+        {now.getHours() <= 21 && <option value="120">In 2h</option>}
+        {later.map((o) => (
+          <option key={o.minutes} value={o.minutes}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

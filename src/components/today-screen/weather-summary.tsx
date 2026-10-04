@@ -1,4 +1,5 @@
 import { type fetchWeather } from "@/lib/weather";
+import { DepartureTimeWord, hourLabel, type LeaveIn } from "./departure-picker";
 
 export function WeatherSummary({
   weather,
@@ -7,6 +8,7 @@ export function WeatherSummary({
   hasLocation,
   onRetry,
   onOpenProfile,
+  timeSelector,
 }: {
   weather: Awaited<ReturnType<typeof fetchWeather>> | undefined;
   isLoading: boolean;
@@ -14,15 +16,29 @@ export function WeatherSummary({
   hasLocation: boolean;
   onRetry: () => void;
   onOpenProfile: () => void;
+  /** When set (Walk), the leading time word is tappable to pick a later hour. */
+  timeSelector?: { value: LeaveIn; onChange: (v: LeaveIn) => void };
 }) {
   if (weather) {
     return (
-      <div className="flex items-baseline gap-2 flex-wrap">
-        <span className="text-2xl font-serif font-semibold text-ink">
-          {Math.round(weather.tempC)}°
-        </span>
-        <span className="text-sm text-ink/70">{weather.condition}</span>
-        <span className="text-sm text-ink/40">· Feels like {Math.round(weather.feelsLikeC)}°</span>
+      <div>
+        <div className="flex items-baseline gap-2 flex-wrap">
+          {timeSelector && (
+            <DepartureTimeWord value={timeSelector.value} onChange={timeSelector.onChange} />
+          )}
+          <span className="text-2xl font-serif font-semibold text-ink">
+            {Math.round(weather.tempC)}°
+          </span>
+          <span className="text-sm text-ink/70">{weather.condition}</span>
+          <span className="text-sm text-ink/40">· Feels like {Math.round(weather.feelsLikeC)}°</span>
+        </div>
+        {timeSelector && timeSelector.value > 0 && (
+          <p className="mt-1 text-xs text-ink/60">
+            Forecast for{" "}
+            {hourLabel(new Date(Date.now() + (timeSelector.value + 30) * 60_000))} — outfit below is
+            for then too.
+          </p>
+        )}
       </div>
     );
   }
