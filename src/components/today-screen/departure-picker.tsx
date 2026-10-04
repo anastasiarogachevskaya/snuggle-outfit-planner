@@ -77,6 +77,12 @@ export function DeparturePicker({
           </label>
         )}
       </div>
+      {value > 0 && (
+        <p className="mt-2 text-xs text-ink/60">
+          Weather and outfit below are for{" "}
+          {hourLabel(new Date(now.getTime() + (value + 30) * 60_000))}.
+        </p>
+      )}
     </section>
   );
 }
