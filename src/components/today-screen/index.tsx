@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchWeather, feelsLikeAtMinutesFromNow, isRainingCode } from "@/lib/weather";
+import {
+  fetchWeather,
+  feelsLikeAtMinutesFromNow,
+  isRainingCode,
+  weatherAtMinutesFromNow,
+} from "@/lib/weather";
+import { DeparturePicker } from "./departure-picker";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { ageInMonths } from "@/lib/baby-age";
@@ -105,12 +111,20 @@ export function TodayScreen({
     if (situation === "home" && homeActivity === "sleeping") setCheckingOutfit(false);
   }, [situation, homeActivity]);
 
-  const isRaining = weatherQ.data ? isRainingCode(weatherQ.data.code) : false;
+  // Planning ahead only applies outdoors; home uses the room thermometer.
+  const [leaveIn, setLeaveIn] = useState(0);
+  const planningAhead = situation === "walk" && leaveIn > 0;
+  const weather = useMemo(
+    () => (weatherQ.data && planningAhead ? weatherAtMinutesFromNow(weatherQ.data, leaveIn) : weatherQ.data),
+    [weatherQ.data, planningAhead, leaveIn],
+  );
+
+  const isRaining = weather ? isRainingCode(weather.code) : false;
 
   const rec = useMemo(() => {
-    if (!weatherQ.data) return null;
+    if (!weather) return null;
     return recommend({
-      feelsLikeC: weatherQ.data.feelsLikeC,
+      feelsLikeC: weather.feelsLikeC,
       tempPref: baby.temperature_pref,
       situation,
       roomTempC: situation === "home" ? roomTemp : undefined,
@@ -120,16 +134,19 @@ export function TodayScreen({
       owned,
       homeActivity: situation === "home" ? homeActivity : undefined,
       ageMonths,
-      uvIndex: weatherQ.data.uvIndex,
-      cloudCoverPct: weatherQ.data.cloudCoverPct,
+      uvIndex: weather.uvIndex,
+      cloudCoverPct: weather.cloudCoverPct,
       feelsLikeAtEndC:
         situation === "walk"
-          ? (feelsLikeAtMinutesFromNow(weatherQ.data, duration) ?? undefined)
+          ? (feelsLikeAtMinutesFromNow(weatherQ.data!, (planningAhead ? leaveIn : 0) + duration) ?? undefined)
           : undefined,
     });
   }, [
     baby.temperature_pref,
+    weather,
     weatherQ.data,
+    planningAhead,
+    leaveIn,
     situation,
     roomTemp,
     transportMode,
@@ -153,7 +170,7 @@ export function TodayScreen({
   }, [rec, appliedBottom, owned]);
 
   const feedbackCtx: FeedbackContext | null =
-    weatherQ.data && rec
+    weather && rec
       ? {
           situation,
           homeActivity,
@@ -161,7 +178,7 @@ export function TodayScreen({
           duration,
           roomTemp,
           ageMonths,
-          weather: weatherQ.data,
+          weather: weather,
           rec,
         }
       : null;
@@ -194,7 +211,7 @@ export function TodayScreen({
 
         <section className="mb-6">
           <WeatherSummary
-            weather={weatherQ.data}
+            weather={weather}
             isLoading={weatherQ.isLoading}
             isError={weatherQ.isError}
             hasLocation={baby.latitude != null && baby.longitude != null}
@@ -217,6 +234,10 @@ export function TodayScreen({
           onRoomTempChange={setRoomTemp}
         />
 
+        {situation === "walk" && weatherQ.data && (
+          <DeparturePicker value={leaveIn} onChange={setLeaveIn} />
+        )}
+
         {/* The warmth-comparison model is clo-based and doesn't apply to
             TOG-rated sleep sacks, so this replaces the recommendation card
             only while awake — during sleep there's nothing to check. */}
@@ -224,7 +245,7 @@ export function TodayScreen({
           <CheckOutfitPanel
             rec={rec}
             owned={owned}
-            weather={weatherQ.data}
+            weather={weather}
             onBack={() => setCheckingOutfit(false)}
           />
         ) : (
@@ -279,7 +300,7 @@ export function TodayScreen({
         {/* Nothing to rate when no outfit could be worked out, and the
             subjective "how did it feel" question doesn't apply while the
             parent is busy answering the objective outfit check instead. */}
-        {rec && !checkingOutfit && (
+        {rec && !checkingOutfit && !planningAhead && (
           <FeedbackPanel
             babyName={baby.name}
             feedbackPending={feedbackPending}

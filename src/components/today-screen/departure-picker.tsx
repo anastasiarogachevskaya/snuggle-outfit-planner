@@ -58,13 +58,13 @@ export function DeparturePicker({
         {later.length > 0 && (
           <label className={`${pill(isCustom)} relative`}>
             {isCustom
-              ? (later.find((o) => o.minutes === value)?.label ?? "Set time")
+              ? hourLabel(new Date(now.getTime() + (value + 30) * 60_000))
               : "Set time"}{" "}
             ▾
             <select
               aria-label="Pick a time later today"
               className="absolute inset-0 opacity-0"
-              value={isCustom ? String(value) : ""}
+              value={isCustom ? String(later.find((o) => Math.abs(o.minutes - value) < 30)?.minutes ?? "") : ""}
               onChange={(e) => e.target.value && set(Number(e.target.value))}
             >
               <option value="">Pick a time</option>
