@@ -209,6 +209,10 @@ export function TodayScreen({
           </p>
         )}
 
+        {situation === "walk" && weatherQ.data && (
+          <DeparturePicker value={leaveIn} onChange={setLeaveIn} />
+        )}
+
         <section className="mb-6">
           <WeatherSummary
             weather={weather}
@@ -234,9 +238,6 @@ export function TodayScreen({
           onRoomTempChange={setRoomTemp}
         />
 
-        {situation === "walk" && weatherQ.data && (
-          <DeparturePicker value={leaveIn} onChange={setLeaveIn} />
-        )}
 
         {/* The warmth-comparison model is clo-based and doesn't apply to
             TOG-rated sleep sacks, so this replaces the recommendation card
