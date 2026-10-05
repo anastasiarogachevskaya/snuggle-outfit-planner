@@ -168,7 +168,7 @@ function Landing() {
                   <PreviewLayer slug="long_sleeve_bodysuit" label="Base" name="Long-sleeve bodysuit" />
                   <PreviewLayer slug="pants" label="Bottom" name="Cotton trousers" />
                   <PreviewLayer slug="cardigan" label="Mid layer" name="Knitted cardigan" />
-                  <PreviewLayer slug="light_jacket" label="Outer layer" name="Light jacket" emphasis />
+                  <PreviewLayer slug="jacket" label="Outer layer" name="Light jacket" emphasis />
                 </div>
               </div>
 
@@ -193,7 +193,7 @@ function PreviewLayer({
   name,
   emphasis = false,
 }: {
-  slug: "long_sleeve_bodysuit" | "pants" | "cardigan" | "light_jacket";
+  slug: "long_sleeve_bodysuit" | "pants" | "cardigan" | "jacket";
   label: string;
   name: string;
   emphasis?: boolean;
