@@ -35,6 +35,8 @@
   --color-ink: var(--ink);
   --font-serif: var(--font-serif);
   --font-sans: var(--font-sans);
+  --font-landing-heading: var(--font-landing-heading);
+  --font-landing-body: var(--font-landing-body);
   --color-activity: var(--activity);
   --color-activity-foreground: var(--activity-foreground);
   --color-activity-selected: var(--activity-selected);
@@ -105,6 +107,8 @@
 
   --font-serif: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-landing-heading: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-landing-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* App launch: keep the brand colour on screen until the app knows where to go,

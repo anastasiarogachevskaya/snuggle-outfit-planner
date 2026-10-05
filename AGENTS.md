@@ -10,3 +10,5 @@
 > the editor, so keep the branch in a working state.
 
 <!-- LOVABLE:END -->
+
+- Keep the public landing page isolated to landing-specific typography tokens and composition so product screens retain their established design system.
