@@ -55,6 +55,10 @@
   --color-warmth-warm-bg: var(--warmth-warm-bg);
   --color-warmth-very-warm: var(--warmth-very-warm);
   --color-warmth-very-warm-bg: var(--warmth-very-warm-bg);
+  --color-landing-canvas: var(--landing-canvas);
+  --color-landing-sage: var(--landing-sage);
+  --color-landing-ink: var(--landing-ink);
+  --color-landing-clay: var(--landing-clay);
 }
 
 :root {
@@ -109,6 +113,12 @@
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-landing-heading: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-landing-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
+
+  /* Public landing page */
+  --landing-canvas: oklch(0.973 0.007 107);
+  --landing-sage: oklch(0.742 0.055 125);
+  --landing-ink: oklch(0.355 0.03 150);
+  --landing-clay: oklch(0.759 0.066 55);
 }
 
 /* App launch: keep the brand colour on screen until the app knows where to go,

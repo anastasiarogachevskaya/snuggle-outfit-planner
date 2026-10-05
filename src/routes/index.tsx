@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { SiteFooter } from "@/components/site-footer";
+import { ClothingIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
 import { logEvent } from "@/lib/analytics";
 import { isIOSApp } from "@/lib/platform";
 import { readGuestProfile } from "@/lib/guest-profile";
@@ -88,88 +90,135 @@ function Landing() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <div className="mx-auto max-w-md px-6 py-10 font-sans">
-        <header className="mb-14 flex items-center justify-between">
-          <Link to="/" className="font-serif text-lg font-semibold text-ink">
-            Layerly
-          </Link>
-          <nav aria-label="Top" className="flex items-center gap-4 text-sm">
-            <Link to="/how-it-works" className="font-medium text-ink/70">
-              How it works
-            </Link>
-            <Link to="/faq" className="font-medium text-ink/70">
-              FAQ
-            </Link>
-            <Link
-              to="/auth"
-              onClick={() => logEvent("landing_signin_clicked", { placement: "header" })}
-              className="font-medium text-primary"
-            >
-              Sign in
-            </Link>
-          </nav>
-        </header>
-
-        <main>
-          <section className="mb-10">
-            <p className="mb-4 text-xs font-medium uppercase tracking-widest text-primary/70">
-              For the daily "what do I put on baby?"
-            </p>
-            <h1 className="font-serif text-4xl font-semibold leading-tight text-ink">
-              What should my baby
-              <br />
-              <span className="italic">wear today?</span>
-            </h1>
-            <p className="mt-5 leading-relaxed text-ink/70">
-              Layerly turns today's weather into a simple, layered outfit for your baby — using the
-              clothes you already own.
-            </p>
-          </section>
-
-          <section
-            aria-label="Example recommendation"
-            className="mb-8 rounded-[32px] border border-black/5 bg-surface p-6 shadow-sm"
-          >
-            <p className="mb-3 text-xs font-medium uppercase tracking-widest text-primary/60">
-              Today &middot; feels like 9°
-            </p>
-            <h2 className="mb-3 font-serif text-2xl font-semibold">Go with layers.</h2>
-            <ul className="space-y-2 text-sm text-ink/80">
-              <li>· Long-sleeve bodysuit</li>
-              <li>· Ribbed leggings</li>
-              <li>· Fleece overall</li>
-              <li>· Wool hat &amp; warm socks</li>
-            </ul>
-          </section>
-
+    <div className="min-h-screen bg-landing-canvas font-landing-body text-landing-ink">
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 sm:px-8 sm:py-8">
+        <Link to="/" className="font-landing-heading text-xl font-semibold text-landing-ink sm:text-2xl">
+          Layerly
+        </Link>
+        <nav aria-label="Top" className="flex items-center gap-5 text-sm sm:gap-8">
           <Link
-            to="/try"
-            onClick={() => logEvent("landing_try_clicked")}
-            className="block w-full rounded-2xl bg-primary py-4 text-center font-medium text-primary-foreground shadow-md shadow-primary/20"
+            to="/how-it-works"
+            className="hidden font-medium text-landing-ink/65 transition-colors hover:text-landing-ink sm:block"
           >
-            {iosApp ? "Get Started" : "Try Layerly — no account needed"}
+            How it works
           </Link>
-          <p className="mt-3 text-center text-xs text-ink/50">
-            {iosApp
-              ? "No account needed. Your data stays on this device until you choose to sync."
-              : "Takes 20 seconds. Nothing is saved until you want it to be."}
-          </p>
+          <Link
+            to="/blog"
+            className="hidden font-medium text-landing-ink/65 transition-colors hover:text-landing-ink sm:block"
+          >
+            Blog
+          </Link>
           <Link
             to="/auth"
-            onClick={() => logEvent("landing_signin_clicked", { placement: "main" })}
-            className="mt-6 block w-full rounded-2xl border border-primary/25 py-3.5 text-center text-sm font-medium text-primary"
+            onClick={() => logEvent("landing_signin_clicked", { placement: "header" })}
+            className="font-semibold text-landing-ink underline decoration-landing-sage/50 underline-offset-4 transition-colors hover:text-primary"
           >
-            {iosApp ? "Sign in to sync" : "I already have an account"}
+            Sign in
           </Link>
+        </nav>
+      </header>
 
-          <p className="mt-10 text-center text-xs leading-relaxed text-ink/50">
-            No ads. No tracking. Uses the clothes you already own.
+      <main className="mx-auto grid w-full max-w-6xl items-center gap-14 px-5 pb-16 pt-8 sm:px-8 sm:pt-14 lg:min-h-[700px] lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.7fr)] lg:gap-20 lg:py-16">
+        <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
+          <p className="mb-5 text-xs font-semibold uppercase text-primary">
+            Weather-aware baby outfits
           </p>
-        </main>
+          <h1 className="font-landing-heading text-5xl font-semibold leading-[1.05] text-landing-ink sm:text-6xl lg:text-7xl">
+            What should my baby <span className="font-normal text-primary">wear today?</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-landing-ink/70 lg:mx-0 lg:text-xl">
+            Layerly turns the local forecast into a clear, layered outfit using the clothes you
+            already own.
+          </p>
 
-        <SiteFooter className="mt-16" />
+          <div className="mx-auto mt-9 flex max-w-sm flex-col gap-4 lg:mx-0">
+            <Button asChild size="lg" className="h-14 rounded-lg px-8 text-base font-semibold shadow-lg shadow-primary/15">
+              <Link to="/try" onClick={() => logEvent("landing_try_clicked")}>
+                {iosApp ? "Get started" : "Try Layerly — no account needed"}
+              </Link>
+            </Button>
+            <p className="text-sm text-landing-ink/50">
+              {iosApp
+                ? "Your data stays on this device until you choose to sync."
+                : "Set up in a minute. No account required."}
+            </p>
+          </div>
+        </div>
+
+        <section aria-label="Layerly outfit preview" className="mx-auto w-full max-w-[340px]">
+          <div className="rounded-[42px] bg-landing-ink p-2.5 shadow-2xl shadow-landing-ink/20">
+            <div className="relative min-h-[610px] overflow-hidden rounded-[34px] bg-landing-canvas px-5 pb-7 pt-12">
+              <div className="absolute left-1/2 top-3 h-5 w-20 -translate-x-1/2 rounded-full bg-landing-ink" />
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase text-primary">Helsinki · Now</p>
+                  <h2 className="mt-1 font-landing-heading text-2xl font-semibold leading-tight">
+                    Perfect for layers
+                  </h2>
+                </div>
+                <div className="text-right">
+                  <p className="font-landing-heading text-3xl font-medium">12°</p>
+                  <p className="text-[10px] uppercase text-landing-ink/45">Overcast</p>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <p className="mb-3 text-[11px] font-semibold uppercase text-landing-ink/45">Outfit layers</p>
+                <div className="space-y-3">
+                  <PreviewLayer slug="long_sleeve_bodysuit" label="Base" name="Long-sleeve bodysuit" />
+                  <PreviewLayer slug="pants" label="Bottom" name="Cotton trousers" />
+                  <PreviewLayer slug="cardigan" label="Mid layer" name="Knitted cardigan" />
+                  <PreviewLayer slug="light_jacket" label="Outer layer" name="Light jacket" emphasis />
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-lg bg-landing-clay/15 p-4 text-sm leading-relaxed text-landing-ink/65">
+                <span className="font-semibold text-landing-ink">Before you go:</span> Add cotton socks and a thin hat.
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div className="mx-auto w-full max-w-6xl px-5 pb-10 sm:px-8">
+        <SiteFooter variant="landing" className="mt-10 lg:mt-16" />
       </div>
+    </div>
+  );
+}
+
+function PreviewLayer({
+  slug,
+  label,
+  name,
+  emphasis = false,
+}: {
+  slug: "long_sleeve_bodysuit" | "pants" | "cardigan" | "light_jacket";
+  label: string;
+  name: string;
+  emphasis?: boolean;
+}) {
+  return (
+    <div
+      className={`flex min-h-16 items-center gap-3 rounded-lg border p-3.5 shadow-sm ${
+        emphasis
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-surface text-landing-ink"
+      }`}
+    >
+      <span
+        className={`flex size-9 shrink-0 items-center justify-center rounded-md ${
+          emphasis ? "bg-primary-foreground/15" : "bg-landing-sage/15 text-primary"
+        }`}
+      >
+        <ClothingIcon slug={slug} size={21} aria-hidden="true" />
+      </span>
+      <span className="min-w-0">
+        <span className={`block text-[10px] font-semibold uppercase ${emphasis ? "opacity-75" : "text-primary"}`}>
+          {label}
+        </span>
+        <span className="block truncate text-sm font-medium">{name}</span>
+      </span>
     </div>
   );
 }
