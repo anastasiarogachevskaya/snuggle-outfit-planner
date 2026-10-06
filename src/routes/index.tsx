@@ -137,6 +137,18 @@ function Landing() {
                 {iosApp ? "Get started" : "Try Layerly — no account needed"}
               </Link>
             </Button>
+            {!iosApp && (
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-14 rounded-lg border-landing-ink/15 bg-transparent px-8 text-base font-semibold text-landing-ink shadow-none hover:bg-landing-ink/5 hover:text-landing-ink"
+              >
+                <Link to="/ios" onClick={() => logEvent("landing_get_app_clicked")}>
+                  Get the app
+                </Link>
+              </Button>
+            )}
             <p className="text-sm text-landing-ink/50">
               {iosApp
                 ? "Your data stays on this device until you choose to sync."
