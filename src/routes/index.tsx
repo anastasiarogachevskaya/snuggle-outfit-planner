@@ -139,8 +139,10 @@ function Landing() {
                 </Link>
               </Button>
               {!iosApp && (
-                <Link
-                  to="/ios"
+                <a
+                  href="https://apps.apple.com/fi/app/layerly-baby-outfit-planner/id6806378380"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => logEvent("landing_get_app_clicked")}
                   aria-label="Download Layerly on the App Store"
                   className="inline-flex h-14 items-center justify-center gap-3 rounded-lg bg-landing-ink px-5 text-landing-canvas transition-opacity hover:opacity-90"
@@ -156,7 +158,7 @@ function Landing() {
                       App Store
                     </span>
                   </span>
-                </Link>
+                </a>
               )}
             </div>
             <p className="text-sm text-landing-ink/50">
