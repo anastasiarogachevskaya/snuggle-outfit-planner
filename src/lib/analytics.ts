@@ -17,6 +17,7 @@ export type AppEventName =
   // Landing
   | "landing_viewed"
   | "landing_try_clicked"
+  | "landing_get_app_clicked"
   | "landing_signin_clicked"
   // Guest flow
   | "try_age_selected"
