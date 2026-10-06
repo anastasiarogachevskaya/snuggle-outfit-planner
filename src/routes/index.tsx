@@ -158,7 +158,7 @@ function Landing() {
                       App Store
                     </span>
                   </span>
-                </Link>
+                </a>
               )}
             </div>
             <p className="text-sm text-landing-ink/50">
