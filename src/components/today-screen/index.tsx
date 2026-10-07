@@ -9,7 +9,6 @@ import {
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { ageInMonths } from "@/lib/baby-age";
-import { SiteFooter } from "@/components/site-footer";
 import { selectionHaptic, lightHaptic } from "@/lib/haptics";
 import { WeatherSummary } from "./weather-summary";
 import { ActivityPicker } from "./activity-picker";
@@ -104,6 +103,7 @@ export function TodayScreen({
   const [duration, setDuration] = useState<30 | 60 | 90>(30);
   const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
   const [checkingOutfit, setCheckingOutfit] = useState(false);
+  const [tab, setTab] = useState<"activity" | "outfit" | "review">("outfit");
   // The warmth model doesn't apply to sleep, so drop out of the checker if
   // the parent switches activity while it's open.
   useEffect(() => {
@@ -182,8 +182,15 @@ export function TodayScreen({
         }
       : null;
 
+  const summary =
+    situation === "walk"
+      ? `Walk · ${transportMode === "pram" ? "Pram" : transportMode === "carrier" ? "Carrier" : "Stroller"} · ${duration === 90 ? "60+" : duration} min`
+      : situation === "home"
+        ? `Home · ${homeActivity === "sleeping" ? "Sleeping" : "Awake"} · ${roomTemp}°`
+        : "Car";
+
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas font-sans text-ink pb-16">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas font-sans text-ink pb-32">
       <div className="mx-auto w-full max-w-md min-w-0 px-6 py-6">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 mb-8">
           <div className="min-w-0">
@@ -341,8 +348,6 @@ export function TodayScreen({
           </button>
         </div>
       )}
-
-      </div>
     </div>
   );
 }
