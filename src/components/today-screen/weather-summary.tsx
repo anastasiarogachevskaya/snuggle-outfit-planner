@@ -21,17 +21,17 @@ export function WeatherSummary({
 }) {
   if (weather) {
     return (
-      <div className="rounded-3xl bg-surface p-5 shadow-sm ring-1 ring-ink/5">
+      <div>
         <div className="flex items-baseline gap-2 flex-wrap">
           {timeSelector && (
             <DepartureTimeWord value={timeSelector.value} onChange={timeSelector.onChange} />
           )}
-          <span className="text-4xl font-serif font-semibold text-ink">
+          <span className="text-2xl font-serif font-semibold text-ink">
             {Math.round(weather.tempC)}°
           </span>
-          <span className="text-sm font-medium text-ink/60">{weather.condition}</span>
+          <span className="text-sm text-ink/70">{weather.condition}</span>
+          <span className="text-sm text-ink/40">· Feels like {Math.round(weather.feelsLikeC)}°</span>
         </div>
-        <p className="mt-1 text-xs text-ink/50">Feels like {Math.round(weather.feelsLikeC)}°</p>
         {timeSelector && timeSelector.value > 0 && (
           <p className="mt-1 text-xs text-ink/60">
             Forecast for{" "}
