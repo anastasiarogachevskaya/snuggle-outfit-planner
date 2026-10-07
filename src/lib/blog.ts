@@ -22,6 +22,56 @@ export type BlogPost = {
 /** Newest first. */
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "dressed-for-when-you-leave",
+    title: "Dressed for when you actually leave",
+    date: "2026-10-07",
+    summary:
+      "Getting ready twenty minutes before a walk? Tell Layerly when you're heading out, and the outfit is for that moment, not this one.",
+    sections: [
+      {
+        paragraphs: [
+          "A recommendation for right now is not always the one you need. Half the time, getting a baby dressed, finding the stroller, and getting out the door takes a while — and by the time you're actually on the pavement, the weather has moved on from the one Layerly answered for.",
+          "So on a walk, the time in the weather line is no longer fixed to now. Tap it, and Layerly plans for whenever you're really leaving.",
+        ],
+        image: {
+          src: "/blog/dressed-for-when-you-leave/now.png",
+          alt: "The Today screen weather card, showing the underlined word 'Now' next to 12 degrees and Drizzle.",
+          caption: "The time word sits right where you'd expect the time to be.",
+        },
+      },
+      {
+        heading: "Now, in an hour, or a specific time",
+        paragraphs: [
+          "Tap the word and you get the obvious options first — Now, in 1 hour, in 2 hours — followed by every full hour left today. Pick 21:00 and the word itself becomes 21:00, with a small note confirming what just happened: the outfit below is for then, not for this minute.",
+          "Under the hood, Layerly pulls the hourly forecast from Open-Meteo rather than just the current reading, matches it to the closest hour, and reshapes it into a full weather snapshot — temperature, feels-like, conditions, UV, cloud cover — as if that were the current weather. Nothing downstream needs to know the difference.",
+        ],
+        image: {
+          src: "/blog/dressed-for-when-you-leave/picked-time.png",
+          alt: "The weather card after picking 21:00, now reading 12 degrees, Overcast, with a note that the outfit below is for 21:00 too.",
+          caption: "Pick a time, and the card tells you plainly what it's planning around.",
+        },
+      },
+      {
+        heading: "The whole recommendation moves with it",
+        paragraphs: [
+          "This isn't a second number tucked away somewhere. Every part of the recommendation — the layers, the warnings, the suggested extras — replans around the time you picked, exactly the way it already does for duration and transport mode.",
+          "In this case, picking 21:00 cleared a rain-cover warning that was showing for right now: the drizzle Layerly saw at the moment wasn't expected to last into the evening. That's the kind of difference twenty minutes of getting ready can make, and now the app accounts for it instead of you having to guess.",
+        ],
+        image: {
+          src: "/blog/dressed-for-when-you-leave/outfit-for-later.png",
+          alt: "The Outfit tab showing a full layered recommendation — long-sleeve bodysuit, warm bottoms and more — planned for 21:00 instead of right now.",
+          caption: "Same engine, same wardrobe — just aimed at the right moment.",
+        },
+      },
+      {
+        heading: "Why it matters",
+        paragraphs: [
+          "A baby app that assumes you're walking out the door the instant you open it was never quite honest about how mornings actually go. Bags get packed, nappies get changed, someone loses a shoe. Letting you say when you're actually leaving means the advice you act on is the advice that was right when you needed it — not the moment you happened to check your phone.",
+        ],
+      },
+    ],
+  },
+  {
     slug: "build-your-own-outfit",
     title: "Build your own outfit",
     date: "2026-09-17",
