@@ -22,6 +22,57 @@ export type BlogPost = {
 /** Newest first. */
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "plan-outfits-ahead",
+    title: "Plan your baby's outfit for later today",
+    date: "2026-10-08",
+    summary:
+      "Pick the hour you're heading out and Layerly shows that hour's forecast and the outfit to match.",
+    sections: [
+      {
+        paragraphs: [
+          "Plenty of walks don't start right now. There's a nap to finish, a feed to fit in, or an afternoon stroll you'd like to plan over breakfast. Until now, Layerly only answered for the weather outside this minute — which isn't much help when you're leaving at four.",
+          "So we made the time something you can choose.",
+        ],
+      },
+      {
+        heading: "Tap the time beside the weather",
+        paragraphs: [
+          "On the Today screen, pick Walk. Next to the temperature you'll see the word Now, underlined. Tap it and choose when you plan to go: in an hour, in two, or any later hour today.",
+        ],
+        image: {
+          src: "/blog/plan-ahead/now.png",
+          alt: "The Layerly Today screen with an underlined 'Now' next to the current temperature, above the walk options and the outfit recommendation.",
+          caption: "The underlined Now is the time picker.",
+        },
+      },
+      {
+        heading: "Everything updates together",
+        paragraphs: [
+          "Once you choose a time, the temperature, conditions and feels-like reading switch to the forecast for that hour, and the outfit below follows. A short line under the weather reminds you that you're looking at a forecast, not the conditions outside right now.",
+          "Your travel choice and walk length stay as you set them, so you can compare a morning and an evening walk side by side and see what actually changes.",
+        ],
+        image: {
+          src: "/blog/plan-ahead/later.png",
+          alt: "The Today screen with 18:00 selected, showing the forecast for that hour and a matching outfit with a fleece overall, warm hat and warm socks.",
+          caption: "Planning for 18:00 — the forecast and outfit are both for then.",
+        },
+      },
+      {
+        heading: "A forecast is still a forecast",
+        paragraphs: [
+          "Weather can change, especially a few hours out. Use the planned outfit to get things ready, then glance at Now before you leave — it only takes a tap to switch back.",
+          "Feedback after the walk is only asked about the current outfit, so what Layerly learns about your baby stays based on what they actually wore.",
+        ],
+      },
+      {
+        heading: "Try it",
+        paragraphs: [
+          "Open Today, choose Walk and tap Now. Next time you're planning an afternoon outing, you'll know what to lay out before the morning gets busy.",
+        ],
+      },
+    ],
+  },
+  {
     slug: "build-your-own-outfit",
     title: "Build your own outfit",
     date: "2026-09-17",
