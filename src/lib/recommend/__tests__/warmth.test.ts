@@ -131,7 +131,7 @@ describe("idealOutfitFrom", () => {
       "wool_socks",
     ]);
     const rec = recommend({
-      feelsLikeC: 2,
+      feelsLikeC: -10,
       tempPref: 3,
       situation: "walk",
       transportMode: "pram",
