@@ -1,5 +1,6 @@
 import {
   CloudSun,
+  Clock,
   Layers3,
   LogIn,
   MapPin,
@@ -14,6 +15,7 @@ import {
 } from "@/components/icons";
 
 const illustrations = {
+  "plan-outfits-ahead": Clock,
   "build-your-own-outfit": Layers3,
   "layerly-on-the-app-store": Smartphone,
   "private-by-design": ShieldCheck,
