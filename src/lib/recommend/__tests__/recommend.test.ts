@@ -99,9 +99,9 @@ describe("recommendation engine", () => {
     expect(accs).not.toContain("mittens");
   });
 
-  it("winter walk -5°C pram → base + fleece + winter overall + warm hat + mittens + footmuff", () => {
+  it("winter walk -10°C pram → base + fleece + winter overall + warm hat + mittens + footmuff", () => {
     const r = recommend({
-      feelsLikeC: -5,
+      feelsLikeC: -10,
       tempPref: 3,
       situation: "walk",
       transportMode: "pram",
@@ -879,5 +879,27 @@ describe("recommendation engine", () => {
     expect(slugs(thirty.babyClothing)).not.toContain("winter_overall");
     expect(slugs(sixty.babyClothing)).not.toContain("winter_overall");
     expect(slugs(sixtyPlus.babyClothing)).toContain("winter_overall");
+  });
+});
+
+describe("cold progression", () => {
+  const at = (c: number) =>
+    recommend({ feelsLikeC: c, tempPref: 3, situation: "walk", transportMode: "sitting-stroller", durationMin: 60, ageMonths: 14, owned: owned() });
+  it("+1°C stroller → winter overall without fleece mid", () => {
+    const c = slugs(at(1).babyClothing);
+    expect(c).toContain("winter_overall");
+    expect(c).not.toContain("fleece_overall");
+  });
+  it("−10°C stroller → fleece mid under winter overall", () => {
+    const c = slugs(at(-10).babyClothing);
+    expect(c).toContain("winter_overall");
+    expect(c).toContain("fleece_overall");
+  });
+  it("−20°C adds a deep-freeze note", () => {
+    expect(at(-20).notes.some((n) => n.startsWith("Deep freeze"))).toBe(true);
+  });
+  it("no 'adjusted warmer' claim when 30 and 60 min outfits match", () => {
+    const r = at(-20);
+    expect(r.notes.some((n) => n.includes("adjusted"))).toBe(false);
   });
 });

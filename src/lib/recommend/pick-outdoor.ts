@@ -71,6 +71,10 @@ export function computeEffectiveTemp(ctx: OutdoorContext): number {
  * light socks. Short sleeves start once it is genuinely hot (22°C+).
  */
 const OUTDOOR_SHORT_SLEEVE_FROM = TEMP.HOT;
+/** Effective °C below which a fleece/wool mid layer goes under the winter overall. */
+export const DEEP_COLD = -5;
+/** Feels-like °C below which a deep-freeze check note is shown. */
+export const VERY_DEEP_COLD = -15;
 
 function pickLayers(effectiveC: number): LayerNeed {
   const band = bandFor(effectiveC);
@@ -93,8 +97,12 @@ function pickLayers(effectiveC: number): LayerNeed {
     case "cold":
       return { base: "long_sleeve", bottom: "warm_bottoms", mid: "fleece", outer: "none" };
     case "frost":
-      return { base: "long_sleeve", bottom: "warm_bottoms", mid: "fleece", outer: "winter_overall" };
     case "freezing":
+      // Around zero a winter overall over everyday clothes is plenty in a
+      // stroller (owner-tested: +1°C, 60 min, toasty). The thick mid layer
+      // only joins below DEEP_COLD, so sub-zero days actually differ.
+      if (effectiveC >= DEEP_COLD)
+        return { base: "long_sleeve", bottom: "pants", mid: "none", outer: "winter_overall" };
       return { base: "long_sleeve", bottom: "warm_bottoms", mid: "fleece", outer: "winter_overall" };
   }
 }
@@ -287,12 +295,25 @@ function buildNotes(
           ? "Long walk in warm weather — take shade breaks and offer water often."
           : "Warm weather — bring water and watch for overheating.",
       );
-    else if (effectiveC < TEMP.COOL)
+    else if (effectiveC < TEMP.COOL) {
+      // Only claim an adjustment when walk length really changed the clothes.
+      const baseC = computeEffectiveTemp({ ...ctx, durationMin: undefined });
+      const changed =
+        JSON.stringify([pickLayers(baseC), pickAccessories(baseC, ctx)]) !==
+        JSON.stringify([layers, accessories]);
       notes.push(
-        long
-          ? "Long cold walk — outfit adjusted a bit warmer."
-          : "Cool weather — outfit adjusted slightly warmer.",
+        changed
+          ? long
+            ? "Long cold walk — outfit adjusted a bit warmer."
+            : "Cool weather — outfit adjusted slightly warmer."
+          : "This outfit already covers the walk length — check baby's neck or chest now and then.",
       );
+    }
+  }
+  if (ctx.situation === "walk" && ctx.feelsLikeC < VERY_DEEP_COLD) {
+    notes.push(
+      "Deep freeze — check baby's cheeks and nose often, and come in sooner if it's windy.",
+    );
   }
 
   const forecastShift = buildForecastShiftNote(ctx, layers, accessories);
