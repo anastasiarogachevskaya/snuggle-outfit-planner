@@ -903,3 +903,14 @@ describe("cold progression", () => {
     expect(r.notes.some((n) => n.includes("adjusted"))).toBe(false);
   });
 });
+
+describe("car trips near freezing", () => {
+  it("a 0°C drive is never dressed lighter than a 7°C drive", () => {
+    const at = (c: number) =>
+      slugs(recommend({ feelsLikeC: c, tempPref: 3, situation: "car", ageMonths: 14, owned: owned() }).babyClothing);
+    const freezing = at(0);
+    expect(freezing).toContain("fleece_overall");
+    expect(freezing).not.toContain("winter_overall");
+    for (const s of at(7)) if (s !== "cotton_socks") expect(freezing).toContain(s);
+  });
+});
