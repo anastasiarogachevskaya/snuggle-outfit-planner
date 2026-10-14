@@ -405,6 +405,10 @@ export function pickOutdoor(ctx: OutdoorContext): OutdoorPick {
   // stays honest, and buildSafety explains the swap.
   if (ctx.situation === "car" && layers.outer !== "none") {
     layers.outer = "none";
+    // Near-freezing walk outfits rely on the overall for warmth; without it,
+    // keep the thin warm layers so a colder drive never dresses lighter.
+    layers.mid = "fleece";
+    layers.bottom = "warm_bottoms";
   }
 
   return { effectiveC, layers, accessories, extras, notes, safetyAdvice };
