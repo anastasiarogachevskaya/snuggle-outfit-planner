@@ -17,6 +17,8 @@ import {
   type SlotAdjustment,
   type SlotKey,
 } from "@/lib/recommend/warmth";
+import { useTempUnit } from "@/hooks/use-temp-unit";
+import { formatTemp, formatWind } from "@/lib/units";
 import { actionableAdjustments } from "@/lib/recommend/actionable";
 import { lightHaptic, selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 
@@ -251,6 +253,7 @@ export function CheckOutfitPanel({
   onBack: () => void;
 }) {
   const [actual, setActual] = useState<ActualOutfit>(EMPTY_OUTFIT);
+  const [unit] = useTempUnit();
 
   const owns = (slugs: WardrobeSlug[]) => slugs.filter((s) => owned.has(s));
 
@@ -323,10 +326,10 @@ export function CheckOutfitPanel({
           {weather && (
             <div className="shrink-0 text-right">
               <div className="text-2xl font-semibold tracking-tight">
-                {Math.round(weather.tempC)}°
+                {formatTemp(weather.tempC, unit)}
               </div>
               <div className="mt-0.5 text-[9px] font-medium uppercase tracking-wider text-accent">
-                Feels like {Math.round(weather.feelsLikeC)}° · {Math.round(weather.windKph)}km/h
+                Feels like {formatTemp(weather.feelsLikeC, unit)} · {formatWind(weather.windKph, unit)}
               </div>
             </div>
           )}

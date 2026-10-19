@@ -1,5 +1,7 @@
 import { type recommend } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { useTempUnit } from "@/hooks/use-temp-unit";
+import { localizeTempText } from "@/lib/units";
 import { ClothingIcon } from "@/components/icons";
 
 export function OutfitResult({
@@ -11,6 +13,7 @@ export function OutfitResult({
   owned: Set<WardrobeSlug>;
   onOpenWardrobe: () => void;
 }) {
+  const [unit] = useTempUnit();
   return (
     <section className="mb-10">
       <div className="w-full max-w-full overflow-hidden bg-surface rounded-[32px] p-7 shadow-sm border border-black/5">
@@ -21,12 +24,12 @@ export function OutfitResult({
               ? "Keep it light."
               : "Just the basics."}
         </h1>
-        <p className="text-ink/60 leading-relaxed mb-4">{rec.reason}</p>
+        <p className="text-ink/60 leading-relaxed mb-4">{localizeTempText(rec.reason, unit)}</p>
         {rec.notes.length > 0 && (
           <div className="space-y-2 mb-6">
             {rec.notes.map((n, i) => (
               <p key={i} className="text-xs text-ink/70 border-l-2 border-accent/40 pl-3">
-                {n}
+                {localizeTempText(n, unit)}
               </p>
             ))}
           </div>
