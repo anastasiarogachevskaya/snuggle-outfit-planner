@@ -35,6 +35,7 @@ import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 import { logEvent } from "@/lib/analytics";
 import { isIOSApp } from "@/lib/platform";
+import { TempUnitToggle } from "@/hooks/use-temp-unit";
 import { TemperaturePreference } from "@/components/temperature-preference";
 
 export const Route = createFileRoute("/try")({
@@ -599,6 +600,7 @@ function LocalProfile({
         <p className="mt-3 text-center text-xs text-ink/40">Saved privately on this device.</p>
 
         <div className="mt-8 space-y-2">
+          <TempUnitToggle />
           <button
             type="button"
             onClick={onOpenWardrobe}

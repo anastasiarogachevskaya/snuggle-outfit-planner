@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { TempUnitToggle } from "@/hooks/use-temp-unit";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -260,6 +261,7 @@ function BabyPage() {
 
         {babyQ.data && (
           <div className="mt-8 pt-6 border-t border-black/5 space-y-2">
+            <TempUnitToggle />
             <NavCard
               to="/wardrobe"
               title="Wardrobe"

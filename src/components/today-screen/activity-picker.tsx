@@ -13,6 +13,9 @@ const situationOptions: {
   { id: "car", Icon: CarIcon, label: "Car", description: "In the car" },
 ];
 
+import { useTempUnit } from "@/hooks/use-temp-unit";
+import { formatTemp } from "@/lib/units";
+
 export function ActivityPicker({
   situation,
   onSituationChange,
@@ -38,6 +41,7 @@ export function ActivityPicker({
   roomTemp: number;
   onRoomTempChange: (t: number) => void;
 }) {
+  const [unit] = useTempUnit();
   const transportOptions: { id: TransportMode; label: string }[] = [
     ...(pramAllowed ? [{ id: "pram" as TransportMode, label: "Pram" }] : []),
     { id: "sitting-stroller", label: "Stroller" },
@@ -113,7 +117,7 @@ export function ActivityPicker({
             <label className="block">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-ink/70">Room temperature</span>
-                <span className="font-medium">{roomTemp}°C</span>
+                <span className="font-medium">{formatTemp(roomTemp, unit, { suffix: true })}</span>
               </div>
               <input
                 type="range"
