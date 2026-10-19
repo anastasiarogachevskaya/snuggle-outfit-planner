@@ -1,3 +1,4 @@
+// @ts-expect-error bun:test is provided by the bun test runner
 import { describe, expect, test } from "bun:test";
 import { defaultUnitFromLocale, formatWind, localizeTempText, toUnit } from "../units";
 
