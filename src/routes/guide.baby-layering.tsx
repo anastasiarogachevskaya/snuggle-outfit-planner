@@ -194,9 +194,10 @@ function LayeringGuide() {
             </p>
             <ul className="mt-4 space-y-4 text-sm leading-relaxed text-ink/80">
               <li><a href="https://www.healthychildren.org/English/ages-stages/baby/diapers-clothing/Pages/Dressing-Your-Newborn.aspx" className="text-primary underline underline-offset-4">American Academy of Pediatrics: Dressing Your Newborn</a> — general layering and extra care for premature babies.</li>
-              <li><a href="https://www.healthychildren.org/English/safety-prevention/on-the-go/Pages/Winter-Car-Seat-Safety-Tips.aspx" className="text-primary underline underline-offset-4">American Academy of Pediatrics: Winter Car Seat Safety Tips</a> — thin layers, no bulky coats under the harness, and blankets over the straps.</li>
-              <li><a href="https://www.nhs.uk/baby/caring-for-a-newborn/helping-your-baby-sleep/" className="text-primary underline underline-offset-4">NHS: Helping your baby to sleep</a> — checking warmth and removing hats and extra clothing indoors.</li>
-              <li><a href="https://www.lullabytrust.org.uk/safer-sleep-advice/baby-room-temperature/" className="text-primary underline underline-offset-4">The Lullaby Trust: Baby room temperature</a> — overheating checks and safer sleep at 16–20°C.</li>
+              <li><a href="https://www.healthychildren.org/English/safety-prevention/on-the-go/Pages/winter-car-seat-safety-tips.aspx" className="text-primary underline underline-offset-4">American Academy of Pediatrics: Winter Car Seat Safety Tips</a> — thin layers, no bulky coats under the harness, and blankets over the straps.</li>
+              <li><a href="https://www.nhs.uk/best-start-in-life/baby/baby-basics/caring-for-your-baby/how-to-dress-a-newborn/" className="text-primary underline underline-offset-4">NHS: How to dress a newborn baby</a> — removing hats and extra clothing indoors or in a warm vehicle.</li>
+              <li><a href="https://www.lullabytrust.org.uk/wp-content/uploads/2025/02/Temperature-factsheet.pdf" className="text-primary underline underline-offset-4">The Lullaby Trust: Temperature factsheet</a> — overheating checks and safer sleep at 16–20°C.</li>
+              <li><a href="https://www.healthychildren.org/English/safety-prevention/at-play/Pages/Cold-Weather-Safety.aspx" className="text-primary underline underline-offset-4">American Academy of Pediatrics: Cold Weather Safety for Children</a> — thin layers, protecting exposed skin and recognizing cold-related risks.</li>
             </ul>
           </section>
 
