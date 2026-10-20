@@ -186,6 +186,26 @@ function StrollerGuide() {
               <li>
                 <a
                   className="text-primary underline underline-offset-4"
+                  href="https://www.healthychildren.org/English/ages-stages/baby/diapers-clothing/Pages/Dressing-Your-Newborn.aspx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  American Academy of Pediatrics (HealthyChildren.org) — Dressing your newborn
+                </a>
+              </li>
+              <li>
+                <a
+                  className="text-primary underline underline-offset-4"
+                  href="https://www.healthychildren.org/English/safety-prevention/on-the-go/Pages/winter-car-seat-safety-tips.aspx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  American Academy of Pediatrics — Winter car seat safety tips
+                </a>
+              </li>
+              <li>
+                <a
+                  className="text-primary underline underline-offset-4"
                   href="https://www.nhs.uk/best-start-in-life/baby/baby-basics/caring-for-your-baby/how-to-dress-a-newborn/"
                   target="_blank"
                   rel="noopener noreferrer"
