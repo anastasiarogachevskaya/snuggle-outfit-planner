@@ -9,7 +9,6 @@ const US_TERMS: [RegExp, string][] = [
   [/\brain overall\b/gi, "rain suit"],
   [/\blight overall\b/gi, "lightweight suit"],
   [/\boveralls?\b/gi, "one-piece suit"],
-  [/\bbodysuits?\b/gi, "bodysuit"],
   [/\bsleepsuit\b/gi, "one-piece pajamas"],
   [/\bpram\b/gi, "bassinet stroller"],
   [/\bfootmuff\b/gi, "stroller bunting"],

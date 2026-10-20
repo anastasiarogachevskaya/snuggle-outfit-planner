@@ -78,16 +78,18 @@ export function TodayScreen({
   const [situation, setSituation] = useState<Situation>("walk");
   const babyId = baby.id;
   const [roomTemp, setRoomTemp] = useState(21);
+  const [loadedRoomBaby, setLoadedRoomBaby] = useState<string | null>(null);
   useEffect(() => {
     if (!babyId || typeof window === "undefined") return;
     const stored = window.localStorage.getItem(`layerly:roomTemp:${babyId}`);
     const n = stored ? Number(stored) : NaN;
     setRoomTemp(Number.isFinite(n) ? n : 21);
+    setLoadedRoomBaby(babyId);
   }, [babyId]);
   useEffect(() => {
-    if (!babyId || typeof window === "undefined") return;
+    if (!babyId || loadedRoomBaby !== babyId || typeof window === "undefined") return;
     window.localStorage.setItem(`layerly:roomTemp:${babyId}`, String(roomTemp));
-  }, [babyId, roomTemp]);
+  }, [babyId, roomTemp, loadedRoomBaby]);
 
   const ageMonths = ageInMonths(baby.dob);
   const pramAllowed = ageMonths === null || ageMonths <= 6;
