@@ -35,7 +35,8 @@ import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 import { logEvent } from "@/lib/analytics";
 import { isIOSApp } from "@/lib/platform";
-import { TempUnitToggle } from "@/hooks/use-temp-unit";
+import { TempUnitToggle, useTempUnit } from "@/hooks/use-temp-unit";
+import { localizeClothingText } from "@/lib/clothing-text";
 import { TemperaturePreference } from "@/components/temperature-preference";
 
 export const Route = createFileRoute("/try")({
@@ -676,6 +677,7 @@ function LocalWardrobe({
   onChange: (owned: WardrobeSlug[]) => void;
   onBack: () => void;
 }) {
+  const [unit] = useTempUnit();
   const groups = Array.from(new Set(WARDROBE_CATALOG.map((item) => item.group)));
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
@@ -717,7 +719,7 @@ function LocalWardrobe({
                       <span className={selected ? "text-primary" : "text-ink/50"}>
                         <ClothingIcon slug={item.slug} size={22} />
                       </span>
-                      <span className="text-sm font-medium">{item.label}</span>
+                      <span className="min-w-0 text-sm font-medium">{localizeClothingText(item.label, unit)}</span>
                     </button>
                   );
                 })}

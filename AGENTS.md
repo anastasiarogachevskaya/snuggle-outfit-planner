@@ -12,3 +12,4 @@
 <!-- LOVABLE:END -->
 
 - Keep the public landing page isolated to landing-specific typography tokens and composition so product screens retain their established design system.
+- Localize clothing text only at UI boundaries through the shared display helper; preserve wardrobe slugs and Celsius engine inputs so saved profiles and outfit rules remain compatible.
