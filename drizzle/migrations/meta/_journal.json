@@ -36,6 +36,13 @@
       "when": 1789206500000,
       "tag": "0004_schedule_app_events_retention",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792496759647,
+      "tag": "0005_profiles_temp_unit",
+      "breakpoints": true
     }
   ]
 }

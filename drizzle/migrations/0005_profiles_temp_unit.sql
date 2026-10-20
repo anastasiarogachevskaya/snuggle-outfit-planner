@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS temp_unit text CHECK (temp_unit IN ('C','F'));
