@@ -11,10 +11,44 @@ function read(): TempUnit {
   return defaultUnitFromLocale(navigator.language);
 }
 
+let syncedFromAccount = false;
+
+async function syncFromAccount() {
+  if (syncedFromAccount) return;
+  syncedFromAccount = true;
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: s } = await supabase.auth.getSession();
+    const uid = s.session?.user.id;
+    if (!uid) return;
+    const { data } = await supabase.from("profiles").select("temp_unit").eq("id", uid).maybeSingle();
+    const saved = data?.temp_unit;
+    if ((saved === "C" || saved === "F") && saved !== window.localStorage.getItem(KEY)) {
+      window.localStorage.setItem(KEY, saved);
+      window.dispatchEvent(new Event(EVT));
+    }
+  } catch {
+    syncedFromAccount = false;
+  }
+}
+
+async function saveToAccount(u: TempUnit) {
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: s } = await supabase.auth.getSession();
+    const uid = s.session?.user.id;
+    if (!uid) return;
+    await supabase.from("profiles").update({ temp_unit: u }).eq("id", uid);
+  } catch {
+    /* stays saved on this device */
+  }
+}
+
 export function useTempUnit(): [TempUnit, (u: TempUnit) => void] {
   const [unit, setUnitState] = useState<TempUnit>("C");
   useEffect(() => {
     setUnitState(read());
+    void syncFromAccount();
     const sync = () => setUnitState(read());
     window.addEventListener(EVT, sync);
     window.addEventListener("storage", sync);
@@ -26,6 +60,7 @@ export function useTempUnit(): [TempUnit, (u: TempUnit) => void] {
   const setUnit = (u: TempUnit) => {
     window.localStorage.setItem(KEY, u);
     window.dispatchEvent(new Event(EVT));
+    void saveToAccount(u);
     void logEvent("units_changed", { unit: u });
   };
   return [unit, setUnit];

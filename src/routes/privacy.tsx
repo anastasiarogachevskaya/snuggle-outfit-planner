@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 const TITLE = "Privacy Policy — Layerly";
 const DESCRIPTION =
   "What Layerly collects, why, and how to delete it: baby profile, wardrobe, comfort feedback, and location used only to fetch the weather.";
-const LAST_UPDATED = "September 12, 2026";
+const LAST_UPDATED = "October 20, 2026";
 
 export const Route = createFileRoute("/privacy")({
   head: () => pageMeta({ title: TITLE, description: DESCRIPTION, path: "/privacy" }),
@@ -106,6 +106,19 @@ function Privacy() {
               Layerly is a tool for parents and caregivers, not for children. We don't knowingly
               collect information directly from children; the baby's date of birth is entered by the
               parent to size clothing recommendations.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="mb-2 font-medium text-ink">US residents, including California</h2>
+            <p>
+              We don't sell your personal information or share it for cross-context behavioral
+              advertising, as those terms are used in the California Consumer Privacy Act (CCPA/CPRA)
+              and similar US state laws. Wherever you live, you can ask to know, correct or delete
+              the information we hold about you by emailing us, or delete it yourself from your
+              account page. We won't treat you differently for making a request. Layerly isn't
+              directed to children under 13, so the baby details you enter are provided by you as
+              the parent.
             </p>
           </section>
 

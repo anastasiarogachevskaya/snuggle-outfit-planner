@@ -1,4 +1,5 @@
 import { BLOG_POSTS } from "./blog";
+import { WEATHER_GUIDES } from "./weather-guides";
 
 export const SITE_URL = "https://layerly.online";
 
@@ -18,6 +19,7 @@ export const PUBLIC_ROUTES: {
   { path: "/faq", changefreq: "monthly", priority: "0.8" },
   { path: "/guide/baby-layering", changefreq: "monthly", priority: "0.8" },
   { path: "/guide/stroller-walks", changefreq: "monthly", priority: "0.8" },
+  ...WEATHER_GUIDES.map((g) => ({ path: `/guide/${g.slug}`, changefreq: "monthly", priority: "0.7" })),
   { path: "/blog", changefreq: "weekly", priority: "0.7" },
   ...BLOG_POSTS.map((post) => ({
     path: `/blog/${post.slug}`,

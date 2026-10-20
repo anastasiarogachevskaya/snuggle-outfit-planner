@@ -403,7 +403,7 @@ export const BLOG_POSTS: BlogPost[] = [
 export const getPost = (slug: string) => BLOG_POSTS.find((p) => p.slug === slug);
 
 export const formatPostDate = (iso: string) =>
-  new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", {
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
     day: "numeric",
     month: "long",
     year: "numeric",
