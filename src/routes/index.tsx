@@ -140,7 +140,7 @@ function Landing() {
               </Button>
               {!iosApp && (
                 <a
-                  href="https://apps.apple.com/fi/app/layerly-baby-outfit-planner/id6806378380"
+                  href="https://apps.apple.com/app/layerly-baby-outfit-planner/id6806378380"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => logEvent("landing_get_app_clicked")}
