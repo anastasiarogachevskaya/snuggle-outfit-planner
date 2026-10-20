@@ -11,7 +11,7 @@
 
 ## Open
 
-- [ ] US adaptation: country-neutral App Store link, familiar clothing wording, and 1°F room-temperature steps
+- [x] US adaptation: country-neutral App Store link, familiar clothing wording, and 1°F room-temperature steps
 - [x] Update baby-layering guide with cold-weather examples, Celsius/Fahrenheit, verified safety sources, and browser checks
 - [x] Make temperature preference readable and include it in iPhone and web profile setup
 - [x] Clarify clothing warmth and examples in setup, Profile wardrobe, and Layer up
