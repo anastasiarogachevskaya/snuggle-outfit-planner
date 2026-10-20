@@ -10,6 +10,8 @@ import {
 import { selectionHaptic } from "@/lib/haptics";
 import { ClothingIcon } from "@/components/icons";
 import { logEvent } from "@/lib/analytics";
+import { useTempUnit } from "@/hooks/use-temp-unit";
+import { localizeClothingText } from "@/lib/clothing-text";
 
 /**
  * The quick / detailed wardrobe setup UI, shared by the signed-in onboarding
@@ -208,6 +210,7 @@ function Shell({
   subtitle?: string;
   children: React.ReactNode;
 }) {
+  const [unit] = useTempUnit();
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
       <div className="mx-auto max-w-md px-6 py-8 pb-24">
@@ -215,7 +218,7 @@ function Shell({
           Wardrobe setup
         </p>
         <h1 className="text-3xl font-serif font-semibold">{title}</h1>
-        {subtitle && <p className="mt-2 text-ink/60 text-sm">{subtitle}</p>}
+        {subtitle && <p className="mt-2 text-ink/60 text-sm">{localizeClothingText(subtitle, unit)}</p>}
         {children}
       </div>
     </div>
@@ -266,6 +269,7 @@ function Tile({
   onClick: () => void;
   compact?: boolean;
 }) {
+  const [unit] = useTempUnit();
   return (
     <button
       onClick={onClick}
@@ -286,7 +290,7 @@ function Tile({
         <ClothingIcon slug={slug} size={compact ? 28 : 34} />
       </div>
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
-        <p className={"min-w-0 font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>{label}</p>
+        <p className={"min-w-0 font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>{localizeClothingText(label, unit)}</p>
         {warmth && (
           <span
             className={
@@ -298,23 +302,30 @@ function Tile({
           </span>
         )}
       </div>
-      <p className="mt-2 text-[10px] leading-snug text-ink/55">{hint}</p>
+      <p className="mt-2 text-[10px] leading-snug text-ink/55">{localizeClothingText(hint, unit)}</p>
     </button>
   );
 }
 
 function GuidancePanel({ items, compact = false }: { items: WardrobeItem[]; compact?: boolean }) {
+  const [unit] = useTempUnit();
   const explainedItems = items.filter((item) => item.explanation);
-  if (explainedItems.length === 0) return null;
+  const hasSleepSacks = items.some((item) => item.slug.startsWith("sleep_sack_"));
+  if (explainedItems.length === 0 && !hasSleepSacks) return null;
 
   return (
     <aside className={(compact ? "mt-3 " : "mt-4 ") + "rounded-2xl border border-primary/15 bg-primary/5 p-4"}>
       <p className="text-[10px] font-bold uppercase tracking-widest text-primary/75">What counts?</p>
       <div className="mt-2 space-y-2">
+        {hasSleepSacks && (
+          <p className="text-[11px] leading-relaxed text-ink/60">
+            A sleep sack is a wearable blanket. TOG measures insulation: a higher rating means more warmth. Follow its manufacturer's clothing and room-temperature guidance.
+          </p>
+        )}
         {explainedItems.map((item) => (
           <p key={item.slug} className="text-[11px] leading-relaxed text-ink/60">
-            <span className="font-semibold text-ink/75">{item.label}: </span>
-            {item.explanation}
+            <span className="font-semibold text-ink/75">{localizeClothingText(item.label, unit)}: </span>
+            {localizeClothingText(item.explanation ?? "", unit)}
           </p>
         ))}
       </div>

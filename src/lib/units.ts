@@ -28,5 +28,18 @@ export function defaultUnitFromLocale(locale: string | undefined): TempUnit {
 /** Rewrites "12°C" occurrences in engine-generated text for display. */
 export function localizeTempText(text: string, unit: TempUnit): string {
   if (unit === "C") return text;
-  return text.replace(/(-?\d+(?:\.\d+)?)\s?°C/g, (_, n) => `${Math.round(cToF(Number(n)))}°F`);
+  return text
+    .replace(/(-?\d+(?:\.\d+)?)([––−-])(-?\d+(?:\.\d+)?)\s?°C/g, (_, low, dash, high) =>
+      `${Math.round(cToF(Number(low)))}${dash}${Math.round(cToF(Number(high)))}°F`,
+    )
+    .replace(/(-?\d+(?:\.\d+)?)\s?°C/g, (_, n) => `${Math.round(cToF(Number(n)))}°F`);
+}
+
+/** Slider values are displayed in the chosen unit; engine inputs stay in °C. */
+export function roomTemperatureRange(unit: TempUnit) {
+  return { min: toUnit(15, unit), max: toUnit(30, unit), step: 1 };
+}
+
+export function roomTemperatureToC(value: number, unit: TempUnit): number {
+  return unit === "F" ? fToC(value) : value;
 }

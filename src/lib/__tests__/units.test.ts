@@ -1,8 +1,18 @@
 // @ts-expect-error bun:test is provided by the bun test runner
 import { describe, expect, test } from "bun:test";
-import { defaultUnitFromLocale, formatWind, localizeTempText, toUnit } from "../units";
+import { defaultUnitFromLocale, formatWind, localizeTempText, toUnit, roomTemperatureRange, roomTemperatureToC } from "../units";
 
 describe("temperature units", () => {
+  test("room selection advances exactly 1°F and retains Celsius engine inputs", () => {
+    expect(roomTemperatureRange("F")).toEqual({ min: 59, max: 86, step: 1 });
+    expect(roomTemperatureToC(68, "F")).toBe(20);
+    expect(toUnit(roomTemperatureToC(69, "F"), "F")).toBe(69);
+    expect(roomTemperatureToC(69, "F") - roomTemperatureToC(68, "F")).toBeCloseTo(5 / 9);
+  });
+  test("Celsius room selection keeps its original 15–30°C limits and 1°C steps", () => {
+    expect(roomTemperatureRange("C")).toEqual({ min: 15, max: 30, step: 1 });
+    expect(roomTemperatureToC(21, "C")).toBe(21);
+  });
   test("conversions", () => {
     expect(toUnit(0, "F")).toBe(32);
     expect(toUnit(20, "F")).toBe(68);

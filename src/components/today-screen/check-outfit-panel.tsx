@@ -19,6 +19,7 @@ import {
 } from "@/lib/recommend/warmth";
 import { useTempUnit } from "@/hooks/use-temp-unit";
 import { formatTemp, formatWind } from "@/lib/units";
+import { localizeClothingText } from "@/lib/clothing-text";
 import { actionableAdjustments } from "@/lib/recommend/actionable";
 import { lightHaptic, selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 
@@ -93,12 +94,13 @@ function SlotRow<T extends WardrobeSlug | "none">({
 }) {
   // "None" stays plainly selected even when the row needs an addition — the
   // dashed hint belongs on the garment to add, not on the empty option.
+  const [unit] = useTempUnit();
   const noneClassName = value === "none" ? CHIP_SELECTED : CHIP_DEFAULT;
 
   return (
     <section>
       <div className="flex items-center gap-2">
-        <h3 className={SLOT_LABEL}>{label}</h3>
+        <h3 className={SLOT_LABEL}>{localizeClothingText(label, unit)}</h3>
         {adjustment && (
           <span
             className={
@@ -144,7 +146,7 @@ function SlotRow<T extends WardrobeSlug | "none">({
               aria-pressed={isSelected}
               className={className}
             >
-              {LABEL_BY_SLUG[slug]}
+              {localizeClothingText(LABEL_BY_SLUG[slug], unit)}
             </button>
           );
         })}
@@ -454,7 +456,7 @@ export function CheckOutfitPanel({
                   {rec.transportExtras.map((e) => (
                     <ToggleTile
                       key={e.slug}
-                      label={e.label}
+                      label={localizeClothingText(e.label, unit)}
                       value={actual.transportExtras.includes(e.slug)}
                       onChange={() => toggleTransportExtra(e.slug)}
                       adjustment={
@@ -473,7 +475,7 @@ export function CheckOutfitPanel({
                     {rec.optionalTransportExtras.map((e) => (
                       <ToggleTile
                         key={e.slug}
-                        label={e.label}
+                        label={localizeClothingText(e.label, unit)}
                         muted
                         note={e.owned ? undefined : "Not in your wardrobe"}
                         value={actual.transportExtras.includes(e.slug)}

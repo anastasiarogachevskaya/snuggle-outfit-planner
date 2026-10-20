@@ -14,7 +14,8 @@ const situationOptions: {
 ];
 
 import { useTempUnit } from "@/hooks/use-temp-unit";
-import { formatTemp } from "@/lib/units";
+import { formatTemp, roomTemperatureRange, roomTemperatureToC, toUnit } from "@/lib/units";
+import { localizeClothingText } from "@/lib/clothing-text";
 
 export function ActivityPicker({
   situation,
@@ -121,10 +122,10 @@ export function ActivityPicker({
               </div>
               <input
                 type="range"
-                min={15}
-                max={30}
-                value={roomTemp}
-                onChange={(e) => onRoomTempChange(Number(e.target.value))}
+                aria-label="Room temperature"
+                {...roomTemperatureRange(unit)}
+                value={toUnit(roomTemp, unit)}
+                onChange={(e) => onRoomTempChange(roomTemperatureToC(Number(e.target.value), unit))}
                 onPointerUp={() => selectionHaptic()}
                 onKeyUp={() => selectionHaptic()}
                 className="w-full accent-primary"
@@ -153,7 +154,7 @@ export function ActivityPicker({
                         : "bg-canvas text-ink/70")
                     }
                   >
-                    {m.label}
+                    {localizeClothingText(m.label, unit)}
                   </button>
                 ))}
               </div>

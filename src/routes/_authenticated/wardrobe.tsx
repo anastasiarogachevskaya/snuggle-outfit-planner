@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { ClothingIcon } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
 import { selectionHaptic, warningHaptic } from "@/lib/haptics";
+import { useTempUnit } from "@/hooks/use-temp-unit";
+import { localizeClothingText } from "@/lib/clothing-text";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
   head: () => ({
@@ -18,6 +20,9 @@ export const Route = createFileRoute("/_authenticated/wardrobe")({
           "Tick everything you own so Layerly only recommends baby clothes that are actually in your drawer.",
       },
       { property: "og:title", content: "Wardrobe checklist — Layerly" },
+      { property: "og:description", content: "Your baby's wardrobe checklist for weather-based outfits in Layerly." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { property: "og:url", content: "https://layerly.online/wardrobe" },
       { name: "robots", content: "noindex" },
     ],
@@ -27,6 +32,7 @@ export const Route = createFileRoute("/_authenticated/wardrobe")({
 });
 
 function WardrobePage() {
+  const [unit] = useTempUnit();
   const qc = useQueryClient();
 
   const babyQ = useQuery({
@@ -187,7 +193,7 @@ function WardrobePage() {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-2">
-                          <span className="break-words text-sm font-medium">{item.label}</span>
+                          <span className="break-words text-sm font-medium">{localizeClothingText(item.label, unit)}</span>
                           {item.warmth && (
                             <span
                               className={
@@ -200,12 +206,12 @@ function WardrobePage() {
                           )}
                         </span>
                         <span className="mt-0.5 block text-xs leading-snug text-ink/55">
-                          {item.hint}
+                          {localizeClothingText(item.hint, unit)}
                         </span>
                         {item.explanation && (
                           <span className="mt-1 block text-[11px] leading-snug text-ink/45">
                             <span className="font-semibold text-ink/60">What counts? </span>
-                            {item.explanation}
+                            {localizeClothingText(item.explanation, unit)}
                           </span>
                         )}
                       </span>

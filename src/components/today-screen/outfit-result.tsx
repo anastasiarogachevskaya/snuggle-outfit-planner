@@ -1,7 +1,7 @@
 import { type recommend } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { useTempUnit } from "@/hooks/use-temp-unit";
-import { localizeTempText } from "@/lib/units";
+import { localizeClothingText } from "@/lib/clothing-text";
 import { ClothingIcon } from "@/components/icons";
 
 export function OutfitResult({
@@ -24,12 +24,12 @@ export function OutfitResult({
               ? "Keep it light."
               : "Just the basics."}
         </h1>
-        <p className="text-ink/60 leading-relaxed mb-4">{localizeTempText(rec.reason, unit)}</p>
+        <p className="text-ink/60 leading-relaxed mb-4">{localizeClothingText(rec.reason, unit)}</p>
         {rec.notes.length > 0 && (
           <div className="space-y-2 mb-6">
             {rec.notes.map((n, i) => (
               <p key={i} className="text-xs text-ink/70 border-l-2 border-accent/40 pl-3">
-                {localizeTempText(n, unit)}
+                {localizeClothingText(n, unit)}
               </p>
             ))}
           </div>
@@ -47,7 +47,7 @@ export function OutfitResult({
                 key={l.slot + l.slug}
                 slug={isSynthetic ? undefined : (l.slug as WardrobeSlug)}
                 chip={l.slot.slice(0, 3).toUpperCase()}
-                label={l.label}
+                label={localizeClothingText(l.label, unit)}
                 dim={!isSynthetic && !isOwned}
               />
             );
@@ -57,7 +57,7 @@ export function OutfitResult({
               key={"acc-" + a.slug}
               slug={a.slug}
               chip="+"
-              label={a.label}
+              label={localizeClothingText(a.label, unit)}
               accent
               dim={!owned.has(a.slug)}
             />
@@ -75,7 +75,7 @@ export function OutfitResult({
                   key={"sleep-" + a.slug}
                   slug={a.slug}
                   chip="ZZ"
-                  label={a.label}
+                  label={localizeClothingText(a.label, unit)}
                 />
               ))}
             </div>
@@ -93,7 +93,7 @@ export function OutfitResult({
                   key={"tx-" + a.slug}
                   slug={a.slug}
                   chip="+"
-                  label={a.label}
+                  label={localizeClothingText(a.label, unit)}
                 />
               ))}
             </div>
@@ -111,7 +111,7 @@ export function OutfitResult({
                   key={i}
                   className="text-sm text-ink/80 bg-accent/5 border border-accent/10 rounded-2xl px-4 py-3"
                 >
-                  {s}
+                  {localizeClothingText(s, unit)}
                 </p>
               ))}
             </div>
@@ -129,7 +129,7 @@ export function OutfitResult({
                   key={"miss-" + a.slug}
                   slug={a.slug}
                   chip="?"
-                  label={a.label}
+                  label={localizeClothingText(a.label, unit)}
                   accent
                   dim
                 />
