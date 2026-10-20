@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 const TITLE = "Privacy Policy — Layerly";
 const DESCRIPTION =
   "What Layerly collects, why, and how to delete it: baby profile, wardrobe, comfort feedback, and location used only to fetch the weather.";
-const LAST_UPDATED = "September 12, 2026";
+const LAST_UPDATED = "October 20, 2026";
 
 export const Route = createFileRoute("/privacy")({
   head: () => pageMeta({ title: TITLE, description: DESCRIPTION, path: "/privacy" }),

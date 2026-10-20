@@ -11,6 +11,8 @@
 
 ## Open
 
+- [x] US: °F synced to account, US dates on blog, AAP sources, 30–60°F guides, US privacy note
+
 - [x] US adaptation: country-neutral App Store link, familiar clothing wording, and 1°F room-temperature steps
 - [x] Update baby-layering guide with cold-weather examples, Celsius/Fahrenheit, verified safety sources, and browser checks
 - [x] Make temperature preference readable and include it in iPhone and web profile setup
