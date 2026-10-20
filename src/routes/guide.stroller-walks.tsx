@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/site-footer";
 
 const TITLE = "Stroller Clothing Guide: Dressing Baby for Pram and Carrier Walks | Layerly";
 const DESCRIPTION =
-  "How to dress your baby for a walk in a pram, stroller or baby carrier — including rain covers, footmuffs, wind chill and how long you are out.";
+  "How to dress your baby for pram, stroller and carrier walks — footmuff layering, avoiding overheating in warm shops, rain covers and wind chill.";
 
 export const Route = createFileRoute("/guide/stroller-walks")({
   head: () => {
@@ -108,6 +108,115 @@ function StrollerGuide() {
               short outings, dress for comfort indoors and add one outer layer. For long outings,
               add a spare layer you can put on when the baby settles and stops moving, and check the
               neck and chest halfway through.
+            </p>
+          </section>
+
+          <section className="mt-10">
+            <h2 className="font-serif text-2xl font-semibold text-ink">
+              From cold street to warm shop
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink/70">
+              A baby dressed for −5°C (23°F) outside is overdressed in a 21°C (70°F) shop, café or
+              bus within minutes. The NHS advises removing hats and extra clothing as soon as you
+              are indoors or in a warm car, bus or train, even if it means waking your baby.
+            </p>
+            <ul className="mt-4 space-y-3 text-sm leading-relaxed text-ink/70">
+              <li>
+                <strong className="font-medium text-ink">Quick stop (a few minutes)</strong> — take
+                off the hat, open the footmuff or fold back the blanket, and unzip the overall at the
+                chest.
+              </li>
+              <li>
+                <strong className="font-medium text-ink">Longer stay</strong> — take the winter
+                overall off, or lift baby out of the footmuff. Put them back on just before you go
+                outside again.
+              </li>
+              <li>
+                <strong className="font-medium text-ink">Rain cover</strong> — take it off indoors.
+                It traps warm air around the baby.
+              </li>
+              <li>
+                <strong className="font-medium text-ink">Check, don't guess</strong> — feel the back
+                of the neck or the chest. Hands and feet are usually cooler, which is normal. Hot,
+                damp or sweaty skin means remove a layer.
+              </li>
+            </ul>
+          </section>
+
+          <section className="mt-10">
+            <h2 className="font-serif text-2xl font-semibold text-ink">
+              Footmuffs and which layers to skip
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink/70">
+              A footmuff or pram bag is a warm outer layer in its own right. When you use one, you
+              usually don't need every warm layer underneath as well. Too many layers under a
+              footmuff is a common way babies end up sweaty on winter walks.
+            </p>
+            <ul className="mt-4 space-y-3 text-sm leading-relaxed text-ink/70">
+              <li>
+                <strong className="font-medium text-ink">Around 0 to +4°C (32–39°F)</strong> — a
+                long-sleeve bodysuit, trousers, socks, a warm hat, mittens and a winter overall
+                inside the footmuff are usually enough. Skip the fleece underneath.
+              </li>
+              <li>
+                <strong className="font-medium text-ink">About −5°C (23°F) and colder</strong> — add
+                a fleece or wool layer and warmer bottoms under the overall, and keep the footmuff
+                zipped up.
+              </li>
+              <li>
+                <strong className="font-medium text-ink">Mild days</strong> — choose either the
+                footmuff or a thick overall, not both. A light jacket inside a footmuff is often
+                plenty around +5 to +10°C (41–50°F).
+              </li>
+              <li>
+                <strong className="font-medium text-ink">Car seat</strong> — never use a footmuff or
+                thick overall under the car-seat harness. Buckle baby in thin layers and lay a
+                blanket over the straps.
+              </li>
+            </ul>
+            <p className="mt-3 text-sm leading-relaxed text-ink/70">
+              These are starting points, not rules. Every baby and every footmuff is different, so
+              check the neck after the first 15–20 minutes and adjust.
+            </p>
+          </section>
+
+          <section className="mt-10">
+            <h2 className="font-serif text-2xl font-semibold text-ink">Sources</h2>
+            <ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink/70">
+              <li>
+                <a
+                  className="text-primary underline underline-offset-4"
+                  href="https://www.nhs.uk/best-start-in-life/baby/baby-basics/caring-for-your-baby/how-to-dress-a-newborn/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  NHS — How to dress a newborn baby
+                </a>
+              </li>
+              <li>
+                <a
+                  className="text-primary underline underline-offset-4"
+                  href="https://www.lullabytrust.org.uk/baby-safety/safer-sleep-information/room-temperature/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  The Lullaby Trust — How to check if your baby is too hot
+                </a>
+              </li>
+              <li>
+                <a
+                  className="text-primary underline underline-offset-4"
+                  href="https://www.lullabytrust.org.uk/baby-safety/travel-and-weather/cold-weather/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  The Lullaby Trust — Cold weather
+                </a>
+              </li>
+            </ul>
+            <p className="mt-3 text-xs leading-relaxed text-ink/50">
+              This guide is general information, not medical advice. If your baby seems unwell, ask
+              your health visitor or doctor.
             </p>
           </section>
 
