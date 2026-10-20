@@ -53,8 +53,8 @@ function StrollerGuide() {
           <section className="mt-10">
             <h2 className="font-serif text-2xl font-semibold text-ink">Pram</h2>
             <p className="mt-3 text-sm leading-relaxed text-ink/70">
-              A lie-flat pram is the coldest option: the baby is motionless, often close to the
-              ground, and shielded only on one side. Dress one layer warmer than you would indoors
+              In a lie-flat pram the baby lies still, so they make less of their own heat than a
+              baby who is moving or being carried. Dress one layer warmer than you would indoors
               at the same temperature, and use a footmuff or pram bag below roughly 10°C. A pram is
               typically used until around six months.
             </p>
