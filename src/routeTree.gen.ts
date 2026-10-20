@@ -34,6 +34,7 @@ import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedWardrobeRouteImport } from './routes/_authenticated/wardrobe'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as GuideWeatherRouteImport } from './routes/guide.$weather'
 import { Route as GuideBabyLayeringRouteImport } from './routes/guide.baby-layering'
 import { Route as GuideStrollerWalksRouteImport } from './routes/guide.stroller-walks'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -168,6 +169,11 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuideWeatherRoute = GuideWeatherRouteImport.update({
+  id: '/guide/$weather',
+  path: '/guide/$weather',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuideBabyLayeringRoute = GuideBabyLayeringRouteImport.update({
   id: '/guide/baby-layering',
   path: '/guide/baby-layering',
@@ -230,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/guide/$weather': typeof GuideWeatherRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
   '/guide/stroller-walks': typeof GuideStrollerWalksRoute
   '/blog/': typeof BlogIndexRoute
@@ -263,6 +270,7 @@ export interface FileRoutesByTo {
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/guide/$weather': typeof GuideWeatherRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
   '/guide/stroller-walks': typeof GuideStrollerWalksRoute
   '/blog': typeof BlogIndexRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/wardrobe': typeof AuthenticatedWardrobeRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/guide/$weather': typeof GuideWeatherRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
   '/guide/stroller-walks': typeof GuideStrollerWalksRoute
   '/blog/': typeof BlogIndexRoute
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/today'
     | '/wardrobe'
     | '/blog/$slug'
+    | '/guide/$weather'
     | '/guide/baby-layering'
     | '/guide/stroller-walks'
     | '/blog/'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
     | '/today'
     | '/wardrobe'
     | '/blog/$slug'
+    | '/guide/$weather'
     | '/guide/baby-layering'
     | '/guide/stroller-walks'
     | '/blog'
@@ -400,6 +411,7 @@ export interface FileRouteTypes {
     | '/_authenticated/today'
     | '/_authenticated/wardrobe'
     | '/blog/$slug'
+    | '/guide/$weather'
     | '/guide/baby-layering'
     | '/guide/stroller-walks'
     | '/blog/'
@@ -430,6 +442,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   BlogSlugRoute: typeof BlogSlugRoute
+  GuideWeatherRoute: typeof GuideWeatherRoute
   GuideBabyLayeringRoute: typeof GuideBabyLayeringRoute
   GuideStrollerWalksRoute: typeof GuideStrollerWalksRoute
   BlogIndexRoute: typeof BlogIndexRoute
@@ -616,6 +629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guide/$weather': {
+      id: '/guide/$weather'
+      path: '/guide/$weather'
+      fullPath: '/guide/$weather'
+      preLoaderRoute: typeof GuideWeatherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guide/baby-layering': {
       id: '/guide/baby-layering'
       path: '/guide/baby-layering'
@@ -710,6 +730,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   BlogSlugRoute: BlogSlugRoute,
+  GuideWeatherRoute: GuideWeatherRoute,
   GuideBabyLayeringRoute: GuideBabyLayeringRoute,
   GuideStrollerWalksRoute: GuideStrollerWalksRoute,
   BlogIndexRoute: BlogIndexRoute,
