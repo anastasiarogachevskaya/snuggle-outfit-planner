@@ -18,7 +18,7 @@ describe("transportExtraCandidates", () => {
   });
 
   it("lists carrier gear for a carrier", () => {
-    expect(transportExtraCandidates("walk", "carrier")).toEqual(["babywearing_cover", "blanket"]);
+    expect(transportExtraCandidates("walk", "carrier")).toEqual(["babywearing_cover"]);
   });
 
   it("lists car gear for car trips", () => {
@@ -40,6 +40,44 @@ const base: RecommendInput = {
 };
 
 describe("optional transport extras", () => {
+  it("never recommends or offers a blanket for a +6°C carrier walk", () => {
+    for (const durationMin of [30, 60, 90]) {
+      for (const tempPref of [1, 3, 5]) {
+        const rec = recommend({
+          ...base,
+          feelsLikeC: 6,
+          transportMode: "carrier",
+          durationMin,
+          tempPref,
+          owned: new Set(["blanket", "babywearing_cover"]),
+        });
+        const allExtras = [
+          ...rec.transportExtras,
+          ...rec.missingHelpfulItems,
+          ...rec.optionalTransportExtras,
+        ];
+        expect(allExtras.map((e) => e.slug)).not.toContain("blanket");
+      }
+    }
+  });
+
+  it("keeps a carrier cover, not a blanket, for colder carrier walks", () => {
+    const rec = recommend({
+      ...base,
+      feelsLikeC: -5,
+      transportMode: "carrier",
+      owned: new Set(["blanket", "babywearing_cover"]),
+    });
+    expect(rec.transportExtras.map((e) => e.slug)).toEqual(["babywearing_cover"]);
+  });
+
+  it("still recommends blankets for mild stroller walks and cold car trips", () => {
+    const stroller = recommend({ ...base, feelsLikeC: 13 });
+    expect(stroller.transportExtras.map((e) => e.slug)).toContain("blanket");
+    const car = recommend({ ...base, feelsLikeC: 6, situation: "car" });
+    expect(car.transportExtras.map((e) => e.slug)).toContain("blanket");
+  });
+
   it("offers the remaining stroller extras on a mild day", () => {
     const rec = recommend(base);
     const optional = rec.optionalTransportExtras.map((e) => e.slug);

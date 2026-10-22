@@ -150,8 +150,8 @@ function pickExtras(effectiveC: number, ctx: OutdoorContext) {
     } else if (ctx.transportMode === "carrier") {
       if (effectiveC < TEMP.COLD)
         extras.push({ slug: "babywearing_cover", label: "Babywearing cover", ownedRequired: true });
-      else if (effectiveC < TEMP.COOL)
-        extras.push({ slug: "blanket", label: "Blanket", ownedRequired: true });
+      // Loose stroller blankets are not carrier gear. Keep the existing
+      // cold-weather carrier-cover rule rather than substituting a blanket.
     }
   }
 

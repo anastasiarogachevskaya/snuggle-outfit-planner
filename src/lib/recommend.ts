@@ -57,7 +57,7 @@ export function transportExtraCandidates(
 ): WardrobeSlug[] {
   if (situation === "car") return ["blanket", "car_seat_blanket"];
   if (situation !== "walk") return [];
-  if (transportMode === "carrier") return ["babywearing_cover", "blanket"];
+  if (transportMode === "carrier") return ["babywearing_cover"];
   if (transportMode === "pram" || transportMode === "sitting-stroller")
     return ["rain_cover", "footmuff", "blanket"];
   return [];
