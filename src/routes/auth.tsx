@@ -196,9 +196,10 @@ function AuthPage() {
           <p className="text-xs font-medium uppercase tracking-widest text-primary/70 mb-2">
             {mode === "signin" ? "Welcome back" : "New here"}
           </p>
-          <h1 className="text-3xl font-serif font-semibold">
-            {mode === "signin" ? "Sign in to Layerly." : "Create your Layerly account."}
-          </h1>
+          <h1 className="text-3xl font-serif font-semibold">Sign in to Layerly</h1>
+          {mode !== "signin" && (
+            <p className="mt-2 text-sm text-ink/60">Create your account to save your baby's wardrobe.</p>
+          )}
         </div>
 
         <div className="mt-8 bg-surface rounded-3xl p-6 shadow-sm border border-black/5">
