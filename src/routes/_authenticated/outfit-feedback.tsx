@@ -81,7 +81,7 @@ function OutfitFeedbackPage() {
           if (!line.trim()) continue;
           const event = JSON.parse(line);
           if (event.type === 'progress') setProgress(event.message);
-          if (event.type === 'error') throw new Error(event.message);
+          if (event.type === 'error' || event.type === 'denied') throw new Error(event.message);
           if (event.type === 'done') { completed = true; setFreshResult(analysisSchema.parse(event.result)); }
         }
         if (chunk.done) break;

@@ -34,17 +34,25 @@ export async function handleOutfitAnalysis(request: Request) {
   if (!reports?.length) return Response.json({ message: 'Add open feedback before analyzing.' }, { status: 400 });
   const encoder = new TextEncoder();
   let safeMessage = 'Analysis could not finish. Your feedback is saved.';
+  let denied = false;
+  let canceled = false;
+  const upstreamAbort = new AbortController();
+  const signal = AbortSignal.any([request.signal, upstreamAbort.signal]);
+  const upstreamRequest = new Request(request, { signal });
   const body = new ReadableStream({
     async start(controller) {
-      const send = (event: unknown) => controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
+      const send = (event: unknown) => {
+        if (!canceled) controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
+      };
       send({ type: 'progress', message: `Reviewing ${reports.length} open reports…` });
       try {
-        const { result } = createResponsesCall(request, {
+        const { result } = createResponsesCall(upstreamRequest, {
           baseURL: 'https://ai.gateway.lovable.dev/v1', apiKey: aiKey, model: MODEL,
           onResponse: async response => {
             if (response.ok) return;
             const payload = await response.clone().json().catch(() => null);
             safeMessage = payload?.message ?? payload?.error?.message ?? `AI request failed (${response.status}).`;
+            denied = response.status === 403;
             if ([402, 403].includes(response.status)) {
               const { error: pauseError } = await client.from('outfit_ai_state').upsert({ id: true, blocked_message: safeMessage, blocked_type: String(payload?.type ?? response.status) });
               if (pauseError) throw new Error('AI access is blocked and the pause could not be saved.');
@@ -59,17 +67,22 @@ export async function handleOutfitAnalysis(request: Request) {
             send({ type: 'progress', message: `Grouping reports… ${characters} characters received` });
           }
         }
+        if (await result.finishReason === 'content-filter') {
+          safeMessage = 'The AI provider declined this analysis. No result was saved.';
+          throw new Error(safeMessage);
+        }
         const output = validateEvidence(await result.output, reports.map(row => row.id));
-        if (request.signal.aborted) throw new DOMException('Stopped', 'AbortError');
+        if (signal.aborted) throw new DOMException('Stopped', 'AbortError');
         const { error: saveError } = await client.from('outfit_analyses').insert({ created_by: identity.user.id, report_ids: reports.map(row => row.id), model: MODEL, result: output });
         if (saveError) throw new Error('The analysis finished but could not be saved.');
         send({ type: 'done', result: output });
       } catch (error) {
-        send({ type: 'error', message: request.signal.aborted ? 'Analysis stopped.' : safeMessage });
+        send({ type: denied ? 'denied' : 'error', status: signal.aborted ? 499 : denied ? 403 : undefined, message: signal.aborted ? 'Analysis stopped.' : safeMessage });
       } finally {
-        controller.close();
+        if (!canceled) controller.close();
       }
     },
+    cancel() { canceled = true; upstreamAbort.abort(); },
   });
   return new Response(body, { headers: { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store, no-transform' } });
 }
