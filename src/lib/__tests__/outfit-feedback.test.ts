@@ -1,3 +1,4 @@
+// @ts-expect-error bun:test is provided by the bun test runner
 import { describe, test, expect } from 'bun:test';
 import { reportInput, validateEvidence, type FeedbackAnalysis } from '../outfit-feedback';
 
