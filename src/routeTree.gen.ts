@@ -30,6 +30,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedBabyRouteImport } from './routes/_authenticated/baby'
 import { Route as AuthenticatedInsightsRouteImport } from './routes/_authenticated/insights'
+import { Route as AuthenticatedOutfitFeedbackRouteImport } from './routes/_authenticated/outfit-feedback'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedWardrobeRouteImport } from './routes/_authenticated/wardrobe'
 import { Route as ApiOutfitAnalysisRouteImport } from './routes/api/outfit-analysis'
@@ -150,6 +151,12 @@ const AuthenticatedInsightsRoute = AuthenticatedInsightsRouteImport.update({
   path: '/insights',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOutfitFeedbackRoute =
+  AuthenticatedOutfitFeedbackRouteImport.update({
+    id: '/outfit-feedback',
+    path: '/outfit-feedback',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
   id: '/today',
   path: '/today',
@@ -239,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/baby': typeof AuthenticatedBabyRoute
   '/insights': typeof AuthenticatedInsightsRoute
+  '/outfit-feedback': typeof AuthenticatedOutfitFeedbackRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
   '/api/outfit-analysis': typeof ApiOutfitAnalysisRoute
@@ -274,6 +282,7 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/baby': typeof AuthenticatedBabyRoute
   '/insights': typeof AuthenticatedInsightsRoute
+  '/outfit-feedback': typeof AuthenticatedOutfitFeedbackRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
   '/api/outfit-analysis': typeof ApiOutfitAnalysisRoute
@@ -311,6 +320,7 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/baby': typeof AuthenticatedBabyRoute
   '/_authenticated/insights': typeof AuthenticatedInsightsRoute
+  '/_authenticated/outfit-feedback': typeof AuthenticatedOutfitFeedbackRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/wardrobe': typeof AuthenticatedWardrobeRoute
   '/api/outfit-analysis': typeof ApiOutfitAnalysisRoute
@@ -348,6 +358,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/baby'
     | '/insights'
+    | '/outfit-feedback'
     | '/today'
     | '/wardrobe'
     | '/api/outfit-analysis'
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/baby'
     | '/insights'
+    | '/outfit-feedback'
     | '/today'
     | '/wardrobe'
     | '/api/outfit-analysis'
@@ -419,6 +431,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/baby'
     | '/_authenticated/insights'
+    | '/_authenticated/outfit-feedback'
     | '/_authenticated/today'
     | '/_authenticated/wardrobe'
     | '/api/outfit-analysis'
@@ -614,6 +627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInsightsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/outfit-feedback': {
+      id: '/_authenticated/outfit-feedback'
+      path: '/outfit-feedback'
+      fullPath: '/outfit-feedback'
+      preLoaderRoute: typeof AuthenticatedOutfitFeedbackRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/today': {
       id: '/_authenticated/today'
       path: '/today'
@@ -712,6 +732,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedBabyRoute: typeof AuthenticatedBabyRoute
   AuthenticatedInsightsRoute: typeof AuthenticatedInsightsRoute
+  AuthenticatedOutfitFeedbackRoute: typeof AuthenticatedOutfitFeedbackRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
   AuthenticatedWardrobeRoute: typeof AuthenticatedWardrobeRoute
   AuthenticatedOnboardingWardrobeRoute: typeof AuthenticatedOnboardingWardrobeRoute
@@ -721,6 +742,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedBabyRoute: AuthenticatedBabyRoute,
   AuthenticatedInsightsRoute: AuthenticatedInsightsRoute,
+  AuthenticatedOutfitFeedbackRoute: AuthenticatedOutfitFeedbackRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
   AuthenticatedWardrobeRoute: AuthenticatedWardrobeRoute,
   AuthenticatedOnboardingWardrobeRoute: AuthenticatedOnboardingWardrobeRoute,
