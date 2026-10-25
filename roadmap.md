@@ -11,7 +11,7 @@
 
 ## Open
 
-- [ ] Administrator outfit feedback inbox and AI grouping into reviewable fixes
+- [x] Administrator outfit feedback inbox and AI grouping into reviewable fixes; signed-in save, live AI review, saved results, resolution and phone layout verified
 
 - [x] US: °F synced to account, US dates on blog, AAP sources, 30–60°F guides, US privacy note
 
