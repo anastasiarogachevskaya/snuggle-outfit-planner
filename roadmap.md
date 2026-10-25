@@ -11,6 +11,8 @@
 
 ## Open
 
+- [ ] Administrator outfit feedback inbox and AI grouping into reviewable fixes
+
 - [x] US: °F synced to account, US dates on blog, AAP sources, 30–60°F guides, US privacy note
 
 - [x] US adaptation: country-neutral App Store link, familiar clothing wording, and 1°F room-temperature steps
