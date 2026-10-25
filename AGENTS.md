@@ -13,3 +13,4 @@
 
 - Keep the public landing page isolated to landing-specific typography tokens and composition so product screens retain their established design system.
 - Localize clothing text only at UI boundaries through the shared display helper; preserve wardrobe slugs and Celsius engine inputs so saved profiles and outfit rules remain compatible.
+- Administrator feedback uses a protected role table and RLS; AI analysis produces review-only proposals through a streamed server endpoint and never changes recommendation rules automatically.

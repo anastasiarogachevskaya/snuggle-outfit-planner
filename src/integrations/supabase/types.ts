@@ -163,6 +163,87 @@ export type Database = {
           },
         ]
       }
+      outfit_ai_state: {
+        Row: {
+          blocked_message: string
+          blocked_type: string
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          blocked_message: string
+          blocked_type: string
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          blocked_message?: string
+          blocked_type?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      outfit_analyses: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          model: string
+          report_ids: string[]
+          result: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          model: string
+          report_ids: string[]
+          result: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          model?: string
+          report_ids?: string[]
+          result?: Json
+        }
+        Relationships: []
+      }
+      outfit_reports: {
+        Row: {
+          context: string
+          created_at: string
+          created_by: string
+          feedback: string
+          id: string
+          situation: string
+          status: string
+          title: string
+        }
+        Insert: {
+          context?: string
+          created_at?: string
+          created_by: string
+          feedback: string
+          id?: string
+          situation: string
+          status?: string
+          title: string
+        }
+        Update: {
+          context?: string
+          created_at?: string
+          created_by?: string
+          feedback?: string
+          id?: string
+          situation?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -181,6 +262,24 @@ export type Database = {
           display_name?: string | null
           id?: string
           temp_unit?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -221,7 +320,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_feedback_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
