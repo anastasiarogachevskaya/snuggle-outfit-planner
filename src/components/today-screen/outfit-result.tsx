@@ -48,6 +48,13 @@ export function OutfitResult({
                 slug={isSynthetic ? undefined : (l.slug as WardrobeSlug)}
                 chip={l.slot.slice(0, 3).toUpperCase()}
                 label={localizeClothingText(l.label, unit)}
+                sub={
+                  l.usingLabel
+                    ? `Using your ${localizeClothingText(l.usingLabel, unit)}`
+                    : !isSynthetic && !isOwned
+                      ? "Not in your wardrobe"
+                      : undefined
+                }
                 dim={!isSynthetic && !isOwned}
               />
             );
@@ -58,6 +65,13 @@ export function OutfitResult({
               slug={a.slug}
               chip="+"
               label={localizeClothingText(a.label, unit)}
+              sub={
+                a.usingLabel
+                  ? `Using your ${localizeClothingText(a.usingLabel, unit)}`
+                  : !owned.has(a.slug)
+                    ? "Not in your wardrobe"
+                    : undefined
+              }
               accent
               dim={!owned.has(a.slug)}
             />
@@ -151,12 +165,14 @@ export function OutfitResult({
 function Row({
   chip,
   label,
+  sub,
   accent,
   dim,
   slug,
 }: {
   chip: string;
   label: string;
+  sub?: string;
   accent?: boolean;
   dim?: boolean;
   slug?: WardrobeSlug;
@@ -181,6 +197,7 @@ function Row({
       </div>
       <div className="min-w-0">
         <p className="break-words text-sm font-medium">{label}</p>
+        {sub && <p className="break-words text-xs text-ink/60">{sub}</p>}
       </div>
     </div>
   );
