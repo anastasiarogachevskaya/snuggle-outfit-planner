@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -59,6 +59,7 @@ function InsightsPage() {
       <div className="mx-auto max-w-md px-5 pb-16 pt-[calc(var(--safe-area-top)+1.5rem)]">
         <p className="text-xs font-medium uppercase tracking-widest text-primary/70">Layerly</p>
         <h1 className="mt-1 font-serif text-3xl font-semibold">Insights</h1>
+        <Button asChild variant="outline" className="mt-4"><Link to="/outfit-feedback">Outfit feedback</Link></Button>
         <p className="mt-2 text-sm text-ink/50">The complete path from first visit to daily use.</p>
 
         <div className="sticky top-0 z-10 -mx-5 mt-5 space-y-2 bg-canvas/95 px-5 py-2 backdrop-blur">

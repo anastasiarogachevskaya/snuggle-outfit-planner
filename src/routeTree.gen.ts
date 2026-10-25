@@ -32,6 +32,7 @@ import { Route as AuthenticatedBabyRouteImport } from './routes/_authenticated/b
 import { Route as AuthenticatedInsightsRouteImport } from './routes/_authenticated/insights'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedWardrobeRouteImport } from './routes/_authenticated/wardrobe'
+import { Route as ApiOutfitAnalysisRouteImport } from './routes/api/outfit-analysis'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as GuideWeatherRouteImport } from './routes/guide.$weather'
@@ -159,6 +160,11 @@ const AuthenticatedWardrobeRoute = AuthenticatedWardrobeRouteImport.update({
   path: '/wardrobe',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiOutfitAnalysisRoute = ApiOutfitAnalysisRouteImport.update({
+  id: '/api/outfit-analysis',
+  path: '/api/outfit-analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/insights': typeof AuthenticatedInsightsRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/api/outfit-analysis': typeof ApiOutfitAnalysisRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/guide/$weather': typeof GuideWeatherRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
@@ -269,6 +276,7 @@ export interface FileRoutesByTo {
   '/insights': typeof AuthenticatedInsightsRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/api/outfit-analysis': typeof ApiOutfitAnalysisRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/guide/$weather': typeof GuideWeatherRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
@@ -305,6 +313,7 @@ export interface FileRoutesById {
   '/_authenticated/insights': typeof AuthenticatedInsightsRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/api/outfit-analysis': typeof ApiOutfitAnalysisRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/guide/$weather': typeof GuideWeatherRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
@@ -341,6 +350,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/today'
     | '/wardrobe'
+    | '/api/outfit-analysis'
     | '/blog/$slug'
     | '/guide/$weather'
     | '/guide/baby-layering'
@@ -375,6 +385,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/today'
     | '/wardrobe'
+    | '/api/outfit-analysis'
     | '/blog/$slug'
     | '/guide/$weather'
     | '/guide/baby-layering'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/_authenticated/insights'
     | '/_authenticated/today'
     | '/_authenticated/wardrobe'
+    | '/api/outfit-analysis'
     | '/blog/$slug'
     | '/guide/$weather'
     | '/guide/baby-layering'
@@ -441,6 +453,7 @@ export interface RootRouteChildren {
   WebAppRoute: typeof WebAppRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ApiOutfitAnalysisRoute: typeof ApiOutfitAnalysisRoute
   BlogSlugRoute: typeof BlogSlugRoute
   GuideWeatherRoute: typeof GuideWeatherRoute
   GuideBabyLayeringRoute: typeof GuideBabyLayeringRoute
@@ -615,6 +628,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWardrobeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/outfit-analysis': {
+      id: '/api/outfit-analysis'
+      path: '/api/outfit-analysis'
+      fullPath: '/api/outfit-analysis'
+      preLoaderRoute: typeof ApiOutfitAnalysisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/': {
       id: '/blog/'
       path: '/blog'
@@ -729,6 +749,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiOutfitAnalysisRoute: ApiOutfitAnalysisRoute,
   BlogSlugRoute: BlogSlugRoute,
   GuideWeatherRoute: GuideWeatherRoute,
   GuideBabyLayeringRoute: GuideBabyLayeringRoute,
