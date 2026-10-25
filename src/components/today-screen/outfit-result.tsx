@@ -197,6 +197,7 @@ function Row({
       </div>
       <div className="min-w-0">
         <p className="break-words text-sm font-medium">{label}</p>
+        {sub && <p className="break-words text-xs text-ink/60">{sub}</p>}
       </div>
     </div>
   );
