@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { toddlerSupportEnabled } from "@/lib/feature-flags";
 import {
   clearGuestProfile,
   GUEST_AGE_OPTIONS,
@@ -182,7 +183,8 @@ function TryPage() {
               <span className="font-medium">{o.label}</span>
               <span className="text-xs text-ink/40">{comingSoon ? "Coming soon" : "→"}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
         <p className="mt-6 text-center text-xs text-ink/40">
           Nothing is saved to an account. You can create one later.
