@@ -1,3 +1,4 @@
+import { toddlerRulesApply } from "@/lib/feature-flags";
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
