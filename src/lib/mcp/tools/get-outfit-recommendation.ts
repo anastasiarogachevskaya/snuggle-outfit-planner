@@ -83,6 +83,7 @@ export default defineTool({
 
     const result = {
       baby: { id: baby.id, name: baby.name, age_months: ageMonths },
+      toddler_rules_applied: toddlerRulesApply(ageMonths),
       weather: weather
         ? {
             temp_c: weather.tempC,
