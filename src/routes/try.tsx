@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { toddlerSupportEnabled } from "@/lib/feature-flags";
 import {
   clearGuestProfile,
   GUEST_AGE_OPTIONS,
@@ -164,10 +165,12 @@ function TryPage() {
     return (
       <Shell title="How old is your baby?" subtitle="This shapes the layers we suggest.">
         <div className="space-y-3">
-          {GUEST_AGE_OPTIONS.map((o) => (
+          {GUEST_AGE_OPTIONS.map((o) => {
+            const comingSoon = o.comingSoon && !toddlerSupportEnabled();
+            return (
             <button
               key={o.id}
-              disabled={o.comingSoon}
+              disabled={comingSoon}
               onClick={() => {
                 logEvent("try_age_selected", { age_band: o.id });
                 const p = createGuestProfile(o.id as GuestAgeBand);
@@ -178,9 +181,10 @@ function TryPage() {
               className="flex w-full items-center justify-between rounded-2xl border border-black/5 bg-surface px-5 py-4 text-left text-ink disabled:opacity-40"
             >
               <span className="font-medium">{o.label}</span>
-              <span className="text-xs text-ink/40">{o.comingSoon ? "Coming soon" : "→"}</span>
+              <span className="text-xs text-ink/40">{comingSoon ? "Coming soon" : "→"}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
         <p className="mt-6 text-center text-xs text-ink/40">
           Nothing is saved to an account. You can create one later.

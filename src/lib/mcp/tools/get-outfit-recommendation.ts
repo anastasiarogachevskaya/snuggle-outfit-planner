@@ -1,3 +1,4 @@
+import { toddlerRulesApply } from "@/lib/feature-flags";
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
@@ -83,6 +84,7 @@ export default defineTool({
 
     const result = {
       baby: { id: baby.id, name: baby.name, age_months: ageMonths },
+      toddler_rules_applied: toddlerRulesApply(ageMonths),
       weather: weather
         ? {
             temp_c: weather.tempC,
