@@ -66,7 +66,7 @@ describe("wardrobe catalog", () => {
     for (const item of allItems) {
       expect(LABEL_BY_SLUG[item.slug]).toBe(item.label);
     }
-    expect(Object.keys(LABEL_BY_SLUG).length).toBe(allItems.length);
+    expect(Object.keys(LABEL_BY_SLUG).length).toBe(ALL_WARDROBE_STEPS.flatMap((s) => s.items).length);
   });
 
   it("all TOG sleep sacks exist in the catalog with their rating in the label", () => {
