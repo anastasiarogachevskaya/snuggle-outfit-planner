@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+// @ts-expect-error bun:test is provided by the bun test runner
+import { describe, expect, it } from "bun:test";
 import { isNewWardrobe, ownedSlugs, wardrobeChanges } from "@/lib/wardrobe-diff";
 
 const rows = [
