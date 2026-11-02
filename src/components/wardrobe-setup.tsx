@@ -135,7 +135,7 @@ export function WardrobeSetup({
             disabled={saving}
             className="w-full rounded-2xl bg-primary text-primary-foreground py-4 font-medium shadow-lg shadow-primary/20 disabled:opacity-50"
           >
-            {saving ? "Saving…" : `Save ${selected.size} items`}
+            {saving ? "Saving…" : `Save ${WARDROBE_STEPS.reduce((n, s) => n + s.items.filter((i) => selected.has(i.slug)).length, 0)} items`}
           </button>
         </div>
       </Shell>
