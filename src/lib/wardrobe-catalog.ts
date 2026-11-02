@@ -1,3 +1,5 @@
+import { toddlerSupportEnabled } from "@/lib/feature-flags";
+
 export type WardrobeSlug =
   // Base
   | "sleeveless_bodysuit"
@@ -5,12 +7,16 @@ export type WardrobeSlug =
   | "long_sleeve_bodysuit"
   | "romper"
   | "pajamas"
+  | "short_sleeve_top"
+  | "long_sleeve_top"
+  | "thermal_top"
   // Bottoms
   | "pants"
   | "leggings"
   | "tights"
   | "wool_leggings"
   | "shorts"
+  | "thermal_bottom"
   // Mid
   | "sweater"
   | "light_merino_layer"
@@ -27,6 +33,8 @@ export type WardrobeSlug =
   | "winter_overall"
   | "jacket"
   | "snow_pants"
+  | "waterproof_jacket"
+  | "rain_pants"
   // Accessories
   | "thin_hat"
   | "warm_hat"
@@ -37,6 +45,8 @@ export type WardrobeSlug =
   | "wool_socks"
   | "booties"
   | "winter_boots"
+  | "everyday_shoes"
+  | "rain_boots"
   | "neck_warmer"
   // Sleep
   | "sleep_sack_05"
@@ -57,6 +67,8 @@ export type WardrobeStep = {
   id: string;
   title: string;
   question: string;
+  /** Wording used instead of `question` while toddler support is on. */
+  toddlerQuestion?: string;
   items: WardrobeItem[];
 };
 
@@ -69,13 +81,16 @@ export type WardrobeItem = {
   emoji: string;
   warmth?: WardrobeWarmth;
   explanation?: string;
+  /** Only shown while the toddler switch is on. */
+  toddlerOnly?: boolean;
 };
 
-export const WARDROBE_STEPS: WardrobeStep[] = [
+export const ALL_WARDROBE_STEPS: WardrobeStep[] = [
   {
     id: "base",
     title: "Base layers",
     question: "Which bodysuits do you have?",
+    toddlerQuestion: "Which base layers do you have?",
     items: [
       {
         slug: "sleeveless_bodysuit",
@@ -100,6 +115,9 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
       },
       { slug: "romper", label: "Romper", hint: "One piece that covers the legs", emoji: "🧸", warmth: "Light" },
       { slug: "pajamas", label: "Pajamas / sleepsuit", hint: "Long one-piece sleepwear", emoji: "🌙", warmth: "Medium" },
+      { slug: "short_sleeve_top", label: "Short-sleeve top / T-shirt", hint: "Everyday top, not a bodysuit", emoji: "👕", warmth: "Light", toddlerOnly: true },
+      { slug: "long_sleeve_top", label: "Long-sleeve top", hint: "Everyday top, not a bodysuit", emoji: "👚", warmth: "Medium", toddlerOnly: true },
+      { slug: "thermal_top", label: "Thermal base-layer top", hint: "Snug thermal underwear top", emoji: "🐑", warmth: "Medium", toddlerOnly: true },
     ],
   },
   {
@@ -112,6 +130,7 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
       { slug: "tights", label: "Tights", hint: "Thin fitted bottoms with feet", emoji: "🩱", warmth: "Light" },
       { slug: "wool_leggings", label: "Wool leggings", hint: "Thicker wool bottoms", emoji: "🐑", warmth: "Warm" },
       { slug: "shorts", label: "Shorts", hint: "Bare lower legs", emoji: "🩳", warmth: "Light" },
+      { slug: "thermal_bottom", label: "Thermal base-layer bottoms", hint: "Snug thermal underwear, worn under pants", emoji: "🐑", warmth: "Medium", toddlerOnly: true },
     ],
   },
   {
@@ -178,6 +197,8 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
       { slug: "winter_overall", label: "Winter overall", hint: "Insulated suit for cold weather", emoji: "❄️", warmth: "Very warm" },
       { slug: "jacket", label: "Jacket", hint: "Warm outer layer for the upper body", emoji: "🧥", warmth: "Warm" },
       { slug: "snow_pants", label: "Rain / snow pants", hint: "Protective outer bottoms", emoji: "🌨️", warmth: "Warm" },
+      { slug: "waterproof_jacket", label: "Waterproof jacket", hint: "Uninsulated rain shell, no padding", emoji: "☔", warmth: "Light", toddlerOnly: true },
+      { slug: "rain_pants", label: "Rain pants", hint: "Uninsulated waterproof pants, no padding", emoji: "☔", warmth: "Light", toddlerOnly: true },
     ],
   },
   {
@@ -194,6 +215,8 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
       { slug: "wool_socks", label: "Wool socks", hint: "Thick insulating socks", emoji: "🧦", warmth: "Warm" },
       { slug: "booties", label: "Booties", hint: "Soft shoes", emoji: "👟" },
       { slug: "winter_boots", label: "Winter boots", hint: "For snow", emoji: "🥾" },
+      { slug: "everyday_shoes", label: "Walking shoes", hint: "Everyday outdoor shoes", emoji: "👟", toddlerOnly: true },
+      { slug: "rain_boots", label: "Rain boots", hint: "Waterproof boots for puddles", emoji: "🥾", toddlerOnly: true },
       { slug: "neck_warmer", label: "Neck warmer", hint: "Scarf alternative", emoji: "🧣" },
     ],
   },
@@ -245,16 +268,31 @@ export const WARDROBE_STEPS: WardrobeStep[] = [
   },
 ];
 
+/**
+ * Steps as parents see them. With the toddler switch off this is exactly the
+ * original infant catalogue and wording; toddler-only items stay hidden but
+ * any saved ownership of them is left untouched.
+ */
+export function visibleWardrobeSteps(toddlerEnabled: boolean): WardrobeStep[] {
+  return ALL_WARDROBE_STEPS.map(({ toddlerQuestion, ...step }) => ({
+    ...step,
+    question: toddlerEnabled && toddlerQuestion ? toddlerQuestion : step.question,
+    items: step.items.filter((i) => toddlerEnabled || !i.toddlerOnly),
+  }));
+}
+
+export const WARDROBE_STEPS: WardrobeStep[] = visibleWardrobeSteps(toddlerSupportEnabled());
+
 export const WARDROBE_CATALOG = WARDROBE_STEPS.flatMap((s) =>
   s.items.map((i) => ({ ...i, group: s.title })),
 );
 
 export const ITEM_BY_SLUG: Record<WardrobeSlug, WardrobeItem> = Object.fromEntries(
-  WARDROBE_STEPS.flatMap((s) => s.items).map((i) => [i.slug, i]),
+  ALL_WARDROBE_STEPS.flatMap((s) => s.items).map((i) => [i.slug, i]),
 ) as Record<WardrobeSlug, WardrobeItem>;
 
 export const LABEL_BY_SLUG: Record<WardrobeSlug, string> = Object.fromEntries(
-  WARDROBE_STEPS.flatMap((s) => s.items).map((i) => [i.slug, i.label]),
+  ALL_WARDROBE_STEPS.flatMap((s) => s.items).map((i) => [i.slug, i.label]),
 ) as Record<WardrobeSlug, string>;
 
 // Quick-setup starter set: common basics most parents own
