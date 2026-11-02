@@ -36,7 +36,8 @@ export function WardrobeSetup({
   const [selected, setSelected] = useState<Set<WardrobeSlug>>(() => new Set(initialSelected ?? []));
 
   useEffect(() => {
-    if (mode === "quick") setSelected(new Set(QUICK_SETUP_OWNED));
+    // Keep a parent's existing selections; only preselect basics when empty.
+    if (mode === "quick") setSelected((prev) => (prev.size > 0 ? prev : new Set(QUICK_SETUP_OWNED)));
   }, [mode]);
 
   useEffect(() => {
