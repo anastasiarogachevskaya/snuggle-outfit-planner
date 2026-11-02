@@ -49,7 +49,7 @@ export default defineTool({
     if (itemsError) return errorResult(itemsError.message);
     const owned = new Set((items ?? []).map((r) => r.slug as WardrobeSlug));
 
-    const ageMonths = Math.max(0, ageInMonths(baby.dob) ?? 0);
+    const ageMonths = ageInMonths(baby.dob);
 
     let weather: Awaited<ReturnType<typeof fetchWeather>> | null = null;
     if (input.feels_like_c === undefined && baby.latitude != null && baby.longitude != null) {

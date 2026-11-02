@@ -19,7 +19,7 @@ export default defineTool({
 
     const babies = (data ?? []).map((b) => ({
       ...b,
-      age_months: Math.max(0, ageInMonths(b.dob) ?? 0),
+      age_months: ageInMonths(b.dob),
     }));
     return textResult(babies, { babies });
   },
