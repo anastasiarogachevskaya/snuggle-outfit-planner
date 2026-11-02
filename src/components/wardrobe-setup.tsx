@@ -22,11 +22,14 @@ export type WardrobeSetupMode = "chooser" | "quick" | "detailed";
 
 export function WardrobeSetup({
   initialSelected,
+  starterBasics,
   saving = false,
   onSave,
   onSkip,
 }: {
   initialSelected?: Iterable<WardrobeSlug>;
+  /** Preselect basics in Quick setup. Defaults to "only when nothing is selected". */
+  starterBasics?: boolean;
   saving?: boolean;
   onSave: (slugs: WardrobeSlug[]) => void;
   onSkip: () => void;
@@ -34,11 +37,17 @@ export function WardrobeSetup({
   const [mode, setMode] = useState<WardrobeSetupMode>("chooser");
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState<Set<WardrobeSlug>>(() => new Set(initialSelected ?? []));
+  const [prefilled, setPrefilled] = useState(false);
 
   useEffect(() => {
-    // Keep a parent's existing selections; only preselect basics when empty.
-    if (mode === "quick") setSelected((prev) => (prev.size > 0 ? prev : new Set(QUICK_SETUP_OWNED)));
-  }, [mode]);
+    // Keep a parent's existing selections; preselect basics once, only for a new wardrobe.
+    if (mode !== "quick" || prefilled) return;
+    setPrefilled(true);
+    setSelected((prev) => {
+      const allow = starterBasics ?? prev.size === 0;
+      return allow && prev.size === 0 ? new Set(QUICK_SETUP_OWNED) : prev;
+    });
+  }, [mode, prefilled, starterBasics]);
 
   useEffect(() => {
     logEvent("wardrobe_chooser_viewed");
@@ -126,7 +135,7 @@ export function WardrobeSetup({
             disabled={saving}
             className="w-full rounded-2xl bg-primary text-primary-foreground py-4 font-medium shadow-lg shadow-primary/20 disabled:opacity-50"
           >
-            {saving ? "Saving…" : `Save ${selected.size} items`}
+            {saving ? "Saving…" : `Save ${WARDROBE_STEPS.reduce((n, s) => n + s.items.filter((i) => selected.has(i.slug)).length, 0)} items`}
           </button>
         </div>
       </Shell>
