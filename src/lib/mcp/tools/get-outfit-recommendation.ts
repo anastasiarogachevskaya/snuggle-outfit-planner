@@ -45,7 +45,8 @@ export default defineTool({
     const { data: items, error: itemsError } = await supabase
       .from("wardrobe_items")
       .select("slug")
-      .eq("baby_id", baby.id);
+      .eq("baby_id", baby.id)
+      .eq("owned", true);
     if (itemsError) return errorResult(itemsError.message);
     const owned = new Set((items ?? []).map((r) => r.slug as WardrobeSlug));
 

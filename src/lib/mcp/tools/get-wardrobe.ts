@@ -16,7 +16,8 @@ export default defineTool({
     const { data, error } = await supabaseForUser(ctx)
       .from("wardrobe_items")
       .select("slug")
-      .eq("baby_id", baby_id);
+      .eq("baby_id", baby_id)
+      .eq("owned", true);
     if (error) return errorResult(error.message);
 
     const owned = new Set((data ?? []).map((r) => r.slug as WardrobeSlug));
