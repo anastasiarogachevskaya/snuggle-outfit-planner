@@ -46,37 +46,46 @@ export type Database = {
       }
       babies: {
         Row: {
+          clothing_style: string
           created_at: string
           dob: string
+          easy_toilet_access: boolean
           id: string
           latitude: number | null
           location_label: string | null
           longitude: number | null
           name: string
+          nappy_use: string
           temperature_pref: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          clothing_style?: string
           created_at?: string
           dob: string
+          easy_toilet_access?: boolean
           id?: string
           latitude?: number | null
           location_label?: string | null
           longitude?: number | null
           name: string
+          nappy_use?: string
           temperature_pref?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          clothing_style?: string
           created_at?: string
           dob?: string
+          easy_toilet_access?: boolean
           id?: string
           latitude?: number | null
           location_label?: string | null
           longitude?: number | null
           name?: string
+          nappy_use?: string
           temperature_pref?: number
           updated_at?: string
           user_id?: string

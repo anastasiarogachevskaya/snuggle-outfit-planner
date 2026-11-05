@@ -1,3 +1,4 @@
+import { compactChildPreferences, normalizeChildPreferences, type ChildPreferences } from "@/lib/child-preferences";
 import { useCallback, useEffect, useState } from "react";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 import {
@@ -56,11 +57,13 @@ export type GuestProfile = {
   version?: number;
   /** Optional garment details (v2). Only non-default fields are stored. */
   wardrobeDetails?: Partial<Record<WardrobeSlug, Partial<GarmentDetails>>>;
+  /** Optional child preferences (v3). Only non-default fields are stored. */
+  preferences?: Partial<ChildPreferences>;
   feedback: GuestFeedbackEntry[];
   createdAt: string;
 };
 
-export const GUEST_PROFILE_VERSION = 2;
+export const GUEST_PROFILE_VERSION = 3;
 
 export const GUEST_AGE_OPTIONS: {
   id: GuestAgeBand;
@@ -109,6 +112,7 @@ export function createGuestProfile(band: GuestAgeBand): GuestProfile {
     locationLabel: null,
     version: GUEST_PROFILE_VERSION,
     wardrobeDetails: {},
+    preferences: {},
     wardrobe: [...GUEST_DEFAULT_WARDROBE],
     feedback: [],
     createdAt: new Date().toISOString(),
@@ -131,6 +135,7 @@ export function createLocalProfile(name: string, dob: string, temperaturePref = 
     locationLabel: null,
     version: GUEST_PROFILE_VERSION,
     wardrobeDetails: {},
+    preferences: {},
     wardrobe: [...GUEST_DEFAULT_WARDROBE],
     feedback: [],
     createdAt: new Date().toISOString(),
@@ -167,6 +172,9 @@ export function upgradeGuestProfile(
     if (Object.keys(compact).length) wardrobeDetails[slug as WardrobeSlug] = compact;
   }
   if (JSON.stringify(wardrobeDetails) !== JSON.stringify(parsed.wardrobeDetails ?? {})) changed = true;
+  // v3: optional child preferences; missing = both / unknown / no.
+  const preferences = compactChildPreferences(normalizeChildPreferences(parsed.preferences));
+  if (JSON.stringify(preferences) !== JSON.stringify(parsed.preferences ?? {})) changed = true;
   if (parsed.version !== GUEST_PROFILE_VERSION) changed = true;
 
   return {
@@ -175,6 +183,7 @@ export function upgradeGuestProfile(
       version: GUEST_PROFILE_VERSION,
       wardrobe,
       wardrobeDetails,
+      preferences,
       feedback,
     },
     changed,
@@ -184,6 +193,11 @@ export function upgradeGuestProfile(
 /** Details for one slug, filled with defaults when the parent hasn't said. */
 export function guestGarmentDetails(profile: GuestProfile, slug: WardrobeSlug): GarmentDetails {
   return normalizeGarmentDetails(profile.wardrobeDetails?.[slug]);
+}
+
+/** Preferences filled with defaults when the parent hasn't said. */
+export function guestPreferences(profile: GuestProfile): ChildPreferences {
+  return normalizeChildPreferences(profile.preferences);
 }
 
 export function readGuestProfile(): GuestProfile | null {

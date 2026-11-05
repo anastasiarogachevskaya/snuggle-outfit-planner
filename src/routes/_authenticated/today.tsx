@@ -1,3 +1,4 @@
+import { normalizeChildPreferences } from "@/lib/child-preferences";
 import { normalizeGarmentDetails } from "@/lib/garment-details";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -78,6 +79,7 @@ function TodayPage() {
           latitude: guest.latitude,
           longitude: guest.longitude,
           location_label: guest.locationLabel,
+          ...normalizeChildPreferences(guest.preferences),
         })
         .select("id")
         .single();
