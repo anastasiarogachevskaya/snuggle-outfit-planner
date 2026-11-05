@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+// @ts-expect-error bun:test is provided by the bun test runner
+import { describe, expect, it } from "bun:test";
 import { normalizeGarmentDetails, isUsable, DEFAULT_GARMENT_DETAILS } from "@/lib/garment-details";
 import { upgradeGuestProfile, GUEST_PROFILE_VERSION, guestGarmentDetails } from "@/lib/guest-profile";
 
