@@ -285,25 +285,46 @@ export type Database = {
       }
       wardrobe_items: {
         Row: {
+          availability: string
           baby_id: string
           created_at: string
+          foot_coverage: string
           id: string
+          insulation: string
+          leggings_use: string
           owned: boolean
+          sleepwear_shape: string
           slug: string
+          updated_at: string
+          waterproof: string
         }
         Insert: {
+          availability?: string
           baby_id: string
           created_at?: string
+          foot_coverage?: string
           id?: string
+          insulation?: string
+          leggings_use?: string
           owned?: boolean
+          sleepwear_shape?: string
           slug: string
+          updated_at?: string
+          waterproof?: string
         }
         Update: {
+          availability?: string
           baby_id?: string
           created_at?: string
+          foot_coverage?: string
           id?: string
+          insulation?: string
+          leggings_use?: string
           owned?: boolean
+          sleepwear_shape?: string
           slug?: string
+          updated_at?: string
+          waterproof?: string
         }
         Relationships: [
           {
