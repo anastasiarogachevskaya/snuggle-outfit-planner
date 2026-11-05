@@ -214,14 +214,17 @@ export function readGuestProfile(): GuestProfile | null {
   }
 }
 
-export function writeGuestProfile(profile: GuestProfile) {
-  if (typeof window === "undefined") return;
+/** Returns false when the device refused the write (e.g. storage full). */
+export function writeGuestProfile(profile: GuestProfile): boolean {
+  if (typeof window === "undefined") return false;
   try {
     window.localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(profile));
+    return true;
   } catch {
     // Safari private mode throws on write. The guest trial is deliberately
     // throwaway, so losing it is survivable — crashing the first tap of the
     // funnel into the root error boundary is not.
+    return false;
   }
 }
 

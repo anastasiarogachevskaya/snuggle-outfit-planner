@@ -20,6 +20,9 @@ import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { isNativeApp } from "@/lib/platform";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 import { TemperaturePreference } from "@/components/temperature-preference";
+import { ChildPreferencesFields } from "@/components/child-preferences-fields";
+import { DEFAULT_CHILD_PREFERENCES, normalizeChildPreferences } from "@/lib/child-preferences";
+import { toddlerSupportEnabled } from "@/lib/feature-flags";
 
 export const Route = createFileRoute("/_authenticated/baby")({
   head: () => ({
@@ -66,6 +69,8 @@ function BabyPage() {
   const [locLabel, setLocLabel] = useState("");
   const [lat, setLat] = useState<number | null>(null);
   const [lon, setLon] = useState<number | null>(null);
+  const [prefs, setPrefs] = useState(DEFAULT_CHILD_PREFERENCES);
+  const showPrefs = toddlerSupportEnabled();
   const [locating, setLocating] = useState(false);
   const [locError, setLocError] = useState<LocationFailureStatus | null>(null);
 
@@ -88,6 +93,7 @@ function BabyPage() {
     setLocLabel(babyQ.data.location_label ?? "");
     setLat(babyQ.data.latitude);
     setLon(babyQ.data.longitude);
+    setPrefs(normalizeChildPreferences(babyQ.data));
   }, [babyQ.data]);
 
   const useGPS = async () => {
@@ -128,6 +134,8 @@ function BabyPage() {
         location_label: locLabel || null,
         latitude: lat,
         longitude: lon,
+        // Hidden controls leave the saved preferences exactly as they were.
+        ...(showPrefs ? prefs : {}),
         updated_at: new Date().toISOString(),
       };
       if (babyQ.data) {
@@ -193,6 +201,8 @@ function BabyPage() {
 
           <TemperaturePreference value={pref} onChange={setPref} />
 
+          {showPrefs && <ChildPreferencesFields value={prefs} onChange={setPrefs} />}
+
           <Field label="Location">
             <CitySearch
               value={locLabel}
@@ -249,6 +259,12 @@ function BabyPage() {
               </p>
             )}
           </Field>
+
+          {save.isError && (
+            <p role="alert" className="rounded-xl border border-destructive/25 bg-surface p-3 text-sm text-destructive">
+              Your changes weren't saved. They're still here — please try again.
+            </p>
+          )}
 
           <button
             type="submit"

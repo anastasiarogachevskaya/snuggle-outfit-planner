@@ -11,6 +11,7 @@ import {
   dobFromAgeBand,
   useGuestProfile,
   writeGuestProfile,
+  guestPreferences,
   type GuestAgeBand,
   type GuestFeedbackEntry,
   type GuestProfile,
@@ -39,6 +40,8 @@ import { isIOSApp } from "@/lib/platform";
 import { TempUnitToggle, useTempUnit } from "@/hooks/use-temp-unit";
 import { localizeClothingText } from "@/lib/clothing-text";
 import { TemperaturePreference } from "@/components/temperature-preference";
+import { ChildPreferencesFields } from "@/components/child-preferences-fields";
+import { compactChildPreferences } from "@/lib/child-preferences";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
@@ -226,8 +229,11 @@ function TryPage() {
       <LocalProfile
         profile={profile}
         onSave={(patch) => {
-          update(patch);
+          const next = { ...profile, ...patch };
+          if (!writeGuestProfile(next)) return false;
+          setProfile(next);
           setStep("today");
+          return true;
         }}
         onBack={() => setStep("today")}
         onOpenWardrobe={() => setStep("wardrobe")}
@@ -526,7 +532,7 @@ function LocalProfile({
   onReset,
 }: {
   profile: GuestProfile;
-  onSave: (patch: Partial<GuestProfile>) => void;
+  onSave: (patch: Partial<GuestProfile>) => boolean;
   onBack: () => void;
   onOpenWardrobe: () => void;
   onOpenAccount: () => void;
@@ -538,6 +544,9 @@ function LocalProfile({
   const [locationLabel, setLocationLabel] = useState(profile.locationLabel ?? "");
   const [latitude, setLatitude] = useState(profile.latitude);
   const [longitude, setLongitude] = useState(profile.longitude);
+  const [prefs, setPrefs] = useState(() => guestPreferences(profile));
+  const [saveFailed, setSaveFailed] = useState(false);
+  const showPrefs = toddlerSupportEnabled();
   const [confirmReset, setConfirmReset] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -547,7 +556,22 @@ function LocalProfile({
         className="mx-auto max-w-md px-6 py-8"
         onSubmit={(event) => {
           event.preventDefault();
-          onSave({ name: name.trim(), dob, temperaturePref, locationLabel, latitude, longitude });
+          const ok = onSave({
+            name: name.trim(),
+            dob,
+            temperaturePref,
+            locationLabel,
+            latitude,
+            longitude,
+            // Hidden controls leave the saved preferences exactly as they were.
+            ...(showPrefs ? { preferences: compactChildPreferences(prefs) } : {}),
+          });
+          setSaveFailed(!ok);
+          if (!ok) {
+            warningHaptic();
+            toast.error("Couldn't save on this device");
+            return;
+          }
           successHaptic();
           toast.success("Saved on this device");
         }}
@@ -584,6 +608,7 @@ function LocalProfile({
             />
           </label>
           <TemperaturePreference value={temperaturePref} onChange={setTemperaturePref} />
+          {showPrefs && <ChildPreferencesFields value={prefs} onChange={setPrefs} />}
           <div>
             <p className="mb-2 text-sm font-medium">Location</p>
             <CitySearch
@@ -599,6 +624,11 @@ function LocalProfile({
             />
           </div>
         </div>
+        {saveFailed && (
+          <p role="alert" className="mt-8 rounded-xl border border-destructive/25 bg-surface p-3 text-sm text-destructive">
+            This device couldn't save your changes. Your edits are still here — please try again.
+          </p>
+        )}
         <button className="mt-8 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20">
           Save
         </button>
