@@ -1,3 +1,4 @@
+import { normalizeGarmentDetails } from "@/lib/garment-details";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -85,7 +86,14 @@ function TodayPage() {
       if (localWardrobe.length > 0) {
         const { error: wErr } = await supabase
           .from("wardrobe_items")
-          .insert(localWardrobe.map((slug) => ({ baby_id: baby.id, slug, owned: true })));
+          .insert(
+            localWardrobe.map((slug) => ({
+              baby_id: baby.id,
+              slug,
+              owned: true,
+              ...normalizeGarmentDetails(guest.wardrobeDetails?.[slug]),
+            })),
+          );
         if (wErr) throw wErr;
       }
       // Comfort ratings tapped before signing up are part of the profile too —

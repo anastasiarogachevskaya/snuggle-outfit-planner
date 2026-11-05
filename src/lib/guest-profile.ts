@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
+import {
+  compactGarmentDetails,
+  normalizeGarmentDetails,
+  type GarmentDetails,
+} from "@/lib/garment-details";
 
 export const GUEST_STORAGE_KEY = "layerly:guest";
 
@@ -47,9 +52,15 @@ export type GuestProfile = {
   longitude: number | null;
   locationLabel: string | null;
   wardrobe: WardrobeSlug[];
+  /** Stored-format version; see upgradeGuestProfile. Missing = v1. */
+  version?: number;
+  /** Optional garment details (v2). Only non-default fields are stored. */
+  wardrobeDetails?: Partial<Record<WardrobeSlug, Partial<GarmentDetails>>>;
   feedback: GuestFeedbackEntry[];
   createdAt: string;
 };
+
+export const GUEST_PROFILE_VERSION = 2;
 
 export const GUEST_AGE_OPTIONS: {
   id: GuestAgeBand;
@@ -96,6 +107,8 @@ export function createGuestProfile(band: GuestAgeBand): GuestProfile {
     latitude: null,
     longitude: null,
     locationLabel: null,
+    version: GUEST_PROFILE_VERSION,
+    wardrobeDetails: {},
     wardrobe: [...GUEST_DEFAULT_WARDROBE],
     feedback: [],
     createdAt: new Date().toISOString(),
@@ -116,10 +129,61 @@ export function createLocalProfile(name: string, dob: string, temperaturePref = 
     latitude: null,
     longitude: null,
     locationLabel: null,
+    version: GUEST_PROFILE_VERSION,
+    wardrobeDetails: {},
     wardrobe: [...GUEST_DEFAULT_WARDROBE],
     feedback: [],
     createdAt: new Date().toISOString(),
   };
+}
+
+/**
+ * Versioned, repeatable upgrade of a stored profile. Running it on an
+ * already-current profile returns it unchanged (changed: false). Every
+ * existing field — ownership, feedback, name, dob, location — is kept.
+ */
+export function upgradeGuestProfile(
+  input: unknown,
+): { profile: GuestProfile; changed: boolean } | null {
+  if (!input || typeof input !== "object") return null;
+  const parsed = input as Partial<GuestProfile> & Record<string, unknown>;
+  if (!parsed.dob) return null;
+  let changed = false;
+  // Profiles created by older versions used the starter wardrobe without
+  // storing it explicitly. Preserve that choice instead of unticking everything.
+  const wardrobe = Array.isArray(parsed.wardrobe)
+    ? (parsed.wardrobe.filter((slug) => typeof slug === "string") as WardrobeSlug[])
+    : [...GUEST_DEFAULT_WARDROBE];
+  if (!Array.isArray(parsed.wardrobe) || wardrobe.length !== parsed.wardrobe.length) changed = true;
+  const feedback = Array.isArray(parsed.feedback) ? parsed.feedback : [];
+  if (!Array.isArray(parsed.feedback)) changed = true;
+
+  // v2: optional garment details keyed by slug; missing = unknown / available.
+  const rawDetails =
+    parsed.wardrobeDetails && typeof parsed.wardrobeDetails === "object" ? parsed.wardrobeDetails : {};
+  const wardrobeDetails: Partial<Record<WardrobeSlug, Partial<GarmentDetails>>> = {};
+  for (const [slug, d] of Object.entries(rawDetails)) {
+    const compact = compactGarmentDetails(normalizeGarmentDetails(d));
+    if (Object.keys(compact).length) wardrobeDetails[slug as WardrobeSlug] = compact;
+  }
+  if (JSON.stringify(wardrobeDetails) !== JSON.stringify(parsed.wardrobeDetails ?? {})) changed = true;
+  if (parsed.version !== GUEST_PROFILE_VERSION) changed = true;
+
+  return {
+    profile: {
+      ...(parsed as GuestProfile),
+      version: GUEST_PROFILE_VERSION,
+      wardrobe,
+      wardrobeDetails,
+      feedback,
+    },
+    changed,
+  };
+}
+
+/** Details for one slug, filled with defaults when the parent hasn't said. */
+export function guestGarmentDetails(profile: GuestProfile, slug: WardrobeSlug): GarmentDetails {
+  return normalizeGarmentDetails(profile.wardrobeDetails?.[slug]);
 }
 
 export function readGuestProfile(): GuestProfile | null {
@@ -127,18 +191,10 @@ export function readGuestProfile(): GuestProfile | null {
   try {
     const raw = window.localStorage.getItem(GUEST_STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as GuestProfile;
-    if (!parsed?.dob) return null;
-    return {
-      ...parsed,
-      // Profiles created by older versions used the starter wardrobe without
-      // storing it explicitly. Preserve that choice during the local-first
-      // migration instead of making every item appear unchecked.
-      wardrobe: Array.isArray(parsed.wardrobe)
-        ? (parsed.wardrobe.filter((slug) => typeof slug === "string") as WardrobeSlug[])
-        : [...GUEST_DEFAULT_WARDROBE],
-      feedback: Array.isArray(parsed.feedback) ? parsed.feedback : [],
-    };
+    const upgraded = upgradeGuestProfile(JSON.parse(raw));
+    if (!upgraded) return null;
+    if (upgraded.changed) writeGuestProfile(upgraded.profile);
+    return upgraded.profile;
   } catch {
     return null;
   }
