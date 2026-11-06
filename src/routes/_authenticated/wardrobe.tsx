@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WARDROBE_CATALOG, warmthTagClasses, type WardrobeSlug } from "@/lib/wardrobe-catalog";
@@ -9,6 +9,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { selectionHaptic, warningHaptic } from "@/lib/haptics";
 import { useTempUnit } from "@/hooks/use-temp-unit";
 import { localizeClothingText } from "@/lib/clothing-text";
+import { GarmentDetailsButton, GarmentDetailsDialog } from "@/components/garment-details-dialog";
+import { availabilityBadge, normalizeGarmentDetails, type GarmentDetails } from "@/lib/garment-details";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
   head: () => ({
@@ -50,7 +52,7 @@ function WardrobePage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wardrobe_items")
-        .select("slug,owned")
+        .select("slug,owned,insulation,waterproof,availability,sleepwear_shape,foot_coverage,leggings_use")
         .eq("baby_id", babyQ.data!.id);
       if (error) throw error;
       return data ?? [];
@@ -62,9 +64,30 @@ function WardrobePage() {
     (wardrobeQ.data ?? []).forEach((i) => m.set(i.slug, i.owned));
     return m;
   }, [wardrobeQ.data]);
+  const detailsMap = useMemo(() => {
+    const m = new Map<string, GarmentDetails>();
+    (wardrobeQ.data ?? []).forEach((i) => m.set(i.slug, normalizeGarmentDetails(i)));
+    return m;
+  }, [wardrobeQ.data]);
+  const [editing, setEditing] = useState<{ slug: WardrobeSlug; label: string } | null>(null);
+
+  // Writes only the changed detail columns on the existing row; ownership and
+  // the other details are untouched.
+  const saveDetails = async (slug: WardrobeSlug, patch: Partial<GarmentDetails>) => {
+    if (!babyQ.data) throw new Error("Profile not loaded");
+    const { data, error } = await supabase
+      .from("wardrobe_items")
+      .update(patch)
+      .eq("baby_id", babyQ.data.id)
+      .eq("slug", slug)
+      .select("slug");
+    if (error) throw error;
+    if (!data?.length) throw new Error("Item not found");
+    await qc.invalidateQueries({ queryKey: ["wardrobe"] });
+  };
 
   const wardrobeKey = ["wardrobe", babyQ.data?.id];
-  type WardrobeRow = { slug: string; owned: boolean };
+  type WardrobeRow = { slug: string; owned: boolean } & Partial<GarmentDetails>;
 
   const toggle = useMutation({
     mutationFn: async ({ slug, owned }: { slug: WardrobeSlug; owned: boolean }) => {
@@ -158,16 +181,17 @@ function WardrobePage() {
               <div className="space-y-2">
                 {WARDROBE_CATALOG.filter((i) => i.group === g).map((item) => {
                   const owned = ownedMap.get(item.slug) ?? false;
+                  const badge = owned ? availabilityBadge(detailsMap.get(item.slug)?.availability ?? "available") : null;
                   return (
+                    <div key={item.slug} className="flex min-w-0 items-center gap-2">
                     <button
-                      key={item.slug}
                       onClick={() => {
                         selectionHaptic();
                         toggle.mutate({ slug: item.slug as WardrobeSlug, owned: !owned });
                       }}
                       aria-pressed={owned}
                       className={
-                        "w-full min-w-0 flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left " +
+                        "flex-1 min-w-0 flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left " +
                         (owned
                           ? "bg-surface border-primary/30"
                           : "bg-canvas/60 border-black/5 opacity-60")
@@ -216,12 +240,31 @@ function WardrobePage() {
                         )}
                       </span>
                     </button>
+                    {owned && (
+                      <GarmentDetailsButton
+                        label={localizeClothingText(item.label, unit)}
+                        badge={badge}
+                        onClick={() => setEditing({ slug: item.slug as WardrobeSlug, label: localizeClothingText(item.label, unit) })}
+                      />
+                    )}
+                    </div>
                   );
                 })}
               </div>
             </section>
           ))}
         </div>
+
+        {editing && (
+          <GarmentDetailsDialog
+            open
+            slug={editing.slug}
+            label={editing.label}
+            details={detailsMap.get(editing.slug) ?? normalizeGarmentDetails(undefined)}
+            onOpenChange={(o) => !o && setEditing(null)}
+            onSave={(patch) => saveDetails(editing.slug, patch)}
+          />
+        )}
 
         <SiteFooter className="mt-14" />
       </div>

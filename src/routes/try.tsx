@@ -274,6 +274,12 @@ function TryPage() {
     return (
       <LocalWardrobe
         owned={new Set(profile.wardrobe)}
+        detailsFor={(slug) => guestGarmentDetails(profile, slug)}
+        onSaveDetails={async (slug, patch) => {
+          const next = withGuestGarmentDetails(profile, slug, patch);
+          if (!writeGuestProfile(next)) throw new Error("This device couldn't save");
+          setProfile(next);
+        }}
         onChange={(wardrobe) => update({ wardrobe, wardrobeSample: false })}
         onBack={() => setStep("today")}
       />
@@ -714,15 +720,20 @@ function LocalProfile({
 
 function LocalWardrobe({
   owned,
+  detailsFor,
+  onSaveDetails,
   onChange,
   onBack,
 }: {
   owned: Set<WardrobeSlug>;
+  detailsFor: (slug: WardrobeSlug) => GarmentDetails;
+  onSaveDetails: (slug: WardrobeSlug, patch: Partial<GarmentDetails>) => Promise<void>;
   onChange: (owned: WardrobeSlug[]) => void;
   onBack: () => void;
 }) {
   const [unit] = useTempUnit();
   const groups = Array.from(new Set(WARDROBE_CATALOG.map((item) => item.group)));
+  const [editing, setEditing] = useState<{ slug: WardrobeSlug; label: string } | null>(null);
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
       <div className="mx-auto max-w-md px-6 py-8">
@@ -742,9 +753,10 @@ function LocalWardrobe({
               <div className="space-y-2">
                 {WARDROBE_CATALOG.filter((item) => item.group === group).map((item) => {
                   const selected = owned.has(item.slug);
+                  const label = localizeClothingText(item.label, unit);
                   return (
+                    <div key={item.slug} className="flex min-w-0 items-center gap-2">
                     <button
-                      key={item.slug}
                       aria-pressed={selected}
                       onClick={() => {
                         const next = new Set(owned);
@@ -753,7 +765,7 @@ function LocalWardrobe({
                         onChange([...next]);
                         lightHaptic();
                       }}
-                      className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left ${selected ? "border-primary/30 bg-surface" : "border-black/5 opacity-60"}`}
+                      className={`flex min-w-0 flex-1 items-center gap-3 rounded-2xl border p-3 text-left ${selected ? "border-primary/30 bg-surface" : "border-black/5 opacity-60"}`}
                     >
                       <span
                         className={`flex size-6 items-center justify-center rounded-full text-xs ${selected ? "bg-primary text-primary-foreground" : "border border-black/10 bg-white"}`}
@@ -763,14 +775,32 @@ function LocalWardrobe({
                       <span className={selected ? "text-primary" : "text-ink/50"}>
                         <ClothingIcon slug={item.slug} size={22} />
                       </span>
-                      <span className="min-w-0 text-sm font-medium">{localizeClothingText(item.label, unit)}</span>
+                      <span className="min-w-0 text-sm font-medium">{label}</span>
                     </button>
+                    {selected && (
+                      <GarmentDetailsButton
+                        label={label}
+                        badge={availabilityBadge(detailsFor(item.slug).availability)}
+                        onClick={() => setEditing({ slug: item.slug, label })}
+                      />
+                    )}
+                    </div>
                   );
                 })}
               </div>
             </section>
           ))}
         </div>
+        {editing && (
+          <GarmentDetailsDialog
+            open
+            slug={editing.slug}
+            label={editing.label}
+            details={detailsFor(editing.slug)}
+            onOpenChange={(o) => !o && setEditing(null)}
+            onSave={(patch) => onSaveDetails(editing.slug, patch)}
+          />
+        )}
       </div>
     </div>
   );
