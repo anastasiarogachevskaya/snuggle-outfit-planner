@@ -265,3 +265,20 @@ export function useGuestProfile() {
 
   return { profile, loaded, setProfile, update };
 }
+
+/**
+ * Apply a parent's detail edits for one slug. Other slugs, ownership and
+ * untouched fields are kept; a slug back at all defaults is dropped from storage.
+ */
+export function withGuestGarmentDetails(
+  profile: GuestProfile,
+  slug: WardrobeSlug,
+  patch: Partial<GarmentDetails>,
+): GuestProfile {
+  const merged = { ...guestGarmentDetails(profile, slug), ...patch };
+  const compact = compactGarmentDetails(normalizeGarmentDetails(merged));
+  const wardrobeDetails = { ...(profile.wardrobeDetails ?? {}) };
+  if (Object.keys(compact).length) wardrobeDetails[slug] = compact;
+  else delete wardrobeDetails[slug];
+  return { ...profile, wardrobeDetails };
+}
