@@ -63,7 +63,7 @@ export function GarmentDetailsDialog({
     } catch (e) {
       setError(
         (e instanceof Error && e.message ? e.message + ". " : "") +
-          "Your changes weren't saved. Check your connection and try again.",
+          "Your changes weren't saved yet — please try again.",
       );
     } finally {
       setSaving(false);
