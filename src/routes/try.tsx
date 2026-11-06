@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { toddlerSupportEnabled } from "@/lib/feature-flags";
+import { toddlerRulesApply, toddlerSupportEnabled } from "@/lib/feature-flags";
+import { ageInMonths } from "@/lib/baby-age";
 import {
   clearGuestProfile,
   GUEST_AGE_OPTIONS,
@@ -146,7 +147,7 @@ function TryPage() {
       update({
         setupComplete: true,
         onboardingStep: "complete",
-        ...(wardrobe ? { wardrobe } : {}),
+        ...(wardrobe ? { wardrobe, wardrobeSample: false } : {}),
       });
       if (wardrobe) {
         logEvent("wardrobe_saved", { items: wardrobe.length });
@@ -155,9 +156,16 @@ function TryPage() {
       }
       setStep("today");
     };
+    const toddler = toddlerRulesApply(ageInMonths(profile.dob));
+    // A toddler's setup never starts from the app's sample basics; skipping
+    // leaves the stored wardrobe exactly as it was.
+    const startFromSample = toddler && profile.wardrobeSample === true;
     return (
       <WardrobeSetup
-        initialSelected={profile.wardrobe}
+        audience={toddler ? "toddler" : "infant"}
+        clothingStyle={guestPreferences(profile).clothing_style}
+        initialSelected={startFromSample ? [] : profile.wardrobe}
+        starterBasics={startFromSample ? false : undefined}
         onSave={(slugs) => finish(slugs)}
         onSkip={() => finish()}
       />
@@ -265,7 +273,7 @@ function TryPage() {
     return (
       <LocalWardrobe
         owned={new Set(profile.wardrobe)}
-        onChange={(wardrobe) => update({ wardrobe })}
+        onChange={(wardrobe) => update({ wardrobe, wardrobeSample: false })}
         onBack={() => setStep("today")}
       />
     );
@@ -275,6 +283,7 @@ function TryPage() {
     <>
       <TodayScreen
         guest={!localFirst}
+        sampleWardrobe={!localFirst || profile.wardrobeSample === true}
         baby={{
           id: "guest",
           name: profile.name,

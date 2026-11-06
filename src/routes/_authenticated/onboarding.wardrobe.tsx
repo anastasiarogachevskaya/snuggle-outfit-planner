@@ -7,6 +7,9 @@ import { toast } from "sonner";
 import { successHaptic, warningHaptic } from "@/lib/haptics";
 import { logEvent } from "@/lib/analytics";
 import { WardrobeSetup } from "@/components/wardrobe-setup";
+import { toddlerRulesApply } from "@/lib/feature-flags";
+import { ageInMonths } from "@/lib/baby-age";
+import { normalizeChildPreferences } from "@/lib/child-preferences";
 import { isNewWardrobe, ownedSlugs, wardrobeChanges, type StoredWardrobeRow } from "@/lib/wardrobe-diff";
 
 export const Route = createFileRoute("/_authenticated/onboarding/wardrobe")({
@@ -103,12 +106,15 @@ function OnboardingWardrobe() {
     );
   }
   if (!rowsQ.isSuccess) return <StatusScreen message="Loading your wardrobe…" />;
+  const toddler = toddlerRulesApply(ageInMonths(babyQ.data?.dob));
 
   return (
     <>
       <WardrobeSetup
         initialSelected={ownedSlugs(rowsQ.data) as WardrobeSlug[]}
         starterBasics={isNewWardrobe(rowsQ.data)}
+        audience={toddler ? "toddler" : "infant"}
+        clothingStyle={normalizeChildPreferences(babyQ.data).clothing_style}
         saving={saving}
         onSave={persist}
         onSkip={() => navigate({ to: "/today" })}
