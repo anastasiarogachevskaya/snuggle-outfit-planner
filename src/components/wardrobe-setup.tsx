@@ -12,6 +12,13 @@ import { ClothingIcon } from "@/components/icons";
 import { logEvent } from "@/lib/analytics";
 import { useTempUnit } from "@/hooks/use-temp-unit";
 import { localizeClothingText } from "@/lib/clothing-text";
+import {
+  planWardrobeSetup,
+  toddlerSuggestions,
+  type PlannedStep,
+  type SetupAudience,
+} from "@/lib/wardrobe-setup-plan";
+import type { ChildPreferences } from "@/lib/child-preferences";
 
 /**
  * The quick / detailed wardrobe setup UI, shared by the signed-in onboarding
@@ -24,6 +31,8 @@ export function WardrobeSetup({
   initialSelected,
   starterBasics,
   saving = false,
+  audience = "infant",
+  clothingStyle = "both",
   onSave,
   onSkip,
 }: {
@@ -31,6 +40,9 @@ export function WardrobeSetup({
   /** Preselect basics in Quick setup. Defaults to "only when nothing is selected". */
   starterBasics?: boolean;
   saving?: boolean;
+  /** From the shared age helper + toddler switch; "infant" keeps the original setup. */
+  audience?: SetupAudience;
+  clothingStyle?: ChildPreferences["clothing_style"];
   onSave: (slugs: WardrobeSlug[]) => void;
   onSkip: () => void;
 }) {
@@ -38,16 +50,23 @@ export function WardrobeSetup({
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState<Set<WardrobeSlug>>(() => new Set(initialSelected ?? []));
   const [prefilled, setPrefilled] = useState(false);
+  // Laid out from the wardrobe as it was opened, so tiles don't jump on tap.
+  const [plan] = useState<PlannedStep[]>(() =>
+    planWardrobeSetup(WARDROBE_STEPS, { audience, clothingStyle, owned: initialSelected ?? [] }),
+  );
+  const toddler = audience === "toddler";
+  const suggested = new Set<WardrobeSlug>(toddler ? toddlerSuggestions(clothingStyle) : []);
 
   useEffect(() => {
     // Keep a parent's existing selections; preselect basics once, only for a new wardrobe.
-    if (mode !== "quick" || prefilled) return;
+    // Toddler setup only suggests basics; it never ticks them.
+    if (mode !== "quick" || prefilled || toddler) return;
     setPrefilled(true);
     setSelected((prev) => {
       const allow = starterBasics ?? prev.size === 0;
       return allow && prev.size === 0 ? new Set(QUICK_SETUP_OWNED) : prev;
     });
-  }, [mode, prefilled, starterBasics]);
+  }, [mode, prefilled, starterBasics, toddler]);
 
   useEffect(() => {
     logEvent("wardrobe_chooser_viewed");
@@ -72,6 +91,19 @@ export function WardrobeSetup({
     setMode(next);
   };
 
+  const switchMode = () => {
+    const next = mode === "quick" ? "detailed" : "quick";
+    logEvent("wardrobe_mode_chosen", { mode: next });
+    setStep(0);
+    setMode(next);
+  };
+
+  const modeSwitch = mode !== "chooser" && (
+    <button onClick={switchMode} className="mt-3 text-xs font-medium text-primary underline underline-offset-2">
+      {mode === "quick" ? "Switch to detailed setup" : "Switch to quick setup"}
+    </button>
+  );
+
   const skip = () => {
     logEvent("wardrobe_mode_chosen", { mode: "skip" });
     onSkip();
@@ -83,7 +115,11 @@ export function WardrobeSetup({
         <div className="mt-8 space-y-3">
           <ChoiceCard
             title="Quick setup"
-            desc="We'll preselect common basics. Edit from there."
+            desc={
+              toddler
+                ? "See everyday basics on one screen. Tick only what you have."
+                : "We'll preselect common basics. Edit from there."
+            }
             onClick={() => chooseMode("quick")}
           />
           <ChoiceCard
@@ -100,28 +136,23 @@ export function WardrobeSetup({
 
   if (mode === "quick") {
     return (
-      <Shell title="Quick setup" subtitle="We preselected common items. Tap to adjust.">
+      <Shell
+        title="Quick setup"
+        subtitle={
+          toddler
+            ? "Tick what you have. Suggested items are common toddler basics—nothing is ticked for you."
+            : "We preselected common items. Tap to adjust."
+        }
+      >
+        {modeSwitch}
         <div className="mt-6 space-y-6">
-          {WARDROBE_STEPS.map((s) => (
+          {plan.map((s) => (
             <section key={s.id}>
               <p className="text-xs font-medium uppercase tracking-widest text-primary/60 mb-3">
                 {s.title}
               </p>
-              <div className="grid grid-cols-2 gap-2">
-                {s.items.map((i) => (
-                  <Tile
-                    key={i.slug}
-                    label={i.label}
-                    hint={i.hint}
-                    warmth={i.warmth}
-                    slug={i.slug}
-                    selected={selected.has(i.slug)}
-                    onClick={() => toggle(i.slug)}
-                    compact
-                  />
-                ))}
-              </div>
-               <GuidancePanel items={s.items} compact />
+              <StepTiles step={s} selected={selected} suggested={suggested} onToggle={toggle} compact />
+              <GuidancePanel items={[...s.primary, ...s.more]} compact />
             </section>
           ))}
         </div>
@@ -135,21 +166,22 @@ export function WardrobeSetup({
             disabled={saving}
             className="w-full rounded-2xl bg-primary text-primary-foreground py-4 font-medium shadow-lg shadow-primary/20 disabled:opacity-50"
           >
-            {saving ? "Saving…" : `Save ${WARDROBE_STEPS.reduce((n, s) => n + s.items.filter((i) => selected.has(i.slug)).length, 0)} items`}
+            {saving ? "Saving…" : `Save ${plan.reduce((n, s) => n + [...s.primary, ...s.more].filter((i) => selected.has(i.slug)).length, 0)} items`}
           </button>
         </div>
       </Shell>
     );
   }
 
-  const total = WARDROBE_STEPS.length;
-  const current = WARDROBE_STEPS[step]!;
+  const total = plan.length;
+  const current = plan[step]!;
   const isLast = step === total - 1;
 
   return (
     <Shell title={current.title} subtitle={current.question}>
+      {modeSwitch}
       <div className="mt-4 flex items-center gap-2">
-        {WARDROBE_STEPS.map((_, i) => (
+        {plan.map((_, i) => (
           <div
             key={i}
             className={"h-1 flex-1 rounded-full " + (i <= step ? "bg-primary" : "bg-black/10")}
@@ -160,21 +192,11 @@ export function WardrobeSetup({
         Step {step + 1} of {total}
       </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        {current.items.map((i) => (
-          <Tile
-            key={i.slug}
-            label={i.label}
-            hint={i.hint}
-            warmth={i.warmth}
-            slug={i.slug}
-            selected={selected.has(i.slug)}
-            onClick={() => toggle(i.slug)}
-          />
-        ))}
+      <div className="mt-6">
+        <StepTiles key={current.id} step={current} selected={selected} suggested={suggested} onToggle={toggle} />
       </div>
 
-       <GuidancePanel items={current.items} />
+      <GuidancePanel items={[...current.primary, ...current.more]} />
 
       <FooterNote />
 
@@ -208,6 +230,51 @@ export function WardrobeSetup({
         Skip for now
       </button>
     </Shell>
+  );
+}
+
+function StepTiles({
+  step,
+  selected,
+  suggested,
+  onToggle,
+  compact = false,
+}: {
+  step: PlannedStep;
+  selected: Set<WardrobeSlug>;
+  suggested: Set<WardrobeSlug>;
+  onToggle: (slug: WardrobeSlug) => void;
+  compact?: boolean;
+}) {
+  const [showAll, setShowAll] = useState(false);
+  const items = showAll ? [...step.primary, ...step.more] : step.primary;
+  return (
+    <>
+      <div className={"grid grid-cols-2 " + (compact ? "gap-2" : "gap-3")}>
+        {items.map((i) => (
+          <Tile
+            key={i.slug}
+            label={i.label}
+            hint={i.hint}
+            warmth={i.warmth}
+            slug={i.slug}
+            selected={selected.has(i.slug)}
+            suggested={suggested.has(i.slug)}
+            onClick={() => onToggle(i.slug)}
+            compact={compact}
+          />
+        ))}
+      </div>
+      {step.more.length > 0 && (
+        <button
+          onClick={() => setShowAll((v) => !v)}
+          aria-expanded={showAll}
+          className="mt-2 w-full rounded-xl border border-black/10 py-2 text-xs font-medium text-ink/70"
+        >
+          {showAll ? "Show fewer" : `View all (${step.more.length} more)`}
+        </button>
+      )}
+    </>
   );
 }
 
@@ -268,6 +335,7 @@ function Tile({
   warmth,
   slug,
   selected,
+  suggested,
   onClick,
   compact,
 }: {
@@ -276,6 +344,7 @@ function Tile({
   warmth?: WardrobeWarmth;
   slug: WardrobeSlug;
   selected: boolean;
+  suggested?: boolean;
   onClick: () => void;
   compact?: boolean;
 }) {
@@ -283,6 +352,7 @@ function Tile({
   return (
     <button
       onClick={onClick}
+      aria-pressed={selected}
       className={
         "relative flex h-full min-w-0 flex-col text-left rounded-2xl border transition-all " +
         (compact ? "min-h-32 p-3 " : "min-h-40 p-4 ") +
@@ -313,6 +383,11 @@ function Tile({
         )}
       </div>
       <p className="mt-2 text-[10px] leading-snug text-ink/55">{localizeClothingText(hint, unit)}</p>
+      {suggested && !selected && (
+        <span className="mt-2 self-start rounded-full border border-primary/30 px-1.5 py-0.5 text-[9px] font-semibold text-primary/80">
+          Suggested
+        </span>
+      )}
     </button>
   );
 }
