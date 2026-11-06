@@ -16,7 +16,11 @@ import {
   type GuestAgeBand,
   type GuestFeedbackEntry,
   type GuestProfile,
+  guestGarmentDetails,
+  withGuestGarmentDetails,
 } from "@/lib/guest-profile";
+import { GarmentDetailsButton, GarmentDetailsDialog } from "@/components/garment-details-dialog";
+import { availabilityBadge, type GarmentDetails } from "@/lib/garment-details";
 import { WardrobeSetup } from "@/components/wardrobe-setup";
 import {
   getCurrentLocation,
