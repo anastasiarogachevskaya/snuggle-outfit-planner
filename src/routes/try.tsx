@@ -165,7 +165,8 @@ function TryPage() {
         audience={toddler ? "toddler" : "infant"}
         clothingStyle={guestPreferences(profile).clothing_style}
         initialSelected={startFromSample ? [] : profile.wardrobe}
-        starterBasics={startFromSample ? false : undefined}
+        // Only the app's own sample counts as "new"; a parent's empty wardrobe stays empty.
+        starterBasics={startFromSample ? false : profile.wardrobeSample === true}
         onSave={(slugs) => finish(slugs)}
         onSkip={() => finish()}
       />
