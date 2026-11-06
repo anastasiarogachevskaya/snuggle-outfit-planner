@@ -51,6 +51,7 @@ export function TodayScreen({
   baby,
   owned,
   guest = false,
+  sampleWardrobe = false,
   feedbackPending = false,
   confirmation = null,
   onFeedback,
@@ -61,6 +62,8 @@ export function TodayScreen({
   baby: TodayBaby;
   owned: Set<WardrobeSlug>;
   guest?: boolean;
+  /** The outfit uses Layerly's sample wardrobe, not the parent's clothes. */
+  sampleWardrobe?: boolean;
   feedbackPending?: boolean;
   confirmation?: null | "cold" | "comfortable" | "warm";
   onFeedback: (rating: "cold" | "comfortable" | "warm", ctx: FeedbackContext | null) => void;
@@ -207,6 +210,12 @@ export function TodayScreen({
         {guest && (
           <p className="mb-6 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs text-ink/70">
             You're trying Layerly without an account. Nothing is saved yet.
+          </p>
+        )}
+        {sampleWardrobe && (
+          <p className="mb-6 rounded-2xl border border-black/10 bg-surface px-4 py-3 text-xs text-ink/70">
+            <span className="font-semibold">Sample wardrobe.</span> Outfits use common basics, not your own
+            clothes{guest ? "" : " — set up your wardrobe to use what you have"}.
           </p>
         )}
 

@@ -53,6 +53,11 @@ export type GuestProfile = {
   longitude: number | null;
   locationLabel: string | null;
   wardrobe: WardrobeSlug[];
+  /**
+   * True while `wardrobe` is still the app's sample of common basics rather
+   * than clothes the parent chose. Missing = parent's own (older profiles).
+   */
+  wardrobeSample?: boolean;
   /** Stored-format version; see upgradeGuestProfile. Missing = v1. */
   version?: number;
   /** Optional garment details (v2). Only non-default fields are stored. */
@@ -114,6 +119,7 @@ export function createGuestProfile(band: GuestAgeBand): GuestProfile {
     wardrobeDetails: {},
     preferences: {},
     wardrobe: [...GUEST_DEFAULT_WARDROBE],
+    wardrobeSample: true,
     feedback: [],
     createdAt: new Date().toISOString(),
   };
@@ -137,6 +143,7 @@ export function createLocalProfile(name: string, dob: string, temperaturePref = 
     wardrobeDetails: {},
     preferences: {},
     wardrobe: [...GUEST_DEFAULT_WARDROBE],
+    wardrobeSample: true,
     feedback: [],
     createdAt: new Date().toISOString(),
   };
