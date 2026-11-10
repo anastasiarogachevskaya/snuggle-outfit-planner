@@ -14,6 +14,7 @@ import {
   type GarmentDetailField,
   type GarmentDetails,
 } from "@/lib/garment-details";
+import { submitGarmentDetails } from "@/lib/garment-details-save";
 
 /**
  * Edit the optional details of one owned garment. Unset values show as
@@ -57,16 +58,14 @@ export function GarmentDetailsDialog({
     if (!dirty) return onOpenChange(false);
     setSaving(true);
     setError(null);
-    try {
-      await onSave(patch);
+    const result = await submitGarmentDetails(details, draft, onSave);
+    setSaving(false);
+    if (result.status === "failed") {
+      // Keep the parent's edits on screen so they can retry.
+      setDraft(result.draft);
+      setError(result.message);
+    } else {
       onOpenChange(false);
-    } catch (e) {
-      setError(
-        (e instanceof Error && e.message ? e.message + ". " : "") +
-          "Your changes weren't saved yet — please try again.",
-      );
-    } finally {
-      setSaving(false);
     }
   };
 
