@@ -11,6 +11,7 @@ import { useTempUnit } from "@/hooks/use-temp-unit";
 import { localizeClothingText } from "@/lib/clothing-text";
 import { GarmentDetailsButton, GarmentDetailsDialog } from "@/components/garment-details-dialog";
 import { availabilityBadge, normalizeGarmentDetails, type GarmentDetails } from "@/lib/garment-details";
+import { saveSignedInGarmentDetails } from "@/lib/garment-details-save";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
   head: () => ({
@@ -75,14 +76,7 @@ function WardrobePage() {
   // the other details are untouched.
   const saveDetails = async (slug: WardrobeSlug, patch: Partial<GarmentDetails>) => {
     if (!babyQ.data) throw new Error("Profile not loaded");
-    const { data, error } = await supabase
-      .from("wardrobe_items")
-      .update(patch)
-      .eq("baby_id", babyQ.data.id)
-      .eq("slug", slug)
-      .select("slug");
-    if (error) throw error;
-    if (!data?.length) throw new Error("Item not found");
+    await saveSignedInGarmentDetails(supabase, babyQ.data.id, slug, patch);
     await qc.invalidateQueries({ queryKey: ["wardrobe"] });
   };
 
