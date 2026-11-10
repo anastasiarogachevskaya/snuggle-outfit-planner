@@ -8,4 +8,4 @@ minimumReleaseAgeExcludes = ["@lovable.dev/vite-tanstack-config", "@lovable.dev/
 [test]
 # Unit tests live under src/. Browser tests in e2e/ belong to Playwright
 # (`bun run test:e2e`); bun's runner can't execute them.
-root = "src"
+pathIgnorePatterns = ["e2e/**"]
