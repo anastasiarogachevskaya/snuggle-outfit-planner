@@ -21,6 +21,9 @@
 - [x] Clarify clothing warmth and examples in setup, Profile wardrobe, and Layer up
 - [x] Balance the two-column wardrobe setup cards and move longer guidance below the grid
 
+- [x] T09 Outfits use only owned and available clothes (phone-kept, signed-in, checker, bottoms comparison, assistant)
+- [ ] T28 Live signed-in browser check of Wardrobe Details and availability on Today (needs a dedicated test account)
+
 ## Open (needs the user)
 
 - [ ] Real-iPhone TestFlight walkthrough of Continue with Apple / Continue with Google
