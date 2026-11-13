@@ -11,9 +11,18 @@
 
 ## Open
 
+- [x] Administrator outfit feedback inbox and AI grouping into reviewable fixes; signed-in save, live AI review, saved results, resolution and phone layout verified
+
+- [x] US: °F synced to account, US dates on blog, AAP sources, 30–60°F guides, US privacy note
+
+- [x] US adaptation: country-neutral App Store link, familiar clothing wording, and 1°F room-temperature steps
+- [x] Update baby-layering guide with cold-weather examples, Celsius/Fahrenheit, verified safety sources, and browser checks
 - [x] Make temperature preference readable and include it in iPhone and web profile setup
 - [x] Clarify clothing warmth and examples in setup, Profile wardrobe, and Layer up
 - [x] Balance the two-column wardrobe setup cards and move longer guidance below the grid
+
+- [x] T09 Outfits use only owned and available clothes (phone-kept, signed-in, checker, bottoms comparison, assistant)
+- [ ] T28 Live signed-in browser check of Wardrobe Details and availability on Today (needs a dedicated test account)
 
 ## Open (needs the user)
 

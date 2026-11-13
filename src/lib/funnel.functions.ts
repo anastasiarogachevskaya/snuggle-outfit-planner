@@ -195,9 +195,10 @@ export const getFunnelReport = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { days?: number; platform?: string }) => ({
     days: Math.min(Math.max(Math.round(input?.days ?? 30), 1), 180),
-    platform: (["all", "web", "app"].includes(input?.platform ?? "")
-      ? input!.platform
-      : "all") as "all" | "web" | "app",
+    platform: (["all", "web", "app"].includes(input?.platform ?? "") ? input!.platform : "all") as
+      | "all"
+      | "web"
+      | "app",
   }))
   .handler(async ({ data, context }): Promise<FunnelReport> => {
     // Hide the page entirely from anyone who is not the owner. This page

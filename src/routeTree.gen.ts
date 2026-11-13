@@ -30,10 +30,13 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedBabyRouteImport } from './routes/_authenticated/baby'
 import { Route as AuthenticatedInsightsRouteImport } from './routes/_authenticated/insights'
+import { Route as AuthenticatedOutfitFeedbackRouteImport } from './routes/_authenticated/outfit-feedback'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthenticatedWardrobeRouteImport } from './routes/_authenticated/wardrobe'
+import { Route as ApiOutfitAnalysisRouteImport } from './routes/api/outfit-analysis'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as GuideWeatherRouteImport } from './routes/guide.$weather'
 import { Route as GuideBabyLayeringRouteImport } from './routes/guide.baby-layering'
 import { Route as GuideStrollerWalksRouteImport } from './routes/guide.stroller-walks'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -148,6 +151,12 @@ const AuthenticatedInsightsRoute = AuthenticatedInsightsRouteImport.update({
   path: '/insights',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOutfitFeedbackRoute =
+  AuthenticatedOutfitFeedbackRouteImport.update({
+    id: '/outfit-feedback',
+    path: '/outfit-feedback',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
   id: '/today',
   path: '/today',
@@ -158,6 +167,11 @@ const AuthenticatedWardrobeRoute = AuthenticatedWardrobeRouteImport.update({
   path: '/wardrobe',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiOutfitAnalysisRoute = ApiOutfitAnalysisRouteImport.update({
+  id: '/api/outfit-analysis',
+  path: '/api/outfit-analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
@@ -166,6 +180,11 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/blog/$slug',
   path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuideWeatherRoute = GuideWeatherRouteImport.update({
+  id: '/guide/$weather',
+  path: '/guide/$weather',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuideBabyLayeringRoute = GuideBabyLayeringRouteImport.update({
@@ -227,9 +246,12 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/baby': typeof AuthenticatedBabyRoute
   '/insights': typeof AuthenticatedInsightsRoute
+  '/outfit-feedback': typeof AuthenticatedOutfitFeedbackRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/api/outfit-analysis': typeof ApiOutfitAnalysisRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/guide/$weather': typeof GuideWeatherRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
   '/guide/stroller-walks': typeof GuideStrollerWalksRoute
   '/blog/': typeof BlogIndexRoute
@@ -260,9 +282,12 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/baby': typeof AuthenticatedBabyRoute
   '/insights': typeof AuthenticatedInsightsRoute
+  '/outfit-feedback': typeof AuthenticatedOutfitFeedbackRoute
   '/today': typeof AuthenticatedTodayRoute
   '/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/api/outfit-analysis': typeof ApiOutfitAnalysisRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/guide/$weather': typeof GuideWeatherRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
   '/guide/stroller-walks': typeof GuideStrollerWalksRoute
   '/blog': typeof BlogIndexRoute
@@ -295,9 +320,12 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/baby': typeof AuthenticatedBabyRoute
   '/_authenticated/insights': typeof AuthenticatedInsightsRoute
+  '/_authenticated/outfit-feedback': typeof AuthenticatedOutfitFeedbackRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/_authenticated/wardrobe': typeof AuthenticatedWardrobeRoute
+  '/api/outfit-analysis': typeof ApiOutfitAnalysisRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/guide/$weather': typeof GuideWeatherRoute
   '/guide/baby-layering': typeof GuideBabyLayeringRoute
   '/guide/stroller-walks': typeof GuideStrollerWalksRoute
   '/blog/': typeof BlogIndexRoute
@@ -330,9 +358,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/baby'
     | '/insights'
+    | '/outfit-feedback'
     | '/today'
     | '/wardrobe'
+    | '/api/outfit-analysis'
     | '/blog/$slug'
+    | '/guide/$weather'
     | '/guide/baby-layering'
     | '/guide/stroller-walks'
     | '/blog/'
@@ -363,9 +394,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/baby'
     | '/insights'
+    | '/outfit-feedback'
     | '/today'
     | '/wardrobe'
+    | '/api/outfit-analysis'
     | '/blog/$slug'
+    | '/guide/$weather'
     | '/guide/baby-layering'
     | '/guide/stroller-walks'
     | '/blog'
@@ -397,9 +431,12 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/baby'
     | '/_authenticated/insights'
+    | '/_authenticated/outfit-feedback'
     | '/_authenticated/today'
     | '/_authenticated/wardrobe'
+    | '/api/outfit-analysis'
     | '/blog/$slug'
+    | '/guide/$weather'
     | '/guide/baby-layering'
     | '/guide/stroller-walks'
     | '/blog/'
@@ -429,7 +466,9 @@ export interface RootRouteChildren {
   WebAppRoute: typeof WebAppRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ApiOutfitAnalysisRoute: typeof ApiOutfitAnalysisRoute
   BlogSlugRoute: typeof BlogSlugRoute
+  GuideWeatherRoute: typeof GuideWeatherRoute
   GuideBabyLayeringRoute: typeof GuideBabyLayeringRoute
   GuideStrollerWalksRoute: typeof GuideStrollerWalksRoute
   BlogIndexRoute: typeof BlogIndexRoute
@@ -588,6 +627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInsightsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/outfit-feedback': {
+      id: '/_authenticated/outfit-feedback'
+      path: '/outfit-feedback'
+      fullPath: '/outfit-feedback'
+      preLoaderRoute: typeof AuthenticatedOutfitFeedbackRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/today': {
       id: '/_authenticated/today'
       path: '/today'
@@ -602,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWardrobeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/outfit-analysis': {
+      id: '/api/outfit-analysis'
+      path: '/api/outfit-analysis'
+      fullPath: '/api/outfit-analysis'
+      preLoaderRoute: typeof ApiOutfitAnalysisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/': {
       id: '/blog/'
       path: '/blog'
@@ -614,6 +667,13 @@ declare module '@tanstack/react-router' {
       path: '/blog/$slug'
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide/$weather': {
+      id: '/guide/$weather'
+      path: '/guide/$weather'
+      fullPath: '/guide/$weather'
+      preLoaderRoute: typeof GuideWeatherRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/guide/baby-layering': {
@@ -672,6 +732,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedBabyRoute: typeof AuthenticatedBabyRoute
   AuthenticatedInsightsRoute: typeof AuthenticatedInsightsRoute
+  AuthenticatedOutfitFeedbackRoute: typeof AuthenticatedOutfitFeedbackRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
   AuthenticatedWardrobeRoute: typeof AuthenticatedWardrobeRoute
   AuthenticatedOnboardingWardrobeRoute: typeof AuthenticatedOnboardingWardrobeRoute
@@ -681,6 +742,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedBabyRoute: AuthenticatedBabyRoute,
   AuthenticatedInsightsRoute: AuthenticatedInsightsRoute,
+  AuthenticatedOutfitFeedbackRoute: AuthenticatedOutfitFeedbackRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
   AuthenticatedWardrobeRoute: AuthenticatedWardrobeRoute,
   AuthenticatedOnboardingWardrobeRoute: AuthenticatedOnboardingWardrobeRoute,
@@ -709,7 +771,9 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiOutfitAnalysisRoute: ApiOutfitAnalysisRoute,
   BlogSlugRoute: BlogSlugRoute,
+  GuideWeatherRoute: GuideWeatherRoute,
   GuideBabyLayeringRoute: GuideBabyLayeringRoute,
   GuideStrollerWalksRoute: GuideStrollerWalksRoute,
   BlogIndexRoute: BlogIndexRoute,

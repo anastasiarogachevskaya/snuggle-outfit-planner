@@ -9,6 +9,7 @@ import {
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { ageInMonths } from "@/lib/baby-age";
+import { SiteFooter } from "@/components/site-footer";
 import { selectionHaptic, lightHaptic } from "@/lib/haptics";
 import { WeatherSummary } from "./weather-summary";
 import { ActivityPicker } from "./activity-picker";
@@ -16,7 +17,7 @@ import { OutfitResult } from "./outfit-result";
 import { FeedbackPanel } from "./feedback-panel";
 import { CheckOutfitPanel } from "./check-outfit-panel";
 import { applyBottomChoice } from "@/lib/recommend/compare-bottoms";
-
+import type { SetAsideReason } from "@/lib/wardrobe-eligibility";
 
 /** Fires a selection haptic only when the value actually changes. */
 function change<T>(current: T, next: T, set: (v: T) => void) {
@@ -49,7 +50,9 @@ export type FeedbackContext = {
 export function TodayScreen({
   baby,
   owned,
+  setAside,
   guest = false,
+  sampleWardrobe = false,
   feedbackPending = false,
   confirmation = null,
   onFeedback,
@@ -58,8 +61,13 @@ export function TodayScreen({
   secondaryAction,
 }: {
   baby: TodayBaby;
+  /** Eligible wardrobe: owned and (when filtering applies) available. */
   owned: Set<WardrobeSlug>;
+  /** Owned items the parent marked unavailable — shown as such, never used. */
+  setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>;
   guest?: boolean;
+  /** The outfit uses Layerly's sample wardrobe, not the parent's clothes. */
+  sampleWardrobe?: boolean;
   feedbackPending?: boolean;
   confirmation?: null | "cold" | "comfortable" | "warm";
   onFeedback: (rating: "cold" | "comfortable" | "warm", ctx: FeedbackContext | null) => void;
@@ -77,16 +85,18 @@ export function TodayScreen({
   const [situation, setSituation] = useState<Situation>("walk");
   const babyId = baby.id;
   const [roomTemp, setRoomTemp] = useState(21);
+  const [loadedRoomBaby, setLoadedRoomBaby] = useState<string | null>(null);
   useEffect(() => {
     if (!babyId || typeof window === "undefined") return;
     const stored = window.localStorage.getItem(`layerly:roomTemp:${babyId}`);
     const n = stored ? Number(stored) : NaN;
     setRoomTemp(Number.isFinite(n) ? n : 21);
+    setLoadedRoomBaby(babyId);
   }, [babyId]);
   useEffect(() => {
-    if (!babyId || typeof window === "undefined") return;
+    if (!babyId || loadedRoomBaby !== babyId || typeof window === "undefined") return;
     window.localStorage.setItem(`layerly:roomTemp:${babyId}`, String(roomTemp));
-  }, [babyId, roomTemp]);
+  }, [babyId, roomTemp, loadedRoomBaby]);
 
   const ageMonths = ageInMonths(baby.dob);
   const pramAllowed = ageMonths === null || ageMonths <= 6;
@@ -103,7 +113,6 @@ export function TodayScreen({
   const [duration, setDuration] = useState<30 | 60 | 90>(30);
   const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
   const [checkingOutfit, setCheckingOutfit] = useState(false);
-  const [tab, setTab] = useState<"activity" | "outfit" | "review">("outfit");
   // The warmth model doesn't apply to sleep, so drop out of the checker if
   // the parent switches activity while it's open.
   useEffect(() => {
@@ -114,7 +123,10 @@ export function TodayScreen({
   const [leaveIn, setLeaveIn] = useState(0);
   const planningAhead = situation === "walk" && leaveIn > 0;
   const weather = useMemo(
-    () => (weatherQ.data && planningAhead ? weatherAtMinutesFromNow(weatherQ.data, leaveIn) : weatherQ.data),
+    () =>
+      weatherQ.data && planningAhead
+        ? weatherAtMinutesFromNow(weatherQ.data, leaveIn)
+        : weatherQ.data,
     [weatherQ.data, planningAhead, leaveIn],
   );
 
@@ -137,7 +149,8 @@ export function TodayScreen({
       cloudCoverPct: weather.cloudCoverPct,
       feelsLikeAtEndC:
         situation === "walk"
-          ? (feelsLikeAtMinutesFromNow(weatherQ.data!, (planningAhead ? leaveIn : 0) + duration) ?? undefined)
+          ? (feelsLikeAtMinutesFromNow(weatherQ.data!, (planningAhead ? leaveIn : 0) + duration) ??
+            undefined)
           : undefined,
     });
   }, [
@@ -182,15 +195,8 @@ export function TodayScreen({
         }
       : null;
 
-  const summary =
-    situation === "walk"
-      ? `Walk · ${transportMode === "pram" ? "Pram" : transportMode === "carrier" ? "Carrier" : "Stroller"} · ${duration === 90 ? "60+" : duration} min`
-      : situation === "home"
-        ? `Home · ${homeActivity === "sleeping" ? "Sleeping" : "Awake"} · ${roomTemp}°`
-        : "Car";
-
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas font-sans text-ink pb-32">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas font-sans text-ink pb-16">
       <div className="mx-auto w-full max-w-md min-w-0 px-6 py-6">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 mb-8">
           <div className="min-w-0">
@@ -209,7 +215,19 @@ export function TodayScreen({
           </button>
         </header>
 
-        <section className="mb-5">
+        {guest && (
+          <p className="mb-6 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs text-ink/70">
+            You're trying Layerly without an account. Nothing is saved yet.
+          </p>
+        )}
+        {sampleWardrobe && (
+          <p className="mb-6 rounded-2xl border border-black/10 bg-surface px-4 py-3 text-xs text-ink/70">
+            <span className="font-semibold">Sample wardrobe.</span> Outfits use common basics, not
+            your own clothes{guest ? "" : " — set up your wardrobe to use what you have"}.
+          </p>
+        )}
+
+        <section className="mb-6">
           <WeatherSummary
             weather={weather}
             isLoading={weatherQ.isLoading}
@@ -225,129 +243,108 @@ export function TodayScreen({
           />
         </section>
 
-        <div role="tablist" className="mb-6 flex rounded-2xl bg-ink/5 p-1">
-          {(["activity", "outfit", "review"] as const).map((t) => (
-            <button
-              key={t}
-              role="tab"
-              aria-selected={tab === t}
-              onClick={() => change(tab, t, setTab)}
-              className={`flex-1 rounded-xl py-2 text-xs font-semibold capitalize transition-all ${
-                tab === t ? "bg-surface text-primary shadow-sm" : "text-ink/50"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        <ActivityPicker
+          situation={situation}
+          onSituationChange={(s) => change(situation, s, setSituation)}
+          pramAllowed={pramAllowed}
+          transportMode={transportMode}
+          onTransportModeChange={(m) => change(transportMode, m, setTransportMode)}
+          duration={duration}
+          onDurationChange={(d) => change(duration, d, setDuration)}
+          homeActivity={homeActivity}
+          onHomeActivityChange={(a) => change(homeActivity, a, setHomeActivity)}
+          roomTemp={roomTemp}
+          onRoomTempChange={setRoomTemp}
+        />
 
-        {tab === "activity" && (
-          <>
-            <ActivityPicker
-              situation={situation}
-              onSituationChange={(s) => change(situation, s, setSituation)}
-              pramAllowed={pramAllowed}
-              transportMode={transportMode}
-              onTransportModeChange={(m) => change(transportMode, m, setTransportMode)}
-              duration={duration}
-              onDurationChange={(d) => change(duration, d, setDuration)}
-              homeActivity={homeActivity}
-              onHomeActivityChange={(a) => change(homeActivity, a, setHomeActivity)}
-              roomTemp={roomTemp}
-              onRoomTempChange={setRoomTemp}
-            />
-            <button
-              onClick={() => setTab("outfit")}
-              className="mt-2 w-full rounded-2xl bg-primary py-3 text-sm font-semibold text-primary-foreground"
-            >
-              See outfit
-            </button>
-          </>
-        )}
-
-        {tab === "outfit" && (
-          <>
-            <button
-              onClick={() => setTab("activity")}
-              className="mb-4 inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
-            >
-              {summary} <span aria-hidden>›</span>
-            </button>
-            {/* The warmth-comparison model is clo-based and doesn't apply to
-                TOG-rated sleep sacks, so this replaces the recommendation card
-                only while awake. */}
-            {rec && checkingOutfit ? (
-              <CheckOutfitPanel
-                rec={rec}
+        {/* The warmth-comparison model is clo-based and doesn't apply to
+            TOG-rated sleep sacks, so this replaces the recommendation card
+            only while awake — during sleep there's nothing to check. */}
+        {rec && checkingOutfit ? (
+          <CheckOutfitPanel
+            rec={rec}
+            owned={owned}
+            setAside={setAside}
+            weather={weather}
+            onBack={() => setCheckingOutfit(false)}
+          />
+        ) : (
+          rec &&
+          displayedRec && (
+            <>
+              <OutfitResult
+                rec={displayedRec}
                 owned={owned}
-                weather={weather}
-                onBack={() => setCheckingOutfit(false)}
+                setAside={setAside}
+                onOpenWardrobe={onOpenWardrobe}
               />
-            ) : (
-              rec &&
-              displayedRec && (
-                <OutfitResult rec={displayedRec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
-              )
-            )}
-          </>
+              {/* Compare bottoms (BottomsPreview) hidden for now — owner is rethinking it. */}
+            </>
+          )
         )}
 
-        {tab === "review" && (
-          <>
-            {rec && !planningAhead ? (
-              <FeedbackPanel
-                babyName={baby.name}
-                feedbackPending={feedbackPending}
-                confirmation={confirmation}
-                onFeedback={(rating) => onFeedback(rating, feedbackCtx)}
-              />
-            ) : (
-              <p className="rounded-2xl bg-surface p-5 text-sm text-ink/60 ring-1 ring-ink/5">
-                You can rate the outfit once you're back from the walk.
-              </p>
-            )}
-            {guest && (
-              <p className="mt-4 text-xs text-ink/50">
-                You're trying Layerly without an account. Nothing is saved yet.
-              </p>
-            )}
-            <nav className="mt-6 divide-y divide-ink/5 overflow-hidden rounded-2xl bg-surface ring-1 ring-ink/5 text-sm">
-              <button onClick={onOpenWardrobe} className="flex w-full justify-between px-5 py-4 text-left font-medium text-ink">
-                Wardrobe <span className="text-ink/30">›</span>
-              </button>
-              <button onClick={onOpenProfile} className="flex w-full justify-between px-5 py-4 text-left text-ink">
-                Baby profile <span className="text-ink/30">›</span>
-              </button>
-              <button onClick={secondaryAction.onClick} className="flex w-full justify-between px-5 py-4 text-left text-ink/60">
-                {secondaryAction.label} <span className="text-ink/30">›</span>
-              </button>
-            </nav>
-          </>
-        )}
-      </div>
-
-      {rec && !checkingOutfit && !(situation === "home" && homeActivity === "sleeping") && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-ink/5 bg-surface pb-[env(safe-area-inset-bottom)]">
+        {rec && !checkingOutfit && !(situation === "home" && homeActivity === "sleeping") && (
           <button
             onClick={() => {
               lightHaptic();
-              setTab("outfit");
               setCheckingOutfit(true);
             }}
-            className="mx-auto flex w-full max-w-md items-center justify-between px-6 py-4 text-left"
+            className="group relative mb-6 w-full text-left"
           >
-            <span>
-              <span className="block text-sm font-semibold text-ink">Layer up</span>
-              <span className="block text-xs text-ink/50">Build your own outfit</span>
-            </span>
-            <span className="flex size-11 items-center justify-center rounded-2xl bg-ink text-canvas shadow-lg">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            </span>
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary/10 to-accent/10 blur-md opacity-60" />
+            <div className="relative flex items-center justify-between rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-ink/5 transition-transform duration-150 active:scale-[0.98]">
+              <div className="flex flex-col">
+                <span className="text-base font-semibold text-ink">Layer up</span>
+                <span className="mt-0.5 text-sm text-ink/60">Build your own outfit for today</span>
+              </div>
+              <div className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M8 4 4.5 6 3 11l3 1v7h12v-7l3-1-1.5-5L16 4l-2 1.5a3 3 0 0 1-4 0Z" />
+                  <path d="m9 13 2 2 4-4" />
+                </svg>
+                <span className="absolute -top-1 -right-1 size-3 rounded-full bg-accent ring-2 ring-surface" />
+              </div>
+            </div>
           </button>
-        </div>
-      )}
+        )}
+
+        {/* Nothing to rate when no outfit could be worked out, and the
+            subjective "how did it feel" question doesn't apply while the
+            parent is busy answering the objective outfit check instead. */}
+        {rec && !checkingOutfit && !planningAhead && (
+          <FeedbackPanel
+            babyName={baby.name}
+            feedbackPending={feedbackPending}
+            confirmation={confirmation}
+            onFeedback={(rating) => onFeedback(rating, feedbackCtx)}
+          />
+        )}
+
+        <footer className="mt-10 grid grid-cols-3 items-center gap-2 border-t border-black/5 pt-6 text-sm">
+          <button onClick={onOpenWardrobe} className="text-left text-primary font-medium">
+            Wardrobe →
+          </button>
+          <button onClick={onOpenProfile} className="text-center text-ink/60">
+            Baby profile
+          </button>
+          <button onClick={secondaryAction.onClick} className="text-right text-ink/40">
+            {secondaryAction.label}
+          </button>
+        </footer>
+
+        <SiteFooter className="mt-10" />
+      </div>
     </div>
   );
 }

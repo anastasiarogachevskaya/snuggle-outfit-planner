@@ -44,18 +44,14 @@ describe("mapWardrobe", () => {
       NO_ACCS,
       own("light_merino_layer"),
     );
-    expect(sweaterNeed.babyClothing.find((i) => i.slot === "mid")?.slug).toBe(
-      "light_merino_layer",
-    );
+    expect(sweaterNeed.babyClothing.find((i) => i.slot === "mid")?.slug).toBe("light_merino_layer");
 
     const fleeceNeed = mapWardrobe(
       { base: "diaper_only", bottom: "none", mid: "fleece", outer: "none" },
       NO_ACCS,
       own("light_merino_layer"),
     );
-    expect(fleeceNeed.babyClothing.find((i) => i.slot === "mid")?.slug).toBe(
-      "fleece_overall",
-    );
+    expect(fleeceNeed.babyClothing.find((i) => i.slot === "mid")?.slug).toBe("fleece_overall");
     expect(fleeceNeed.missing).toContain("fleece_overall");
   });
 

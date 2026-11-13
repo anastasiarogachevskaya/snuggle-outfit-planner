@@ -22,51 +22,52 @@ export type BlogPost = {
 /** Newest first. */
 export const BLOG_POSTS: BlogPost[] = [
   {
-    slug: "dressed-for-when-you-leave",
-    title: "Dressed for when you actually leave",
-    date: "2026-10-07",
+    slug: "plan-outfits-ahead",
+    title: "Plan your baby's outfit for later today",
+    date: "2026-10-08",
     summary:
-      "Getting ready twenty minutes before a walk? Tell Layerly when you're heading out, and the outfit is for that moment, not this one.",
+      "Pick the hour you're heading out and Layerly shows that hour's forecast and the outfit to match.",
     sections: [
       {
         paragraphs: [
-          "A recommendation for right now is not always the one you need. Half the time, getting a baby dressed, finding the stroller, and getting out the door takes a while — and by the time you're actually on the pavement, the weather has moved on from the one Layerly answered for.",
-          "So on a walk, the time in the weather line is no longer fixed to now. Tap it, and Layerly plans for whenever you're really leaving.",
+          "Plenty of walks don't start right now. There's a nap to finish, a feed to fit in, or an afternoon stroll you'd like to plan over breakfast. Until now, Layerly only answered for the weather outside this minute — which isn't much help when you're leaving at four.",
+          "So we made the time something you can choose.",
+        ],
+      },
+      {
+        heading: "Tap the time beside the weather",
+        paragraphs: [
+          "On the Today screen, pick Walk. Next to the temperature you'll see the word Now, underlined. Tap it and choose when you plan to go: in an hour, in two, or any later hour today.",
         ],
         image: {
-          src: "/blog/dressed-for-when-you-leave/now.png",
-          alt: "The Today screen weather card, showing the underlined word 'Now' next to 12 degrees and Drizzle.",
-          caption: "The time word sits right where you'd expect the time to be.",
+          src: "/blog/plan-ahead/now.png",
+          alt: "The Layerly Today screen with an underlined 'Now' next to the current temperature, above the walk options and the outfit recommendation.",
+          caption: "The underlined Now is the time picker.",
         },
       },
       {
-        heading: "Now, in an hour, or a specific time",
+        heading: "Everything updates together",
         paragraphs: [
-          "Tap the word and you get the obvious options first — Now, in 1 hour, in 2 hours — followed by every full hour left today. Pick 21:00 and the word itself becomes 21:00, with a small note confirming what just happened: the outfit below is for then, not for this minute.",
-          "Under the hood, Layerly pulls the hourly forecast from Open-Meteo rather than just the current reading, matches it to the closest hour, and reshapes it into a full weather snapshot — temperature, feels-like, conditions, UV, cloud cover — as if that were the current weather. Nothing downstream needs to know the difference.",
+          "Once you choose a time, the temperature, conditions and feels-like reading switch to the forecast for that hour, and the outfit below follows. A short line under the weather reminds you that you're looking at a forecast, not the conditions outside right now.",
+          "Your travel choice and walk length stay as you set them, so you can compare a morning and an evening walk side by side and see what actually changes.",
         ],
         image: {
-          src: "/blog/dressed-for-when-you-leave/picked-time.png",
-          alt: "The weather card after picking 21:00, now reading 12 degrees, Overcast, with a note that the outfit below is for 21:00 too.",
-          caption: "Pick a time, and the card tells you plainly what it's planning around.",
+          src: "/blog/plan-ahead/later.png",
+          alt: "The Today screen with 18:00 selected, showing the forecast for that hour and a matching outfit with a fleece overall, warm hat and warm socks.",
+          caption: "Planning for 18:00 — the forecast and outfit are both for then.",
         },
       },
       {
-        heading: "The whole recommendation moves with it",
+        heading: "A forecast is still a forecast",
         paragraphs: [
-          "This isn't a second number tucked away somewhere. Every part of the recommendation — the layers, the warnings, the suggested extras — replans around the time you picked, exactly the way it already does for duration and transport mode.",
-          "In this case, picking 21:00 cleared a rain-cover warning that was showing for right now: the drizzle Layerly saw at the moment wasn't expected to last into the evening. That's the kind of difference twenty minutes of getting ready can make, and now the app accounts for it instead of you having to guess.",
+          "Weather can change, especially a few hours out. Use the planned outfit to get things ready, then glance at Now before you leave — it only takes a tap to switch back.",
+          "Feedback after the walk is only asked about the current outfit, so what Layerly learns about your baby stays based on what they actually wore.",
         ],
-        image: {
-          src: "/blog/dressed-for-when-you-leave/outfit-for-later.png",
-          alt: "The Outfit tab showing a full layered recommendation — long-sleeve bodysuit, warm bottoms and more — planned for 21:00 instead of right now.",
-          caption: "Same engine, same wardrobe — just aimed at the right moment.",
-        },
       },
       {
-        heading: "Why it matters",
+        heading: "Try it",
         paragraphs: [
-          "A baby app that assumes you're walking out the door the instant you open it was never quite honest about how mornings actually go. Bags get packed, nappies get changed, someone loses a shoe. Letting you say when you're actually leaving means the advice you act on is the advice that was right when you needed it — not the moment you happened to check your phone.",
+          "Open Today, choose Walk and tap Now. Next time you're planning an afternoon outing, you'll know what to lay out before the morning gets busy.",
         ],
       },
     ],
@@ -131,8 +132,7 @@ export const BLOG_POSTS: BlogPost[] = [
     slug: "layerly-on-the-app-store",
     title: "Layerly is on the App Store",
     date: "2026-09-15",
-    summary:
-      "The iPhone app is here — and you can set it up without an email or a password.",
+    summary: "The iPhone app is here — and you can set it up without an email or a password.",
     sections: [
       {
         paragraphs: [
@@ -229,8 +229,7 @@ export const BLOG_POSTS: BlogPost[] = [
     slug: "advice-before-you-leave",
     title: "Advice that arrives before you leave",
     date: "2026-08-24",
-    summary:
-      "Getting the weather quickly and reliably, so the morning answer is there in seconds.",
+    summary: "Getting the weather quickly and reliably, so the morning answer is there in seconds.",
     sections: [
       {
         paragraphs: [
@@ -402,7 +401,7 @@ export const BLOG_POSTS: BlogPost[] = [
 export const getPost = (slug: string) => BLOG_POSTS.find((p) => p.slug === slug);
 
 export const formatPostDate = (iso: string) =>
-  new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", {
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
     day: "numeric",
     month: "long",
     year: "numeric",

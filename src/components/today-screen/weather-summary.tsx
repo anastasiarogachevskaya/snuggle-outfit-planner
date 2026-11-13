@@ -1,3 +1,5 @@
+import { useTempUnit } from "@/hooks/use-temp-unit";
+import { formatTemp } from "@/lib/units";
 import { type fetchWeather } from "@/lib/weather";
 import { DepartureTimeWord, hourLabel, type LeaveIn } from "./departure-picker";
 
@@ -19,24 +21,26 @@ export function WeatherSummary({
   /** When set (Walk), the leading time word is tappable to pick a later hour. */
   timeSelector?: { value: LeaveIn; onChange: (v: LeaveIn) => void };
 }) {
+  const [unit] = useTempUnit();
   if (weather) {
     return (
-      <div className="rounded-3xl bg-surface p-5 shadow-sm ring-1 ring-ink/5">
+      <div>
         <div className="flex items-baseline gap-2 flex-wrap">
           {timeSelector && (
             <DepartureTimeWord value={timeSelector.value} onChange={timeSelector.onChange} />
           )}
-          <span className="text-4xl font-serif font-semibold text-ink">
-            {Math.round(weather.tempC)}°
+          <span className="text-2xl font-serif font-semibold text-ink">
+            {formatTemp(weather.tempC, unit)}
           </span>
-          <span className="text-sm font-medium text-ink/60">{weather.condition}</span>
+          <span className="text-sm text-ink/70">{weather.condition}</span>
+          <span className="text-sm text-ink/40">
+            · Feels like {formatTemp(weather.feelsLikeC, unit)}
+          </span>
         </div>
-        <p className="mt-1 text-xs text-ink/50">Feels like {Math.round(weather.feelsLikeC)}°</p>
         {timeSelector && timeSelector.value > 0 && (
           <p className="mt-1 text-xs text-ink/60">
-            Forecast for{" "}
-            {hourLabel(new Date(Date.now() + (timeSelector.value + 30) * 60_000))} — outfit below is
-            for then too.
+            Forecast for {hourLabel(new Date(Date.now() + (timeSelector.value + 30) * 60_000))} —
+            outfit below is for then too.
           </p>
         )}
       </div>

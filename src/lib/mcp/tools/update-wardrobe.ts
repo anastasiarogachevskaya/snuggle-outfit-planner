@@ -24,7 +24,7 @@ export default defineTool({
 
     if (toAdd.length) {
       const { error } = await supabase.from("wardrobe_items").upsert(
-        toAdd.map((slug) => ({ baby_id, slug })),
+        toAdd.map((slug) => ({ baby_id, slug, owned: true })),
         { onConflict: "baby_id,slug" },
       );
       if (error) return errorResult(error.message);
@@ -32,7 +32,9 @@ export default defineTool({
     if (toRemove.length) {
       const { error } = await supabase
         .from("wardrobe_items")
-        .delete()
+        // Mark as not owned instead of deleting so the row's ID and any
+        // garment details survive if the item is added back later.
+        .update({ owned: false })
         .eq("baby_id", baby_id)
         .in("slug", toRemove);
       if (error) return errorResult(error.message);

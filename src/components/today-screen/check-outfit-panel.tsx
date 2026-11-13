@@ -1,3 +1,4 @@
+import { missingItemNote, type SetAsideReason } from "@/lib/wardrobe-eligibility";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import type { Recommendation } from "@/lib/recommend";
@@ -17,6 +18,9 @@ import {
   type SlotAdjustment,
   type SlotKey,
 } from "@/lib/recommend/warmth";
+import { useTempUnit } from "@/hooks/use-temp-unit";
+import { formatTemp, formatWind } from "@/lib/units";
+import { localizeClothingText } from "@/lib/clothing-text";
 import { actionableAdjustments } from "@/lib/recommend/actionable";
 import { lightHaptic, selectionHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 
@@ -91,12 +95,13 @@ function SlotRow<T extends WardrobeSlug | "none">({
 }) {
   // "None" stays plainly selected even when the row needs an addition — the
   // dashed hint belongs on the garment to add, not on the empty option.
+  const [unit] = useTempUnit();
   const noneClassName = value === "none" ? CHIP_SELECTED : CHIP_DEFAULT;
 
   return (
     <section>
       <div className="flex items-center gap-2">
-        <h3 className={SLOT_LABEL}>{label}</h3>
+        <h3 className={SLOT_LABEL}>{localizeClothingText(label, unit)}</h3>
         {adjustment && (
           <span
             className={
@@ -142,7 +147,7 @@ function SlotRow<T extends WardrobeSlug | "none">({
               aria-pressed={isSelected}
               className={className}
             >
-              {LABEL_BY_SLUG[slug]}
+              {localizeClothingText(LABEL_BY_SLUG[slug], unit)}
             </button>
           );
         })}
@@ -242,15 +247,18 @@ function isEmptyOutfit(o: ActualOutfit): boolean {
 export function CheckOutfitPanel({
   rec,
   owned,
+  setAside,
   weather,
   onBack,
 }: {
   rec: Recommendation;
   owned: Set<WardrobeSlug>;
+  setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>;
   weather?: PanelWeather;
   onBack: () => void;
 }) {
   const [actual, setActual] = useState<ActualOutfit>(EMPTY_OUTFIT);
+  const [unit] = useTempUnit();
 
   const owns = (slugs: WardrobeSlug[]) => slugs.filter((s) => owned.has(s));
 
@@ -323,10 +331,11 @@ export function CheckOutfitPanel({
           {weather && (
             <div className="shrink-0 text-right">
               <div className="text-2xl font-semibold tracking-tight">
-                {Math.round(weather.tempC)}°
+                {formatTemp(weather.tempC, unit)}
               </div>
               <div className="mt-0.5 text-[9px] font-medium uppercase tracking-wider text-accent">
-                Feels like {Math.round(weather.feelsLikeC)}° · {Math.round(weather.windKph)}km/h
+                Feels like {formatTemp(weather.feelsLikeC, unit)} ·{" "}
+                {formatWind(weather.windKph, unit)}
               </div>
             </div>
           )}
@@ -451,7 +460,7 @@ export function CheckOutfitPanel({
                   {rec.transportExtras.map((e) => (
                     <ToggleTile
                       key={e.slug}
-                      label={e.label}
+                      label={localizeClothingText(e.label, unit)}
                       value={actual.transportExtras.includes(e.slug)}
                       onChange={() => toggleTransportExtra(e.slug)}
                       adjustment={
@@ -470,9 +479,9 @@ export function CheckOutfitPanel({
                     {rec.optionalTransportExtras.map((e) => (
                       <ToggleTile
                         key={e.slug}
-                        label={e.label}
+                        label={localizeClothingText(e.label, unit)}
                         muted
-                        note={e.owned ? undefined : "Not in your wardrobe"}
+                        note={e.owned ? undefined : missingItemNote(e.slug, setAside)}
                         value={actual.transportExtras.includes(e.slug)}
                         onChange={() => toggleTransportExtra(e.slug)}
                       />

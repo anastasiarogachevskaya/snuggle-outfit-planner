@@ -13,6 +13,10 @@ const situationOptions: {
   { id: "car", Icon: CarIcon, label: "Car", description: "In the car" },
 ];
 
+import { useTempUnit } from "@/hooks/use-temp-unit";
+import { formatTemp, roomTemperatureRange, roomTemperatureToC, toUnit } from "@/lib/units";
+import { localizeClothingText } from "@/lib/clothing-text";
+
 export function ActivityPicker({
   situation,
   onSituationChange,
@@ -38,6 +42,7 @@ export function ActivityPicker({
   roomTemp: number;
   onRoomTempChange: (t: number) => void;
 }) {
+  const [unit] = useTempUnit();
   const transportOptions: { id: TransportMode; label: string }[] = [
     ...(pramAllowed ? [{ id: "pram" as TransportMode, label: "Pram" }] : []),
     { id: "sitting-stroller", label: "Stroller" },
@@ -113,14 +118,14 @@ export function ActivityPicker({
             <label className="block">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-ink/70">Room temperature</span>
-                <span className="font-medium">{roomTemp}°C</span>
+                <span className="font-medium">{formatTemp(roomTemp, unit, { suffix: true })}</span>
               </div>
               <input
                 type="range"
-                min={15}
-                max={30}
-                value={roomTemp}
-                onChange={(e) => onRoomTempChange(Number(e.target.value))}
+                aria-label="Room temperature"
+                {...roomTemperatureRange(unit)}
+                value={toUnit(roomTemp, unit)}
+                onChange={(e) => onRoomTempChange(roomTemperatureToC(Number(e.target.value), unit))}
                 onPointerUp={() => selectionHaptic()}
                 onKeyUp={() => selectionHaptic()}
                 className="w-full accent-primary"
@@ -149,7 +154,7 @@ export function ActivityPicker({
                         : "bg-canvas text-ink/70")
                     }
                   >
-                    {m.label}
+                    {localizeClothingText(m.label, unit)}
                   </button>
                 ))}
               </div>

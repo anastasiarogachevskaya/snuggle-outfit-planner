@@ -1,5 +1,6 @@
 import {
   CloudSun,
+  Clock,
   Layers3,
   LogIn,
   MapPin,
@@ -7,13 +8,10 @@ import {
   Smartphone,
   Sparkles,
 } from "lucide-react";
-import {
-  BodysuitIcon,
-  HatIcon,
-  WardrobeIcon,
-} from "@/components/icons";
+import { BodysuitIcon, HatIcon, WardrobeIcon } from "@/components/icons";
 
 const illustrations = {
+  "plan-outfits-ahead": Clock,
   "build-your-own-outfit": Layers3,
   "layerly-on-the-app-store": Smartphone,
   "private-by-design": ShieldCheck,

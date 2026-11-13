@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { toddlerRulesApply, toddlerSupportEnabled } from "@/lib/feature-flags";
+import { ageInMonths } from "@/lib/baby-age";
 import {
   clearGuestProfile,
   GUEST_AGE_OPTIONS,
@@ -10,11 +12,17 @@ import {
   dobFromAgeBand,
   useGuestProfile,
   writeGuestProfile,
+  guestPreferences,
   type GuestAgeBand,
   type GuestFeedbackEntry,
   type GuestProfile,
+  guestGarmentDetails,
+  withGuestGarmentDetails,
 } from "@/lib/guest-profile";
+import { GarmentDetailsButton, GarmentDetailsDialog } from "@/components/garment-details-dialog";
+import { availabilityBadge, type GarmentDetails } from "@/lib/garment-details";
 import { WardrobeSetup } from "@/components/wardrobe-setup";
+import { guestWardrobeRows, resolveEligibleWardrobe } from "@/lib/wardrobe-eligibility";
 import {
   getCurrentLocation,
   locationErrorMessage,
@@ -35,7 +43,11 @@ import { lightHaptic, successHaptic, warningHaptic } from "@/lib/haptics";
 import { useLocationPermissionRecovery } from "@/hooks/use-location-permission-recovery";
 import { logEvent } from "@/lib/analytics";
 import { isIOSApp } from "@/lib/platform";
+import { TempUnitToggle, useTempUnit } from "@/hooks/use-temp-unit";
+import { localizeClothingText } from "@/lib/clothing-text";
 import { TemperaturePreference } from "@/components/temperature-preference";
+import { ChildPreferencesFields } from "@/components/child-preferences-fields";
+import { compactChildPreferences } from "@/lib/child-preferences";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
@@ -119,6 +131,21 @@ function TryPage() {
     if (step === "today") logEvent("try_recommendation_viewed");
   }, [step]);
 
+  // The phone-kept wardrobe goes through the same eligibility rule as the
+  // signed-in one. Depends on the details too, so an availability-only edit
+  // (same slugs, same ownership) still changes the outfit. An empty
+  // wardrobe stays empty — the sample is only used for the web trial.
+  const profileWardrobe = profile?.wardrobe;
+  const profileDetails = profile?.wardrobeDetails;
+  const localWardrobe = useMemo(
+    () =>
+      resolveEligibleWardrobe(
+        guestWardrobeRows({ wardrobe: profileWardrobe ?? [], wardrobeDetails: profileDetails }),
+      ),
+    [profileWardrobe, profileDetails],
+  );
+  const sampleTrialWardrobe = useMemo(() => new Set(GUEST_DEFAULT_WARDROBE), []);
+
   if (!loaded || step === null) return <div className="min-h-screen bg-canvas" />;
 
   if (step === "baby") {
@@ -140,7 +167,7 @@ function TryPage() {
       update({
         setupComplete: true,
         onboardingStep: "complete",
-        ...(wardrobe ? { wardrobe } : {}),
+        ...(wardrobe ? { wardrobe, wardrobeSample: false } : {}),
       });
       if (wardrobe) {
         logEvent("wardrobe_saved", { items: wardrobe.length });
@@ -149,9 +176,17 @@ function TryPage() {
       }
       setStep("today");
     };
+    const toddler = toddlerRulesApply(ageInMonths(profile.dob));
+    // A toddler's setup never starts from the app's sample basics; skipping
+    // leaves the stored wardrobe exactly as it was.
+    const startFromSample = toddler && profile.wardrobeSample === true;
     return (
       <WardrobeSetup
-        initialSelected={profile.wardrobe}
+        audience={toddler ? "toddler" : "infant"}
+        clothingStyle={guestPreferences(profile).clothing_style}
+        initialSelected={startFromSample ? [] : profile.wardrobe}
+        // Only the app's own sample counts as "new"; a parent's empty wardrobe stays empty.
+        starterBasics={startFromSample ? false : profile.wardrobeSample === true}
         onSave={(slugs) => finish(slugs)}
         onSkip={() => finish()}
       />
@@ -162,23 +197,26 @@ function TryPage() {
     return (
       <Shell title="How old is your baby?" subtitle="This shapes the layers we suggest.">
         <div className="space-y-3">
-          {GUEST_AGE_OPTIONS.map((o) => (
-            <button
-              key={o.id}
-              disabled={o.comingSoon}
-              onClick={() => {
-                logEvent("try_age_selected", { age_band: o.id });
-                const p = createGuestProfile(o.id as GuestAgeBand);
-                writeGuestProfile(p);
-                setProfile(p);
-                setStep("location");
-              }}
-              className="flex w-full items-center justify-between rounded-2xl border border-black/5 bg-surface px-5 py-4 text-left text-ink disabled:opacity-40"
-            >
-              <span className="font-medium">{o.label}</span>
-              <span className="text-xs text-ink/40">{o.comingSoon ? "Coming soon" : "→"}</span>
-            </button>
-          ))}
+          {GUEST_AGE_OPTIONS.map((o) => {
+            const comingSoon = o.comingSoon && !toddlerSupportEnabled();
+            return (
+              <button
+                key={o.id}
+                disabled={comingSoon}
+                onClick={() => {
+                  logEvent("try_age_selected", { age_band: o.id });
+                  const p = createGuestProfile(o.id as GuestAgeBand);
+                  writeGuestProfile(p);
+                  setProfile(p);
+                  setStep("location");
+                }}
+                className="flex w-full items-center justify-between rounded-2xl border border-black/5 bg-surface px-5 py-4 text-left text-ink disabled:opacity-40"
+              >
+                <span className="font-medium">{o.label}</span>
+                <span className="text-xs text-ink/40">{comingSoon ? "Coming soon" : "→"}</span>
+              </button>
+            );
+          })}
         </div>
         <p className="mt-6 text-center text-xs text-ink/40">
           Nothing is saved to an account. You can create one later.
@@ -220,8 +258,11 @@ function TryPage() {
       <LocalProfile
         profile={profile}
         onSave={(patch) => {
-          update(patch);
+          const next = { ...profile, ...patch };
+          if (!writeGuestProfile(next)) return false;
+          setProfile(next);
           setStep("today");
+          return true;
         }}
         onBack={() => setStep("today")}
         onOpenWardrobe={() => setStep("wardrobe")}
@@ -253,7 +294,13 @@ function TryPage() {
     return (
       <LocalWardrobe
         owned={new Set(profile.wardrobe)}
-        onChange={(wardrobe) => update({ wardrobe })}
+        detailsFor={(slug) => guestGarmentDetails(profile, slug)}
+        onSaveDetails={async (slug, patch) => {
+          const next = withGuestGarmentDetails(profile, slug, patch);
+          if (!writeGuestProfile(next)) throw new Error("This device couldn't save");
+          setProfile(next);
+        }}
+        onChange={(wardrobe) => update({ wardrobe, wardrobeSample: false })}
         onBack={() => setStep("today")}
       />
     );
@@ -263,6 +310,7 @@ function TryPage() {
     <>
       <TodayScreen
         guest={!localFirst}
+        sampleWardrobe={!localFirst || profile.wardrobeSample === true}
         baby={{
           id: "guest",
           name: profile.name,
@@ -272,7 +320,8 @@ function TryPage() {
           longitude: profile.longitude,
           location_label: profile.locationLabel,
         }}
-        owned={new Set(localFirst ? profile.wardrobe : GUEST_DEFAULT_WARDROBE)}
+        owned={localFirst ? localWardrobe.eligible : sampleTrialWardrobe}
+        setAside={localFirst ? localWardrobe.setAside : undefined}
         confirmation={confirmation}
         onFeedback={(rating, ctx) => {
           logEvent("try_feedback_submitted", { rating });
@@ -520,7 +569,7 @@ function LocalProfile({
   onReset,
 }: {
   profile: GuestProfile;
-  onSave: (patch: Partial<GuestProfile>) => void;
+  onSave: (patch: Partial<GuestProfile>) => boolean;
   onBack: () => void;
   onOpenWardrobe: () => void;
   onOpenAccount: () => void;
@@ -532,6 +581,9 @@ function LocalProfile({
   const [locationLabel, setLocationLabel] = useState(profile.locationLabel ?? "");
   const [latitude, setLatitude] = useState(profile.latitude);
   const [longitude, setLongitude] = useState(profile.longitude);
+  const [prefs, setPrefs] = useState(() => guestPreferences(profile));
+  const [saveFailed, setSaveFailed] = useState(false);
+  const showPrefs = toddlerSupportEnabled();
   const [confirmReset, setConfirmReset] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -541,7 +593,22 @@ function LocalProfile({
         className="mx-auto max-w-md px-6 py-8"
         onSubmit={(event) => {
           event.preventDefault();
-          onSave({ name: name.trim(), dob, temperaturePref, locationLabel, latitude, longitude });
+          const ok = onSave({
+            name: name.trim(),
+            dob,
+            temperaturePref,
+            locationLabel,
+            latitude,
+            longitude,
+            // Hidden controls leave the saved preferences exactly as they were.
+            ...(showPrefs ? { preferences: compactChildPreferences(prefs) } : {}),
+          });
+          setSaveFailed(!ok);
+          if (!ok) {
+            warningHaptic();
+            toast.error("Couldn't save on this device");
+            return;
+          }
           successHaptic();
           toast.success("Saved on this device");
         }}
@@ -578,6 +645,7 @@ function LocalProfile({
             />
           </label>
           <TemperaturePreference value={temperaturePref} onChange={setTemperaturePref} />
+          {showPrefs && <ChildPreferencesFields value={prefs} onChange={setPrefs} />}
           <div>
             <p className="mb-2 text-sm font-medium">Location</p>
             <CitySearch
@@ -593,12 +661,21 @@ function LocalProfile({
             />
           </div>
         </div>
+        {saveFailed && (
+          <p
+            role="alert"
+            className="mt-8 rounded-xl border border-destructive/25 bg-surface p-3 text-sm text-destructive"
+          >
+            This device couldn't save your changes. Your edits are still here — please try again.
+          </p>
+        )}
         <button className="mt-8 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground shadow-md shadow-primary/20">
           Save
         </button>
         <p className="mt-3 text-center text-xs text-ink/40">Saved privately on this device.</p>
 
         <div className="mt-8 space-y-2">
+          <TempUnitToggle />
           <button
             type="button"
             onClick={onOpenWardrobe}
@@ -667,14 +744,20 @@ function LocalProfile({
 
 function LocalWardrobe({
   owned,
+  detailsFor,
+  onSaveDetails,
   onChange,
   onBack,
 }: {
   owned: Set<WardrobeSlug>;
+  detailsFor: (slug: WardrobeSlug) => GarmentDetails;
+  onSaveDetails: (slug: WardrobeSlug, patch: Partial<GarmentDetails>) => Promise<void>;
   onChange: (owned: WardrobeSlug[]) => void;
   onBack: () => void;
 }) {
+  const [unit] = useTempUnit();
   const groups = Array.from(new Set(WARDROBE_CATALOG.map((item) => item.group)));
+  const [editing, setEditing] = useState<{ slug: WardrobeSlug; label: string } | null>(null);
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
       <div className="mx-auto max-w-md px-6 py-8">
@@ -694,35 +777,54 @@ function LocalWardrobe({
               <div className="space-y-2">
                 {WARDROBE_CATALOG.filter((item) => item.group === group).map((item) => {
                   const selected = owned.has(item.slug);
+                  const label = localizeClothingText(item.label, unit);
                   return (
-                    <button
-                      key={item.slug}
-                      aria-pressed={selected}
-                      onClick={() => {
-                        const next = new Set(owned);
-                        if (selected) next.delete(item.slug);
-                        else next.add(item.slug);
-                        onChange([...next]);
-                        lightHaptic();
-                      }}
-                      className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left ${selected ? "border-primary/30 bg-surface" : "border-black/5 opacity-60"}`}
-                    >
-                      <span
-                        className={`flex size-6 items-center justify-center rounded-full text-xs ${selected ? "bg-primary text-primary-foreground" : "border border-black/10 bg-white"}`}
+                    <div key={item.slug} className="flex min-w-0 items-center gap-2">
+                      <button
+                        aria-pressed={selected}
+                        onClick={() => {
+                          const next = new Set(owned);
+                          if (selected) next.delete(item.slug);
+                          else next.add(item.slug);
+                          onChange([...next]);
+                          lightHaptic();
+                        }}
+                        className={`flex min-w-0 flex-1 items-center gap-3 rounded-2xl border p-3 text-left ${selected ? "border-primary/30 bg-surface" : "border-black/5 opacity-60"}`}
                       >
-                        {selected ? "✓" : ""}
-                      </span>
-                      <span className={selected ? "text-primary" : "text-ink/50"}>
-                        <ClothingIcon slug={item.slug} size={22} />
-                      </span>
-                      <span className="text-sm font-medium">{item.label}</span>
-                    </button>
+                        <span
+                          className={`flex size-6 items-center justify-center rounded-full text-xs ${selected ? "bg-primary text-primary-foreground" : "border border-black/10 bg-white"}`}
+                        >
+                          {selected ? "✓" : ""}
+                        </span>
+                        <span className={selected ? "text-primary" : "text-ink/50"}>
+                          <ClothingIcon slug={item.slug} size={22} />
+                        </span>
+                        <span className="min-w-0 text-sm font-medium">{label}</span>
+                      </button>
+                      {selected && (
+                        <GarmentDetailsButton
+                          label={label}
+                          badge={availabilityBadge(detailsFor(item.slug).availability)}
+                          onClick={() => setEditing({ slug: item.slug, label })}
+                        />
+                      )}
+                    </div>
                   );
                 })}
               </div>
             </section>
           ))}
         </div>
+        {editing && (
+          <GarmentDetailsDialog
+            open
+            slug={editing.slug}
+            label={editing.label}
+            details={detailsFor(editing.slug)}
+            onOpenChange={(o) => !o && setEditing(null)}
+            onSave={(patch) => onSaveDetails(editing.slug, patch)}
+          />
+        )}
       </div>
     </div>
   );

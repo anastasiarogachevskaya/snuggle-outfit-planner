@@ -56,14 +56,20 @@ export function SiteFooter({
       <footer className={`${className} border-t border-border pt-10`}>
         <div className="grid grid-cols-2 gap-x-8 gap-y-9 sm:grid-cols-3">
           {LANDING_GROUPS.map((group) => {
-            const groupLinks = group.links.filter((link) => links.some((item) => item.to === link.to));
+            const groupLinks = group.links.filter((link) =>
+              links.some((item) => item.to === link.to),
+            );
             if (groupLinks.length === 0) return null;
             return (
               <div key={group.label}>
                 <p className="mb-3 text-xs font-semibold uppercase text-ink/45">{group.label}</p>
                 <nav aria-label={group.label} className="flex flex-col gap-2.5 text-sm text-ink/65">
                   {groupLinks.map((link) => (
-                    <Link key={link.to} to={link.to} className="transition-colors hover:text-primary">
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      className="transition-colors hover:text-primary"
+                    >
                       {link.label}
                     </Link>
                   ))}

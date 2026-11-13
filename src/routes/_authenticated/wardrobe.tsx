@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WARDROBE_CATALOG, warmthTagClasses, type WardrobeSlug } from "@/lib/wardrobe-catalog";
@@ -7,6 +7,16 @@ import { toast } from "sonner";
 import { ClothingIcon } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
 import { selectionHaptic, warningHaptic } from "@/lib/haptics";
+import { useTempUnit } from "@/hooks/use-temp-unit";
+import { localizeClothingText } from "@/lib/clothing-text";
+import { GarmentDetailsButton, GarmentDetailsDialog } from "@/components/garment-details-dialog";
+import {
+  availabilityBadge,
+  normalizeGarmentDetails,
+  type GarmentDetails,
+} from "@/lib/garment-details";
+import { saveSignedInGarmentDetails } from "@/lib/garment-details-save";
+import { fetchWardrobeItems } from "@/lib/wardrobe-eligibility";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
   head: () => ({
@@ -18,6 +28,12 @@ export const Route = createFileRoute("/_authenticated/wardrobe")({
           "Tick everything you own so Layerly only recommends baby clothes that are actually in your drawer.",
       },
       { property: "og:title", content: "Wardrobe checklist — Layerly" },
+      {
+        property: "og:description",
+        content: "Your baby's wardrobe checklist for weather-based outfits in Layerly.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { property: "og:url", content: "https://layerly.online/wardrobe" },
       { name: "robots", content: "noindex" },
     ],
@@ -27,6 +43,7 @@ export const Route = createFileRoute("/_authenticated/wardrobe")({
 });
 
 function WardrobePage() {
+  const [unit] = useTempUnit();
   const qc = useQueryClient();
 
   const babyQ = useQuery({
@@ -41,24 +58,32 @@ function WardrobePage() {
   const wardrobeQ = useQuery({
     queryKey: ["wardrobe", babyQ.data?.id],
     enabled: !!babyQ.data?.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("wardrobe_items")
-        .select("slug,owned")
-        .eq("baby_id", babyQ.data!.id);
-      if (error) throw error;
-      return data ?? [];
-    },
+    // Shared with Today's cache entry; every item, including unavailable ones.
+    queryFn: () => fetchWardrobeItems(supabase, babyQ.data!.id),
   });
 
   const ownedMap = useMemo(() => {
     const m = new Map<string, boolean>();
-    (wardrobeQ.data ?? []).forEach((i) => m.set(i.slug, i.owned));
+    (wardrobeQ.data ?? []).forEach((i) => m.set(i.slug, i.owned === true));
     return m;
   }, [wardrobeQ.data]);
+  const detailsMap = useMemo(() => {
+    const m = new Map<string, GarmentDetails>();
+    (wardrobeQ.data ?? []).forEach((i) => m.set(i.slug, normalizeGarmentDetails(i)));
+    return m;
+  }, [wardrobeQ.data]);
+  const [editing, setEditing] = useState<{ slug: WardrobeSlug; label: string } | null>(null);
+
+  // Writes only the changed detail columns on the existing row; ownership and
+  // the other details are untouched.
+  const saveDetails = async (slug: WardrobeSlug, patch: Partial<GarmentDetails>) => {
+    if (!babyQ.data) throw new Error("Profile not loaded");
+    await saveSignedInGarmentDetails(supabase, babyQ.data.id, slug, patch);
+    await qc.invalidateQueries({ queryKey: ["wardrobe"] });
+  };
 
   const wardrobeKey = ["wardrobe", babyQ.data?.id];
-  type WardrobeRow = { slug: string; owned: boolean };
+  type WardrobeRow = { slug: string; owned: boolean } & Partial<GarmentDetails>;
 
   const toggle = useMutation({
     mutationFn: async ({ slug, owned }: { slug: WardrobeSlug; owned: boolean }) => {
@@ -152,70 +177,99 @@ function WardrobePage() {
               <div className="space-y-2">
                 {WARDROBE_CATALOG.filter((i) => i.group === g).map((item) => {
                   const owned = ownedMap.get(item.slug) ?? false;
+                  const badge = owned
+                    ? availabilityBadge(detailsMap.get(item.slug)?.availability ?? "available")
+                    : null;
                   return (
-                    <button
-                      key={item.slug}
-                      onClick={() => {
-                        selectionHaptic();
-                        toggle.mutate({ slug: item.slug as WardrobeSlug, owned: !owned });
-                      }}
-                      aria-pressed={owned}
-                      className={
-                        "w-full min-w-0 flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left " +
-                        (owned
-                          ? "bg-surface border-primary/30"
-                          : "bg-canvas/60 border-black/5 opacity-60")
-                      }
-                    >
-                      <div
+                    <div key={item.slug} className="flex min-w-0 items-center gap-2">
+                      <button
+                        onClick={() => {
+                          selectionHaptic();
+                          toggle.mutate({ slug: item.slug as WardrobeSlug, owned: !owned });
+                        }}
+                        aria-pressed={owned}
                         className={
-                          "size-6 shrink-0 rounded-full flex items-center justify-center text-xs " +
+                          "flex-1 min-w-0 flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left " +
                           (owned
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-white border border-black/10")
+                            ? "bg-surface border-primary/30"
+                            : "bg-canvas/60 border-black/5 opacity-60")
                         }
                       >
-                        {owned ? "✓" : ""}
-                      </div>
-                      <span
-                        className={
-                          "inline-flex shrink-0 items-center justify-center " +
-                          (owned ? "text-primary" : "text-ink/50")
-                        }
-                      >
-                        <ClothingIcon slug={item.slug as WardrobeSlug} size={22} />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex flex-wrap items-center gap-2">
-                          <span className="break-words text-sm font-medium">{item.label}</span>
-                          {item.warmth && (
-                            <span
-                              className={
-                                "rounded-full px-2 py-0.5 text-[10px] font-semibold " +
-                                warmthTagClasses(item.warmth)
-                              }
-                            >
-                              {item.warmth}
+                        <div
+                          className={
+                            "size-6 shrink-0 rounded-full flex items-center justify-center text-xs " +
+                            (owned
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-white border border-black/10")
+                          }
+                        >
+                          {owned ? "✓" : ""}
+                        </div>
+                        <span
+                          className={
+                            "inline-flex shrink-0 items-center justify-center " +
+                            (owned ? "text-primary" : "text-ink/50")
+                          }
+                        >
+                          <ClothingIcon slug={item.slug as WardrobeSlug} size={22} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span className="break-words text-sm font-medium">
+                              {localizeClothingText(item.label, unit)}
+                            </span>
+                            {item.warmth && (
+                              <span
+                                className={
+                                  "rounded-full px-2 py-0.5 text-[10px] font-semibold " +
+                                  warmthTagClasses(item.warmth)
+                                }
+                              >
+                                {item.warmth}
+                              </span>
+                            )}
+                          </span>
+                          <span className="mt-0.5 block text-xs leading-snug text-ink/55">
+                            {localizeClothingText(item.hint, unit)}
+                          </span>
+                          {item.explanation && (
+                            <span className="mt-1 block text-[11px] leading-snug text-ink/45">
+                              <span className="font-semibold text-ink/60">What counts? </span>
+                              {localizeClothingText(item.explanation, unit)}
                             </span>
                           )}
                         </span>
-                        <span className="mt-0.5 block text-xs leading-snug text-ink/55">
-                          {item.hint}
-                        </span>
-                        {item.explanation && (
-                          <span className="mt-1 block text-[11px] leading-snug text-ink/45">
-                            <span className="font-semibold text-ink/60">What counts? </span>
-                            {item.explanation}
-                          </span>
-                        )}
-                      </span>
-                    </button>
+                      </button>
+                      {owned && (
+                        <GarmentDetailsButton
+                          label={localizeClothingText(item.label, unit)}
+                          badge={badge}
+                          onClick={() =>
+                            setEditing({
+                              slug: item.slug as WardrobeSlug,
+                              label: localizeClothingText(item.label, unit),
+                            })
+                          }
+                        />
+                      )}
+                    </div>
                   );
                 })}
               </div>
             </section>
           ))}
         </div>
+
+        {editing && (
+          <GarmentDetailsDialog
+            open
+            slug={editing.slug}
+            label={editing.label}
+            details={detailsMap.get(editing.slug) ?? normalizeGarmentDetails(undefined)}
+            onOpenChange={(o) => !o && setEditing(null)}
+            onSave={(patch) => saveDetails(editing.slug, patch)}
+          />
+        )}
 
         <SiteFooter className="mt-14" />
       </div>
