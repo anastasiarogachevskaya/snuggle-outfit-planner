@@ -10,7 +10,12 @@ import { WardrobeSetup } from "@/components/wardrobe-setup";
 import { toddlerRulesApply } from "@/lib/feature-flags";
 import { ageInMonths } from "@/lib/baby-age";
 import { normalizeChildPreferences } from "@/lib/child-preferences";
-import { isNewWardrobe, ownedSlugs, wardrobeChanges, type StoredWardrobeRow } from "@/lib/wardrobe-diff";
+import {
+  isNewWardrobe,
+  ownedSlugs,
+  wardrobeChanges,
+  type StoredWardrobeRow,
+} from "@/lib/wardrobe-diff";
 
 export const Route = createFileRoute("/_authenticated/onboarding/wardrobe")({
   head: () => ({
@@ -71,12 +76,10 @@ function OnboardingWardrobe() {
     setSaveError(null);
     try {
       if (changes.length > 0) {
-        const { error } = await supabase
-          .from("wardrobe_items")
-          .upsert(
-            changes.map((c) => ({ baby_id: babyId, ...c })),
-            { onConflict: "baby_id,slug" },
-          );
+        const { error } = await supabase.from("wardrobe_items").upsert(
+          changes.map((c) => ({ baby_id: babyId, ...c })),
+          { onConflict: "baby_id,slug" },
+        );
         if (error) throw error;
       }
       qc.invalidateQueries({ queryKey: ["wardrobe"] });
@@ -100,7 +103,9 @@ function OnboardingWardrobe() {
     const noBaby = babyQ.isSuccess && !babyQ.data;
     return (
       <StatusScreen
-        message={noBaby ? "We couldn't find your baby's profile." : "We couldn't load your saved wardrobe."}
+        message={
+          noBaby ? "We couldn't find your baby's profile." : "We couldn't load your saved wardrobe."
+        }
         onRetry={noBaby ? undefined : () => (babyQ.isError ? babyQ.refetch() : rowsQ.refetch())}
       />
     );
@@ -120,7 +125,10 @@ function OnboardingWardrobe() {
         onSkip={() => navigate({ to: "/today" })}
       />
       {saveError && (
-        <div role="alert" className="fixed inset-x-4 top-4 z-50 mx-auto max-w-md rounded-2xl bg-destructive px-4 py-3 text-sm text-destructive-foreground shadow-lg">
+        <div
+          role="alert"
+          className="fixed inset-x-4 top-4 z-50 mx-auto max-w-md rounded-2xl bg-destructive px-4 py-3 text-sm text-destructive-foreground shadow-lg"
+        >
           {saveError}
         </div>
       )}
@@ -132,7 +140,9 @@ function StatusScreen({ message, onRetry }: { message: string; onRetry?: () => v
   return (
     <div className="min-h-screen bg-canvas font-sans text-ink">
       <div className="mx-auto max-w-md px-6 py-16 text-center">
-        <p className="text-sm text-ink/60" role="status">{message}</p>
+        <p className="text-sm text-ink/60" role="status">
+          {message}
+        </p>
         {onRetry && (
           <button
             onClick={onRetry}

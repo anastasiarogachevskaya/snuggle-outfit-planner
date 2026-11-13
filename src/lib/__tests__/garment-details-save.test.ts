@@ -11,7 +11,8 @@ type Row = { id: string; baby_id: string; slug: string; owned: boolean } & Garme
  * update to matching rows (like the real table) and records every call.
  */
 function fakeClient(rows: Row[], opts: { fail?: string } = {}) {
-  const calls: { table: string; patch: Record<string, unknown>; filters: [string, string][] }[] = [];
+  const calls: { table: string; patch: Record<string, unknown>; filters: [string, string][] }[] =
+    [];
   const client = {
     from(table: string) {
       return {
@@ -25,7 +26,9 @@ function fakeClient(rows: Row[], opts: { fail?: string } = {}) {
             },
             async select() {
               if (opts.fail) return { data: null, error: { message: opts.fail } };
-              const hit = rows.filter((r) => filters.every(([c, v]) => (r as Record<string, unknown>)[c] === v));
+              const hit = rows.filter((r) =>
+                filters.every(([c, v]) => (r as Record<string, unknown>)[c] === v),
+              );
               hit.forEach((r) => Object.assign(r, patch));
               return { data: hit.map((r) => ({ slug: r.slug })), error: null };
             },
@@ -38,7 +41,12 @@ function fakeClient(rows: Row[], opts: { fail?: string } = {}) {
   return { client: client as never, calls };
 }
 
-const row = (baby_id: string, slug: string, details: Partial<GarmentDetails> = {}, owned = true): Row => ({
+const row = (
+  baby_id: string,
+  slug: string,
+  details: Partial<GarmentDetails> = {},
+  owned = true,
+): Row => ({
   id: `${baby_id}-${slug}`,
   baby_id,
   slug,
@@ -70,7 +78,10 @@ describe("signed-in garment details save", () => {
     expect(res).toEqual({ status: "saved" });
     expect(calls).toHaveLength(1);
     expect(calls[0].table).toBe("wardrobe_items");
-    expect(calls[0].filters).toEqual([["baby_id", "baby-a"], ["slug", "winter_overall"]]);
+    expect(calls[0].filters).toEqual([
+      ["baby_id", "baby-a"],
+      ["slug", "winter_overall"],
+    ]);
     expect(calls[0].patch).toEqual({ waterproof: "no" });
     // Ownership, ID and untouched details stay as they were.
     expect(rows[0]).toEqual({ ...before[0], waterproof: "no" });
@@ -85,7 +96,12 @@ describe("signed-in garment details save", () => {
       saveSignedInGarmentDetails(client, "baby-a", "winter_overall", p),
     );
     expect(calls[0].patch).toEqual({ insulation: "unknown" });
-    expect(rows[0]).toMatchObject({ insulation: "unknown", waterproof: "yes", owned: true, availability: "available" });
+    expect(rows[0]).toMatchObject({
+      insulation: "unknown",
+      waterproof: "yes",
+      owned: true,
+      availability: "available",
+    });
   });
 
   it("restores availability without touching other details or ownership", async () => {
@@ -97,7 +113,12 @@ describe("signed-in garment details save", () => {
       saveSignedInGarmentDetails(client, "baby-a", "pajamas", p),
     );
     expect(calls[0].patch).toEqual({ availability: "available" });
-    expect(rows[1]).toMatchObject({ availability: "available", foot_coverage: "footed", owned: true, id: "baby-a-pajamas" });
+    expect(rows[1]).toMatchObject({
+      availability: "available",
+      foot_coverage: "footed",
+      owned: true,
+      id: "baby-a-pajamas",
+    });
   });
 
   it("never sends ownership or unknown columns, even if passed in", async () => {
@@ -128,7 +149,11 @@ describe("signed-in garment details save", () => {
     const before = structuredClone(rows);
     const { client } = fakeClient(rows, { fail: "Network error" });
     const current = normalizeGarmentDetails(rows[0]);
-    const draft: GarmentDetails = { ...current, insulation: "light", availability: "temporarily_unavailable" };
+    const draft: GarmentDetails = {
+      ...current,
+      insulation: "light",
+      availability: "temporarily_unavailable",
+    };
 
     const res = await submitGarmentDetails(current, draft, (p) =>
       saveSignedInGarmentDetails(client, "baby-a", "winter_overall", p),

@@ -34,6 +34,14 @@ export const TODDLER_MIN_MONTHS = 12;
 export const TODDLER_MAX_MONTHS = 35;
 
 /** True when toddler-specific rules should apply for this age. */
-export function toddlerRulesApply(ageMonths: number | null | undefined, enabled = toddlerSupportEnabled()): boolean {
-  return enabled && ageMonths != null && ageMonths >= TODDLER_MIN_MONTHS && ageMonths <= TODDLER_MAX_MONTHS;
+export function toddlerRulesApply(
+  ageMonths: number | null | undefined,
+  enabled = toddlerSupportEnabled(),
+): boolean {
+  return (
+    enabled &&
+    ageMonths != null &&
+    ageMonths >= TODDLER_MIN_MONTHS &&
+    ageMonths <= TODDLER_MAX_MONTHS
+  );
 }

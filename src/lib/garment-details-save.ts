@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { DEFAULT_GARMENT_DETAILS, changedGarmentDetails, type GarmentDetails } from "@/lib/garment-details";
+import {
+  DEFAULT_GARMENT_DETAILS,
+  changedGarmentDetails,
+  type GarmentDetails,
+} from "@/lib/garment-details";
 
 const DETAIL_KEYS = Object.keys(DEFAULT_GARMENT_DETAILS) as (keyof GarmentDetails)[];
 

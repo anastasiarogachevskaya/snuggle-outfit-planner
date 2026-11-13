@@ -48,7 +48,8 @@ export const WEATHER_GUIDES: WeatherGuide[] = [
       "Warm hat, mittens and warm socks",
     ],
     car: "No snowsuit under the harness. Use a fleece and warm bottoms, then a blanket over the buckled straps.",
-    check: "Snowsuits and buntings differ a lot in warmth. After the first walk, adjust the middle layer.",
+    check:
+      "Snowsuits and buntings differ a lot in warmth. After the first walk, adjust the middle layer.",
   },
   {
     slug: "30-degree-weather",
@@ -62,7 +63,8 @@ export const WEATHER_GUIDES: WeatherGuide[] = [
       "Add a fleece or wool layer under the snowsuit when it's about 23°F or colder",
     ],
     car: "Thin layers only under the harness, never a snowsuit. Blanket over the straps once buckled.",
-    check: "Check cheeks and nose often. Babies under 2 months should only go out briefly in freezing weather.",
+    check:
+      "Check cheeks and nose often. Babies under 2 months should only go out briefly in freezing weather.",
   },
 ];
 

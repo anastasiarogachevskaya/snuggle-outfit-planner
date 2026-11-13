@@ -54,8 +54,8 @@ function StrollerGuide() {
             <h2 className="font-serif text-2xl font-semibold text-ink">Pram</h2>
             <p className="mt-3 text-sm leading-relaxed text-ink/70">
               In a lie-flat pram the baby lies still, so they make less of their own heat than a
-              baby who is moving or being carried. Dress one layer warmer than you would indoors
-              at the same temperature, and use a footmuff or pram bag below roughly 10°C. A pram is
+              baby who is moving or being carried. Dress one layer warmer than you would indoors at
+              the same temperature, and use a footmuff or pram bag below roughly 10°C. A pram is
               typically used until around six months.
             </p>
           </section>
@@ -123,8 +123,8 @@ function StrollerGuide() {
             <ul className="mt-4 space-y-3 text-sm leading-relaxed text-ink/70">
               <li>
                 <strong className="font-medium text-ink">Quick stop (a few minutes)</strong> — take
-                off the hat, open the footmuff or fold back the blanket, and unzip the overall at the
-                chest.
+                off the hat, open the footmuff or fold back the blanket, and unzip the overall at
+                the chest.
               </li>
               <li>
                 <strong className="font-medium text-ink">Longer stay</strong> — take the winter

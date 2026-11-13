@@ -44,10 +44,17 @@ describe("child preferences", () => {
   });
 
   it("stated preferences survive save and reload", () => {
-    const p = { ...upgradeGuestProfile(v2)!.profile, preferences: { clothing_style: "tops", nappy_use: "no", easy_toilet_access: true } };
+    const p = {
+      ...upgradeGuestProfile(v2)!.profile,
+      preferences: { clothing_style: "tops", nappy_use: "no", easy_toilet_access: true },
+    };
     const back = upgradeGuestProfile(JSON.parse(JSON.stringify(p)))!;
     expect(back.changed).toBe(false);
-    expect(guestPreferences(back.profile)).toEqual({ clothing_style: "tops", nappy_use: "no", easy_toilet_access: true });
+    expect(guestPreferences(back.profile)).toEqual({
+      clothing_style: "tops",
+      nappy_use: "no",
+      easy_toilet_access: true,
+    });
     expect(back.profile.wardrobeDetails).toEqual(v2.wardrobeDetails);
   });
 

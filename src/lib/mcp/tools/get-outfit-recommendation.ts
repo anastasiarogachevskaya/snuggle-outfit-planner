@@ -3,7 +3,11 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { fetchWeather, isRainingCode } from "@/lib/weather";
-import { fetchWardrobeItems, resolveEligibleWardrobe, type EligibleWardrobe } from "@/lib/wardrobe-eligibility";
+import {
+  fetchWardrobeItems,
+  resolveEligibleWardrobe,
+  type EligibleWardrobe,
+} from "@/lib/wardrobe-eligibility";
 import { ageInMonths } from "@/lib/baby-age";
 import { errorResult, supabaseForUser, textResult } from "../supabase";
 

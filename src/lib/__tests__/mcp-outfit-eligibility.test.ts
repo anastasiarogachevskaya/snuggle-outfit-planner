@@ -28,7 +28,10 @@ mock.module("@/lib/mcp/supabase", () => ({
     content: [{ type: "text" as const, text: JSON.stringify(value, null, 2) }],
     ...(structured ? { structuredContent: structured } : {}),
   }),
-  errorResult: (message: string) => ({ content: [{ type: "text" as const, text: message }], isError: true }),
+  errorResult: (message: string) => ({
+    content: [{ type: "text" as const, text: message }],
+    isError: true,
+  }),
 }));
 
 const { default: tool } = await import("@/lib/mcp/tools/get-outfit-recommendation");
@@ -36,13 +39,35 @@ const { default: tool } = await import("@/lib/mcp/tools/get-outfit-recommendatio
 const ctx = { isAuthenticated: () => true, getToken: () => "t" } as never;
 const run = async () => {
   const res = (await tool.handler(
-    { baby_id: "a", situation: "walk", transport_mode: "sitting-stroller", duration_min: 60, feels_like_c: -5 } as never,
+    {
+      baby_id: "a",
+      situation: "walk",
+      transport_mode: "sitting-stroller",
+      duration_min: 60,
+      feels_like_c: -5,
+    } as never,
     ctx,
-  )) as { structuredContent: { wardrobe: { set_aside: { slug: string }[]; availability_filter_applied: boolean }; recommendation: { transportExtras: { slug: string }[]; missingHelpfulItems: { slug: string }[] } } };
+  )) as {
+    structuredContent: {
+      wardrobe: { set_aside: { slug: string }[]; availability_filter_applied: boolean };
+      recommendation: {
+        transportExtras: { slug: string }[];
+        missingHelpfulItems: { slug: string }[];
+      };
+    };
+  };
   return res.structuredContent;
 };
 
-const baby = { id: "a", name: "Test", dob: "2025-12-01", temperature_pref: 3, latitude: null, longitude: null, location_label: null };
+const baby = {
+  id: "a",
+  name: "Test",
+  dob: "2025-12-01",
+  temperature_pref: 3,
+  latitude: null,
+  longitude: null,
+  location_label: null,
+};
 const item = (slug: string, extra: Row = {}) => ({ baby_id: "a", slug, owned: true, ...extra });
 
 describe("assistant outfit tool", () => {
@@ -63,7 +88,9 @@ describe("assistant outfit tool", () => {
     expect(extras).not.toContain("blanket");
     if (toddlerSupportEnabled()) {
       expect(extras).not.toContain("footmuff");
-      expect(out.wardrobe.set_aside).toEqual([{ slug: "footmuff", availability: "temporarily_unavailable" }] as never);
+      expect(out.wardrobe.set_aside).toEqual([
+        { slug: "footmuff", availability: "temporarily_unavailable" },
+      ] as never);
     } else {
       expect(extras).toContain("footmuff");
       expect(out.wardrobe.set_aside).toEqual([]);

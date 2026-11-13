@@ -261,7 +261,10 @@ function BabyPage() {
           </Field>
 
           {save.isError && (
-            <p role="alert" className="rounded-xl border border-destructive/25 bg-surface p-3 text-sm text-destructive">
+            <p
+              role="alert"
+              className="rounded-xl border border-destructive/25 bg-surface p-3 text-sm text-destructive"
+            >
               Your changes weren't saved. They're still here — please try again.
             </p>
           )}
@@ -393,4 +396,3 @@ function NavCard({
     </Link>
   );
 }
-

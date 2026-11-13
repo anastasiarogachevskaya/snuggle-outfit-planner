@@ -92,12 +92,22 @@ function WeatherGuidePage() {
             <h2 className="font-serif text-xl font-semibold text-ink">Sources</h2>
             <ul className="mt-3 space-y-2 text-sm text-ink/70">
               <li>
-                <a className="text-primary underline underline-offset-4" target="_blank" rel="noopener noreferrer" href="https://www.healthychildren.org/English/safety-prevention/at-play/Pages/Cold-Weather-Safety.aspx">
+                <a
+                  className="text-primary underline underline-offset-4"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://www.healthychildren.org/English/safety-prevention/at-play/Pages/Cold-Weather-Safety.aspx"
+                >
                   American Academy of Pediatrics — Cold weather safety
                 </a>
               </li>
               <li>
-                <a className="text-primary underline underline-offset-4" target="_blank" rel="noopener noreferrer" href="https://www.healthychildren.org/English/safety-prevention/on-the-go/Pages/winter-car-seat-safety-tips.aspx">
+                <a
+                  className="text-primary underline underline-offset-4"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://www.healthychildren.org/English/safety-prevention/on-the-go/Pages/winter-car-seat-safety-tips.aspx"
+                >
                   American Academy of Pediatrics — Winter car seat safety tips
                 </a>
               </li>
@@ -109,7 +119,9 @@ function WeatherGuidePage() {
           </section>
 
           <section className="mt-12 rounded-[28px] border border-black/5 bg-surface p-6">
-            <h2 className="font-serif text-xl font-semibold text-ink">Get an outfit for right now</h2>
+            <h2 className="font-serif text-xl font-semibold text-ink">
+              Get an outfit for right now
+            </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink/70">
               Layerly reads your local weather and suggests layers from the clothes you own.
             </p>

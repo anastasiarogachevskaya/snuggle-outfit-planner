@@ -5,11 +5,7 @@ import { compareOutfits, idealOutfitFrom, EMPTY_OUTFIT } from "../warmth";
 
 describe("transportExtraCandidates", () => {
   it("lists stroller gear for pram and sitting stroller", () => {
-    expect(transportExtraCandidates("walk", "pram")).toEqual([
-      "rain_cover",
-      "footmuff",
-      "blanket",
-    ]);
+    expect(transportExtraCandidates("walk", "pram")).toEqual(["rain_cover", "footmuff", "blanket"]);
     expect(transportExtraCandidates("walk", "sitting-stroller")).toEqual([
       "rain_cover",
       "footmuff",

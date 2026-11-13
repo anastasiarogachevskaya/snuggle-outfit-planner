@@ -29,8 +29,10 @@ export function defaultUnitFromLocale(locale: string | undefined): TempUnit {
 export function localizeTempText(text: string, unit: TempUnit): string {
   if (unit === "C") return text;
   return text
-    .replace(/(-?\d+(?:\.\d+)?)([––−-])(-?\d+(?:\.\d+)?)\s?°C/g, (_, low, dash, high) =>
-      `${Math.round(cToF(Number(low)))}${dash}${Math.round(cToF(Number(high)))}°F`,
+    .replace(
+      /(-?\d+(?:\.\d+)?)([––−-])(-?\d+(?:\.\d+)?)\s?°C/g,
+      (_, low, dash, high) =>
+        `${Math.round(cToF(Number(low)))}${dash}${Math.round(cToF(Number(high)))}°F`,
     )
     .replace(/(-?\d+(?:\.\d+)?)\s?°C/g, (_, n) => `${Math.round(cToF(Number(n)))}°F`);
 }

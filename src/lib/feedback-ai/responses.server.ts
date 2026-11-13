@@ -1,6 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText, Output, type ModelMessage } from "ai";
-import { analysisSchema } from '../outfit-feedback';
+import { analysisSchema } from "../outfit-feedback";
 
 import {
   createLovableAiGatewayRunIdFetch,
@@ -10,7 +10,12 @@ import {
 
 export function createResponsesCall(
   request: Request,
-  config: { baseURL: string; apiKey: string; model: string; onResponse: (response: Response) => Promise<void> },
+  config: {
+    baseURL: string;
+    apiKey: string;
+    model: string;
+    onResponse: (response: Response) => Promise<void>;
+  },
   messages: ModelMessage[],
   instructions?: string,
 ) {
@@ -50,6 +55,9 @@ export function createResponsesCall(
   return {
     result,
     response: () =>
-      withLovableAiGatewayRunIdHeader(result.toUIMessageStreamResponse({ sendReasoning: true }), runIdFetch),
+      withLovableAiGatewayRunIdHeader(
+        result.toUIMessageStreamResponse({ sendReasoning: true }),
+        runIdFetch,
+      ),
   };
 }

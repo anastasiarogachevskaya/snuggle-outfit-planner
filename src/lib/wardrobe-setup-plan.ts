@@ -16,7 +16,11 @@ export type PlannedStep = Omit<WardrobeStep, "items"> & {
   more: WardrobeItem[];
 };
 
-const BODYSUITS: WardrobeSlug[] = ["sleeveless_bodysuit", "short_sleeve_bodysuit", "long_sleeve_bodysuit"];
+const BODYSUITS: WardrobeSlug[] = [
+  "sleeveless_bodysuit",
+  "short_sleeve_bodysuit",
+  "long_sleeve_bodysuit",
+];
 const TOPS: WardrobeSlug[] = ["short_sleeve_top", "long_sleeve_top"];
 /** Newborn items kept out of the default toddler setup (ownership is kept). */
 const TODDLER_TUCKED_AWAY: WardrobeSlug[] = ["swaddle"];
@@ -61,7 +65,11 @@ function tuckedAway(
   return false;
 }
 
-function priority(slug: WardrobeSlug, audience: SetupAudience, style: ChildPreferences["clothing_style"]): number {
+function priority(
+  slug: WardrobeSlug,
+  audience: SetupAudience,
+  style: ChildPreferences["clothing_style"],
+): number {
   if (audience === "infant") return 0;
   const foot = TODDLER_FOOTWEAR_FIRST.indexOf(slug);
   if (foot >= 0) return -10 + foot;
@@ -86,7 +94,8 @@ export function planWardrobeSetup(
     const primary: WardrobeItem[] = [];
     const more: WardrobeItem[] = [];
     for (const item of ordered) {
-      const hide = !owned.has(item.slug) && tuckedAway(item.slug, item, opts.audience, opts.clothingStyle);
+      const hide =
+        !owned.has(item.slug) && tuckedAway(item.slug, item, opts.audience, opts.clothingStyle);
       (hide ? more : primary).push(item);
     }
     return { ...step, primary, more };

@@ -22,7 +22,9 @@ export function localizeClothingText(text: string, unit: TempUnit): string {
   if (unit !== "F") return result;
   for (const [pattern, replacement] of US_TERMS) {
     result = result.replace(pattern, (match) =>
-      /^[A-Z]/.test(match) ? replacement.charAt(0).toUpperCase() + replacement.slice(1) : replacement,
+      /^[A-Z]/.test(match)
+        ? replacement.charAt(0).toUpperCase() + replacement.slice(1)
+        : replacement,
     );
   }
   return result;

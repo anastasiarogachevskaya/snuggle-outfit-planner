@@ -15,6 +15,9 @@ async function startGuestFlow(page: import("@playwright/test").Page) {
 }
 
 test.describe("location permission denied", () => {
+  // These weather assertions use Celsius; en-US now defaults to Fahrenheit.
+  test.use({ locale: "en-GB" });
+
   test("stops showing “Locating…” and offers manual city search", async ({ page }, testInfo) => {
     await denyGeolocation(page, { native: testInfo.project.name === "ios-webview" });
     await stubOpenMeteo(page);

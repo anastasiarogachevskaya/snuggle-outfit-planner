@@ -103,7 +103,12 @@ function pickLayers(effectiveC: number): LayerNeed {
       // only joins below DEEP_COLD, so sub-zero days actually differ.
       if (effectiveC >= DEEP_COLD)
         return { base: "long_sleeve", bottom: "pants", mid: "none", outer: "winter_overall" };
-      return { base: "long_sleeve", bottom: "warm_bottoms", mid: "fleece", outer: "winter_overall" };
+      return {
+        base: "long_sleeve",
+        bottom: "warm_bottoms",
+        mid: "fleece",
+        outer: "winter_overall",
+      };
   }
 }
 

@@ -190,7 +190,6 @@ function RootComponent() {
     if (pathname !== "/") releaseBootHold();
   }, [pathname]);
 
-
   useEffect(() => {
     initPlatform();
     initializeNativeUI();

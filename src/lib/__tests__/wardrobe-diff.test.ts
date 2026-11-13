@@ -25,7 +25,9 @@ describe("wardrobe save diff", () => {
   });
 
   it("un-ticking an owned item records it as not owned", () => {
-    expect(wardrobeChanges(rows, ["rain_pants"], visible)).toEqual([{ slug: "bodysuit_long", owned: false }]);
+    expect(wardrobeChanges(rows, ["rain_pants"], visible)).toEqual([
+      { slug: "bodysuit_long", owned: false },
+    ]);
   });
 
   it("an empty saved wardrobe is not treated as new", () => {

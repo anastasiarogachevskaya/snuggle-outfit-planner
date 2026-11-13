@@ -366,4 +366,3 @@ export function compareOutfits(
 
   return { verdict, diff, adjustments, missingTransportExtras };
 }
-

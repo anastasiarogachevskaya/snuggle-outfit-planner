@@ -7,7 +7,8 @@ import { createGuestProfile, createLocalProfile, upgradeGuestProfile } from "../
 const on = visibleWardrobeSteps(true);
 const off = visibleWardrobeSteps(false);
 const slugs = (items: { slug: string }[]) => items.map((i) => i.slug);
-const step = (plan: ReturnType<typeof planWardrobeSetup>, id: string) => plan.find((s) => s.id === id)!;
+const step = (plan: ReturnType<typeof planWardrobeSetup>, id: string) =>
+  plan.find((s) => s.id === id)!;
 
 describe("wardrobe setup plan", () => {
   it("leaves infant setup unchanged with the switch off", () => {
@@ -28,33 +29,58 @@ describe("wardrobe setup plan", () => {
     const plan = planWardrobeSetup(on, { audience: "toddler", clothingStyle: "both", owned: [] });
     expect(slugs(step(plan, "sleep").more)).toEqual(["swaddle"]);
     expect(slugs(step(plan, "sleep").primary)).toContain("sleep_sack_25");
-    expect(slugs(step(plan, "transport").primary)).toEqual(expect.arrayContaining(["stroller", "baby_carrier"]));
+    expect(slugs(step(plan, "transport").primary)).toEqual(
+      expect.arrayContaining(["stroller", "baby_carrier"]),
+    );
     expect(slugs(step(plan, "outer").primary)).toContain("winter_overall");
   });
 
   it("keeps an owned swaddle visible", () => {
-    const plan = planWardrobeSetup(on, { audience: "toddler", clothingStyle: "both", owned: ["swaddle"] });
+    const plan = planWardrobeSetup(on, {
+      audience: "toddler",
+      clothingStyle: "both",
+      owned: ["swaddle"],
+    });
     expect(slugs(step(plan, "sleep").primary)).toContain("swaddle");
     expect(step(plan, "sleep").more).toEqual([]);
   });
 
   it("prioritises tops or bodysuits from the clothing style, others under View all", () => {
-    const tops = step(planWardrobeSetup(on, { audience: "toddler", clothingStyle: "tops", owned: [] }), "base");
+    const tops = step(
+      planWardrobeSetup(on, { audience: "toddler", clothingStyle: "tops", owned: [] }),
+      "base",
+    );
     expect(slugs(tops.primary).slice(0, 2)).toEqual(["short_sleeve_top", "long_sleeve_top"]);
-    expect(slugs(tops.more)).toEqual(["sleeveless_bodysuit", "short_sleeve_bodysuit", "long_sleeve_bodysuit"]);
-    const bodies = step(planWardrobeSetup(on, { audience: "toddler", clothingStyle: "bodysuits", owned: [] }), "base");
+    expect(slugs(tops.more)).toEqual([
+      "sleeveless_bodysuit",
+      "short_sleeve_bodysuit",
+      "long_sleeve_bodysuit",
+    ]);
+    const bodies = step(
+      planWardrobeSetup(on, { audience: "toddler", clothingStyle: "bodysuits", owned: [] }),
+      "base",
+    );
     expect(slugs(bodies.more)).toEqual(["short_sleeve_top", "long_sleeve_top"]);
   });
 
   it("puts walking footwear first for toddlers", () => {
-    const acc = step(planWardrobeSetup(on, { audience: "toddler", clothingStyle: "both", owned: [] }), "accessories");
-    expect(slugs(acc.primary).slice(0, 3)).toEqual(["everyday_shoes", "rain_boots", "winter_boots"]);
+    const acc = step(
+      planWardrobeSetup(on, { audience: "toddler", clothingStyle: "both", owned: [] }),
+      "accessories",
+    );
+    expect(slugs(acc.primary).slice(0, 3)).toEqual([
+      "everyday_shoes",
+      "rain_boots",
+      "winter_boots",
+    ]);
   });
 
   it("never drops an item: primary + more covers every visible item", () => {
     for (const style of ["both", "tops", "bodysuits"] as const) {
       const plan = planWardrobeSetup(on, { audience: "toddler", clothingStyle: style, owned: [] });
-      expect(plan.flatMap((s) => [...s.primary, ...s.more]).length).toBe(on.flatMap((s) => s.items).length);
+      expect(plan.flatMap((s) => [...s.primary, ...s.more]).length).toBe(
+        on.flatMap((s) => s.items).length,
+      );
     }
   });
 

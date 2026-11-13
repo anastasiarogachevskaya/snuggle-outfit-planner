@@ -28,7 +28,13 @@ const owned = new Set<WardrobeSlug>([
 ]);
 
 function run(extra: Partial<RecommendInput>) {
-  const r = recommend({ feelsLikeC: 15, tempPref: 3, ageMonths: 8, owned, ...extra } as RecommendInput);
+  const r = recommend({
+    feelsLikeC: 15,
+    tempPref: 3,
+    ageMonths: 8,
+    owned,
+    ...extra,
+  } as RecommendInput);
   return {
     clothing: r.babyClothing.map((l) => l.slug),
     accessories: r.accessories.map((a) => a.slug),
@@ -46,11 +52,15 @@ describe("infant baseline (8 months)", () => {
   });
 
   it("sleep at 19°C", () => {
-    expect(run({ situation: "home", roomTempC: 19, homeActivity: "sleeping" }).clothing).toEqual(["pajamas"]);
+    expect(run({ situation: "home", roomTempC: 19, homeActivity: "sleeping" }).clothing).toEqual([
+      "pajamas",
+    ]);
   });
 
   it("pram walk at 2°C for 30 min", () => {
-    expect(run({ situation: "walk", transportMode: "pram", feelsLikeC: 2, durationMin: 30 })).toEqual({
+    expect(
+      run({ situation: "walk", transportMode: "pram", feelsLikeC: 2, durationMin: 30 }),
+    ).toEqual({
       clothing: ["long_sleeve_bodysuit", "pants", "winter_overall"],
       accessories: ["warm_hat", "cotton_socks", "mittens"],
       extras: ["footmuff"],
@@ -58,7 +68,9 @@ describe("infant baseline (8 months)", () => {
   });
 
   it("carrier walk at 12°C for 30 min", () => {
-    expect(run({ situation: "walk", transportMode: "carrier", feelsLikeC: 12, durationMin: 30 })).toEqual({
+    expect(
+      run({ situation: "walk", transportMode: "carrier", feelsLikeC: 12, durationMin: 30 }),
+    ).toEqual({
       clothing: ["long_sleeve_bodysuit", "pants", "sweater"],
       accessories: ["thin_hat", "cotton_socks"],
       extras: [],

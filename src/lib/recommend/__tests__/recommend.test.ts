@@ -884,7 +884,15 @@ describe("recommendation engine", () => {
 
 describe("cold progression", () => {
   const at = (c: number) =>
-    recommend({ feelsLikeC: c, tempPref: 3, situation: "walk", transportMode: "sitting-stroller", durationMin: 60, ageMonths: 14, owned: owned() });
+    recommend({
+      feelsLikeC: c,
+      tempPref: 3,
+      situation: "walk",
+      transportMode: "sitting-stroller",
+      durationMin: 60,
+      ageMonths: 14,
+      owned: owned(),
+    });
   it("+1°C stroller → winter overall without fleece mid", () => {
     const c = slugs(at(1).babyClothing);
     expect(c).toContain("winter_overall");
@@ -907,7 +915,10 @@ describe("cold progression", () => {
 describe("car trips near freezing", () => {
   it("a 0°C drive is never dressed lighter than a 4°C drive", () => {
     const at = (c: number) =>
-      slugs(recommend({ feelsLikeC: c, tempPref: 3, situation: "car", ageMonths: 14, owned: owned() }).babyClothing);
+      slugs(
+        recommend({ feelsLikeC: c, tempPref: 3, situation: "car", ageMonths: 14, owned: owned() })
+          .babyClothing,
+      );
     const freezing = at(0);
     expect(freezing).toContain("fleece_overall");
     expect(freezing).not.toContain("winter_overall");

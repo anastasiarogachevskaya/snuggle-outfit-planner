@@ -44,10 +44,12 @@ function BlogIndex() {
 
         <main>
           <div className="mb-10 max-w-xl sm:mb-14">
-          <h1 className="mb-4 font-serif text-4xl font-semibold leading-tight text-ink sm:text-5xl">Layerly journal</h1>
-          <p className="leading-relaxed text-ink/70">
-            What's new in Layerly, and why we built it that way.
-          </p>
+            <h1 className="mb-4 font-serif text-4xl font-semibold leading-tight text-ink sm:text-5xl">
+              Layerly journal
+            </h1>
+            <p className="leading-relaxed text-ink/70">
+              What's new in Layerly, and why we built it that way.
+            </p>
           </div>
 
           <ul className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-14">
@@ -63,14 +65,16 @@ function BlogIndex() {
                       <BlogCardIllustration slug={post.slug} index={index} />
                     </div>
                     <div className="flex flex-1 flex-col pt-5">
-                  <p className="text-xs uppercase tracking-widest text-ink/40">
-                    <time dateTime={post.date}>{formatPostDate(post.date)}</time>
-                  </p>
-                  <h2 className="mt-2 font-serif text-2xl font-semibold leading-snug text-ink transition-colors group-hover:text-primary">
-                    {post.title}
-                  </h2>
-                  <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/70">{post.summary}</p>
-                  <span className="mt-4 text-sm font-medium text-primary">Read story →</span>
+                      <p className="text-xs uppercase tracking-widest text-ink/40">
+                        <time dateTime={post.date}>{formatPostDate(post.date)}</time>
+                      </p>
+                      <h2 className="mt-2 font-serif text-2xl font-semibold leading-snug text-ink transition-colors group-hover:text-primary">
+                        {post.title}
+                      </h2>
+                      <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/70">
+                        {post.summary}
+                      </p>
+                      <span className="mt-4 text-sm font-medium text-primary">Read story →</span>
                     </div>
                   </Link>
                 </article>

@@ -73,7 +73,9 @@ export function BottomsPreview({
         <p className="text-[11px] font-medium uppercase tracking-widest text-primary/60">
           Compare bottoms
         </p>
-        <h2 className="mt-1 font-serif text-xl font-semibold">What if you picked different bottoms?</h2>
+        <h2 className="mt-1 font-serif text-xl font-semibold">
+          What if you picked different bottoms?
+        </h2>
         <p className="mt-1 text-sm leading-relaxed text-ink/60">
           Same weather, same plan — tap an option to see how the rest of the outfit changes.
         </p>

@@ -1,7 +1,11 @@
 // @ts-expect-error bun:test is provided by the bun test runner
 import { describe, expect, it } from "bun:test";
 import { normalizeGarmentDetails, isUsable, DEFAULT_GARMENT_DETAILS } from "@/lib/garment-details";
-import { upgradeGuestProfile, GUEST_PROFILE_VERSION, guestGarmentDetails } from "@/lib/guest-profile";
+import {
+  upgradeGuestProfile,
+  GUEST_PROFILE_VERSION,
+  guestGarmentDetails,
+} from "@/lib/guest-profile";
 
 const v1 = {
   dob: "2026-01-10",
@@ -21,7 +25,9 @@ describe("garment details", () => {
     expect(DEFAULT_GARMENT_DETAILS.availability).toBe("available");
   });
   it("invalid values fall back to unknown", () => {
-    expect(normalizeGarmentDetails({ insulation: "toasty", waterproof: true }).insulation).toBe("unknown");
+    expect(normalizeGarmentDetails({ insulation: "toasty", waterproof: true }).insulation).toBe(
+      "unknown",
+    );
   });
   it("outgrown or temporarily unavailable items are not usable", () => {
     expect(isUsable({ owned: true, availability: "outgrown" })).toBe(false);
@@ -53,7 +59,13 @@ describe("local profile upgrade", () => {
     expect(d.waterproof).toBe("unknown");
   });
   it("keeps stated details through reload", () => {
-    const withDetails = { ...v1, wardrobeDetails: { wool_leggings: { leggings_use: "standalone" }, pajamas: { sleepwear_shape: "two_piece", foot_coverage: "footed" } } };
+    const withDetails = {
+      ...v1,
+      wardrobeDetails: {
+        wool_leggings: { leggings_use: "standalone" },
+        pajamas: { sleepwear_shape: "two_piece", foot_coverage: "footed" },
+      },
+    };
     const p = upgradeGuestProfile(JSON.parse(JSON.stringify(withDetails)))!.profile;
     const again = upgradeGuestProfile(JSON.parse(JSON.stringify(p)))!.profile;
     expect(guestGarmentDetails(again, "wool_leggings").leggings_use).toBe("standalone");

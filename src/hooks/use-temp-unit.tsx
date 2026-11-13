@@ -21,7 +21,11 @@ async function syncFromAccount() {
     const { data: s } = await supabase.auth.getSession();
     const uid = s.session?.user.id;
     if (!uid) return;
-    const { data } = await supabase.from("profiles").select("temp_unit").eq("id", uid).maybeSingle();
+    const { data } = await supabase
+      .from("profiles")
+      .select("temp_unit")
+      .eq("id", uid)
+      .maybeSingle();
     const saved = data?.temp_unit;
     if ((saved === "C" || saved === "F") && saved !== window.localStorage.getItem(KEY)) {
       window.localStorage.setItem(KEY, saved);

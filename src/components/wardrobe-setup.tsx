@@ -99,7 +99,10 @@ export function WardrobeSetup({
   };
 
   const modeSwitch = mode !== "chooser" && (
-    <button onClick={switchMode} className="mt-3 text-xs font-medium text-primary underline underline-offset-2">
+    <button
+      onClick={switchMode}
+      className="mt-3 text-xs font-medium text-primary underline underline-offset-2"
+    >
       {mode === "quick" ? "Switch to detailed setup" : "Switch to quick setup"}
     </button>
   );
@@ -151,7 +154,13 @@ export function WardrobeSetup({
               <p className="text-xs font-medium uppercase tracking-widest text-primary/60 mb-3">
                 {s.title}
               </p>
-              <StepTiles step={s} selected={selected} suggested={suggested} onToggle={toggle} compact />
+              <StepTiles
+                step={s}
+                selected={selected}
+                suggested={suggested}
+                onToggle={toggle}
+                compact
+              />
               <GuidancePanel items={[...s.primary, ...s.more]} compact />
             </section>
           ))}
@@ -166,7 +175,9 @@ export function WardrobeSetup({
             disabled={saving}
             className="w-full rounded-2xl bg-primary text-primary-foreground py-4 font-medium shadow-lg shadow-primary/20 disabled:opacity-50"
           >
-            {saving ? "Saving…" : `Save ${plan.reduce((n, s) => n + [...s.primary, ...s.more].filter((i) => selected.has(i.slug)).length, 0)} items`}
+            {saving
+              ? "Saving…"
+              : `Save ${plan.reduce((n, s) => n + [...s.primary, ...s.more].filter((i) => selected.has(i.slug)).length, 0)} items`}
           </button>
         </div>
       </Shell>
@@ -193,7 +204,13 @@ export function WardrobeSetup({
       </p>
 
       <div className="mt-6">
-        <StepTiles key={current.id} step={current} selected={selected} suggested={suggested} onToggle={toggle} />
+        <StepTiles
+          key={current.id}
+          step={current}
+          selected={selected}
+          suggested={suggested}
+          onToggle={toggle}
+        />
       </div>
 
       <GuidancePanel items={[...current.primary, ...current.more]} />
@@ -295,7 +312,9 @@ function Shell({
           Wardrobe setup
         </p>
         <h1 className="text-3xl font-serif font-semibold">{title}</h1>
-        {subtitle && <p className="mt-2 text-ink/60 text-sm">{localizeClothingText(subtitle, unit)}</p>}
+        {subtitle && (
+          <p className="mt-2 text-ink/60 text-sm">{localizeClothingText(subtitle, unit)}</p>
+        )}
         {children}
       </div>
     </div>
@@ -370,7 +389,9 @@ function Tile({
         <ClothingIcon slug={slug} size={compact ? 28 : 34} />
       </div>
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
-        <p className={"min-w-0 font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>{localizeClothingText(label, unit)}</p>
+        <p className={"min-w-0 font-medium leading-tight " + (compact ? "text-xs" : "text-sm")}>
+          {localizeClothingText(label, unit)}
+        </p>
         {warmth && (
           <span
             className={
@@ -382,7 +403,9 @@ function Tile({
           </span>
         )}
       </div>
-      <p className="mt-2 text-[10px] leading-snug text-ink/55">{localizeClothingText(hint, unit)}</p>
+      <p className="mt-2 text-[10px] leading-snug text-ink/55">
+        {localizeClothingText(hint, unit)}
+      </p>
       {suggested && !selected && (
         <span className="mt-2 self-start rounded-full border border-primary/30 px-1.5 py-0.5 text-[9px] font-semibold text-primary/80">
           Suggested
@@ -399,17 +422,26 @@ function GuidancePanel({ items, compact = false }: { items: WardrobeItem[]; comp
   if (explainedItems.length === 0 && !hasSleepSacks) return null;
 
   return (
-    <aside className={(compact ? "mt-3 " : "mt-4 ") + "rounded-2xl border border-primary/15 bg-primary/5 p-4"}>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-primary/75">What counts?</p>
+    <aside
+      className={
+        (compact ? "mt-3 " : "mt-4 ") + "rounded-2xl border border-primary/15 bg-primary/5 p-4"
+      }
+    >
+      <p className="text-[10px] font-bold uppercase tracking-widest text-primary/75">
+        What counts?
+      </p>
       <div className="mt-2 space-y-2">
         {hasSleepSacks && (
           <p className="text-[11px] leading-relaxed text-ink/60">
-            A sleep sack is a wearable blanket. TOG measures insulation: a higher rating means more warmth. Follow its manufacturer's clothing and room-temperature guidance.
+            A sleep sack is a wearable blanket. TOG measures insulation: a higher rating means more
+            warmth. Follow its manufacturer's clothing and room-temperature guidance.
           </p>
         )}
         {explainedItems.map((item) => (
           <p key={item.slug} className="text-[11px] leading-relaxed text-ink/60">
-            <span className="font-semibold text-ink/75">{localizeClothingText(item.label, unit)}: </span>
+            <span className="font-semibold text-ink/75">
+              {localizeClothingText(item.label, unit)}:{" "}
+            </span>
             {localizeClothingText(item.explanation ?? "", unit)}
           </p>
         ))}

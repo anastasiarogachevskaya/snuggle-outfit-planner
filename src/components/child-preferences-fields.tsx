@@ -30,7 +30,9 @@ function Segmented<T extends string>({
 }) {
   return (
     <fieldset>
-      <legend className="text-xs font-medium uppercase tracking-widest text-ink/70">{legend}</legend>
+      <legend className="text-xs font-medium uppercase tracking-widest text-ink/70">
+        {legend}
+      </legend>
       {hint && <p className="mt-1 text-sm leading-relaxed text-ink/60">{hint}</p>}
       <div className="mt-3 grid grid-cols-3 gap-2">
         {options.map((o) => (

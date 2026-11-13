@@ -31,7 +31,9 @@ export const DEFAULT_GARMENT_DETAILS: GarmentDetails = {
 };
 
 function pick<T extends readonly string[]>(allowed: T, v: unknown, fallback: T[number]): T[number] {
-  return typeof v === "string" && (allowed as readonly string[]).includes(v) ? (v as T[number]) : fallback;
+  return typeof v === "string" && (allowed as readonly string[]).includes(v)
+    ? (v as T[number])
+    : fallback;
 }
 
 /** Fill missing/invalid fields with the compatible defaults (unknown / available). */
@@ -65,14 +67,38 @@ export function isUsable(row: { owned: boolean; availability?: string | null }):
 export type GarmentDetailField = keyof GarmentDetails;
 
 const INSULATION_SLUGS = new Set([
-  "light_overall", "fleece_overall", "wool_overall", "softshell_overall", "rain_overall",
-  "winter_overall", "jacket", "snow_pants", "waterproof_jacket", "rain_pants",
-  "mittens", "winter_boots", "footmuff", "babywearing_cover",
+  "light_overall",
+  "fleece_overall",
+  "wool_overall",
+  "softshell_overall",
+  "rain_overall",
+  "winter_overall",
+  "jacket",
+  "snow_pants",
+  "waterproof_jacket",
+  "rain_pants",
+  "mittens",
+  "winter_boots",
+  "footmuff",
+  "babywearing_cover",
 ]);
 const WATERPROOF_SLUGS = new Set([
-  "light_overall", "fleece_overall", "wool_overall", "softshell_overall", "rain_overall",
-  "winter_overall", "jacket", "snow_pants", "waterproof_jacket", "rain_pants",
-  "mittens", "winter_boots", "everyday_shoes", "rain_boots", "footmuff", "babywearing_cover",
+  "light_overall",
+  "fleece_overall",
+  "wool_overall",
+  "softshell_overall",
+  "rain_overall",
+  "winter_overall",
+  "jacket",
+  "snow_pants",
+  "waterproof_jacket",
+  "rain_pants",
+  "mittens",
+  "winter_boots",
+  "everyday_shoes",
+  "rain_boots",
+  "footmuff",
+  "babywearing_cover",
 ]);
 
 /**
@@ -90,7 +116,10 @@ export function garmentDetailFields(slug: string): GarmentDetailField[] {
 }
 
 export const GARMENT_DETAIL_OPTIONS: {
-  [K in GarmentDetailField]: { label: string; options: { value: GarmentDetails[K]; label: string }[] };
+  [K in GarmentDetailField]: {
+    label: string;
+    options: { value: GarmentDetails[K]; label: string }[];
+  };
 } = {
   insulation: {
     label: "Insulation",
@@ -144,7 +173,10 @@ export const GARMENT_DETAIL_OPTIONS: {
 };
 
 /** Fields the parent changed in the dialog — only these are written. */
-export function changedGarmentDetails(before: GarmentDetails, after: GarmentDetails): Partial<GarmentDetails> {
+export function changedGarmentDetails(
+  before: GarmentDetails,
+  after: GarmentDetails,
+): Partial<GarmentDetails> {
   const out: Partial<GarmentDetails> = {};
   for (const k of Object.keys(DEFAULT_GARMENT_DETAILS) as GarmentDetailField[]) {
     if (before[k] !== after[k]) (out as Record<string, string>)[k] = after[k];

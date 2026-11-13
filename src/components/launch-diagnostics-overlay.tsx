@@ -25,9 +25,11 @@ export function LaunchDiagnosticsOverlay() {
   useEffect(() => {
     if (!enabled) return;
     const id = setInterval(() => setTick((t) => t + 1), 100);
-    void supabase.auth.getSession().then(({ data }) =>
-      setSession(data.session ? `signed in (${data.session.user.email ?? "no email"})` : "none"),
-    );
+    void supabase.auth
+      .getSession()
+      .then(({ data }) =>
+        setSession(data.session ? `signed in (${data.session.user.email ?? "no email"})` : "none"),
+      );
     return () => clearInterval(id);
   }, [enabled]);
 
@@ -73,7 +75,9 @@ export function LaunchDiagnosticsOverlay() {
           </button>
         </span>
       </div>
-      <div>native: {String(isNativeApp())} · uptime {t}ms</div>
+      <div>
+        native: {String(isNativeApp())} · uptime {t}ms
+      </div>
       <div>current path: {pathname}</div>
       <div>resolved destination: {snap.destination ?? "not resolved"}</div>
       <div>boot hold: {hold}</div>

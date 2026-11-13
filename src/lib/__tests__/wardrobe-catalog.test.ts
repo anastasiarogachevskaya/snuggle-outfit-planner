@@ -66,7 +66,9 @@ describe("wardrobe catalog", () => {
     for (const item of allItems) {
       expect(LABEL_BY_SLUG[item.slug]).toBe(item.label);
     }
-    expect(Object.keys(LABEL_BY_SLUG).length).toBe(ALL_WARDROBE_STEPS.flatMap((s) => s.items).length);
+    expect(Object.keys(LABEL_BY_SLUG).length).toBe(
+      ALL_WARDROBE_STEPS.flatMap((s) => s.items).length,
+    );
   });
 
   it("all TOG sleep sacks exist in the catalog with their rating in the label", () => {
@@ -106,7 +108,8 @@ describe("toddler garment types", () => {
   const off = visibleWardrobeSteps(false).flatMap((s) => s.items.map((i) => i.slug as string));
 
   it("each of the eight types exists exactly once", () => {
-    for (const slug of TODDLER_SLUGS) expect({ slug, n: on.filter((s) => s === slug).length }).toEqual({ slug, n: 1 });
+    for (const slug of TODDLER_SLUGS)
+      expect({ slug, n: on.filter((s) => s === slug).length }).toEqual({ slug, n: 1 });
   });
 
   it("none is owned by default or preselected", () => {
@@ -124,13 +127,19 @@ describe("toddler garment types", () => {
   });
 
   it("base-layer question depends on the switch", () => {
-    expect(visibleWardrobeSteps(false).find((s) => s.id === "base")!.question).toBe("Which bodysuits do you have?");
-    expect(visibleWardrobeSteps(true).find((s) => s.id === "base")!.question).toBe("Which base layers do you have?");
+    expect(visibleWardrobeSteps(false).find((s) => s.id === "base")!.question).toBe(
+      "Which bodysuits do you have?",
+    );
+    expect(visibleWardrobeSteps(true).find((s) => s.id === "base")!.question).toBe(
+      "Which base layers do you have?",
+    );
   });
 
   it("legacy snow_pants keeps its neutral label in both states and stays separate from rain_pants", () => {
     for (const enabled of [false, true]) {
-      const item = visibleWardrobeSteps(enabled).flatMap((s) => s.items).find((i) => i.slug === "snow_pants")!;
+      const item = visibleWardrobeSteps(enabled)
+        .flatMap((s) => s.items)
+        .find((i) => i.slug === "snow_pants")!;
       expect(item.label).toBe("Rain / snow pants");
       expect(item.hint).toBe("Protective outer bottoms");
       // Its warmth tag is a display hint only, not confirmation of insulation.

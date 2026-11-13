@@ -62,8 +62,19 @@ const COLD_WALK: Omit<RecommendInput, "owned"> = {
   ageMonths: 8,
 };
 const COLD_WARDROBE = [
-  "long_sleeve_bodysuit", "pants", "leggings", "wool_leggings", "sweater", "hoodie",
-  "winter_overall", "warm_hat", "wool_socks", "mittens", "footmuff", "rain_cover", "blanket",
+  "long_sleeve_bodysuit",
+  "pants",
+  "leggings",
+  "wool_leggings",
+  "sweater",
+  "hoodie",
+  "winter_overall",
+  "warm_hat",
+  "wool_socks",
+  "mittens",
+  "footmuff",
+  "rain_cover",
+  "blanket",
 ];
 
 describe("wardrobe eligibility", () => {
@@ -109,9 +120,16 @@ describe("wardrobe eligibility", () => {
   });
 
   it("keeps saved garment details for set-aside and eligible items, unchanged", () => {
-    const stored = { insulation: "insulated", waterproof: "yes", availability: "outgrown" } as const;
+    const stored = {
+      insulation: "insulated",
+      waterproof: "yes",
+      availability: "outgrown",
+    } as const;
     const w = resolveEligibleWardrobe(
-      [row("winter_overall", stored), row("pajamas", { foot_coverage: "footed", sleepwear_shape: "one_piece" })],
+      [
+        row("winter_overall", stored),
+        row("pajamas", { foot_coverage: "footed", sleepwear_shape: "one_piece" }),
+      ],
       ON,
     );
     expect(w.details.get("winter_overall")).toEqual(normalizeGarmentDetails(stored));
@@ -129,7 +147,10 @@ describe("wardrobe eligibility", () => {
 
   it("names set-aside items as such and everything else as not in the wardrobe", () => {
     const w = resolveEligibleWardrobe(
-      [row("jacket", { availability: "outgrown" }), row("footmuff", { availability: "temporarily_unavailable" })],
+      [
+        row("jacket", { availability: "outgrown" }),
+        row("footmuff", { availability: "temporarily_unavailable" }),
+      ],
       ON,
     );
     expect(missingItemNote("jacket", w.setAside)).toBe("Marked outgrown in your wardrobe");
@@ -154,16 +175,22 @@ describe("recommendations use only the eligible wardrobe", () => {
 
   it("with filtering off, an unavailable footmuff is still used (legacy behaviour)", () => {
     const off = resolveEligibleWardrobe(rowsWith({ footmuff: "temporarily_unavailable" }), OFF);
-    expect(recommend({ ...COLD_WALK, owned: off.eligible }).transportExtras.map((e) => e.slug)).toContain("footmuff");
+    expect(
+      recommend({ ...COLD_WALK, owned: off.eligible }).transportExtras.map((e) => e.slug),
+    ).toContain("footmuff");
   });
 
   it("substitutes an available garment for an outgrown one", () => {
     // At 12°C the engine asks for a sweater; the parent also owns a hoodie.
     const mild = { ...COLD_WALK, feelsLikeC: 12 };
     const all = resolveEligibleWardrobe(rowsWith({}), ON);
-    expect(recommend({ ...mild, owned: all.eligible }).babyClothing.find((l) => l.slot === "mid")?.slug).toBe("sweater");
+    expect(
+      recommend({ ...mild, owned: all.eligible }).babyClothing.find((l) => l.slot === "mid")?.slug,
+    ).toBe("sweater");
     const w = resolveEligibleWardrobe(rowsWith({ sweater: "outgrown" }), ON);
-    const mid = recommend({ ...mild, owned: w.eligible }).babyClothing.find((l) => l.slot === "mid");
+    const mid = recommend({ ...mild, owned: w.eligible }).babyClothing.find(
+      (l) => l.slot === "mid",
+    );
     expect(mid?.slug).toBe("hoodie");
     expect(mid?.usingLabel).toBeDefined();
   });
@@ -207,7 +234,8 @@ describe("recommendations use only the eligible wardrobe", () => {
     // Applying a bottom never pulls a set-aside garment into the outfit as owned.
     const applied = applyBottomChoice(rec, "leggings", w.eligible);
     for (const l of [...applied.babyClothing, ...applied.accessories]) {
-      if (w.setAside.has(l.slug as WardrobeSlug)) expect(w.eligible.has(l.slug as WardrobeSlug)).toBe(false);
+      if (w.setAside.has(l.slug as WardrobeSlug))
+        expect(w.eligible.has(l.slug as WardrobeSlug)).toBe(false);
     }
   });
 
@@ -224,7 +252,12 @@ describe("recommendations use only the eligible wardrobe", () => {
     expect(rec.missing.length).toBeGreaterThan(0);
     for (const l of rec.babyClothing) expect(l.usingLabel).toBeUndefined();
     const home = recommend({
-      feelsLikeC: 0, tempPref: 3, situation: "home", homeActivity: "sleeping", roomTempC: 18, ageMonths: 8,
+      feelsLikeC: 0,
+      tempPref: 3,
+      situation: "home",
+      homeActivity: "sleeping",
+      roomTempC: 18,
+      ageMonths: 8,
       owned: w.eligible,
     });
     expect(home.sleepAccessories).toEqual([]);
@@ -236,7 +269,10 @@ describe("phone-kept, signed-in and assistant paths agree", () => {
     footmuff: { availability: "outgrown" as const, insulation: "insulated" as const },
     winter_overall: { waterproof: "yes" as const },
   };
-  const guest = { wardrobe: ["footmuff", "winter_overall", "pants"] as WardrobeSlug[], wardrobeDetails: details };
+  const guest = {
+    wardrobe: ["footmuff", "winter_overall", "pants"] as WardrobeSlug[],
+    wardrobeDetails: details,
+  };
   const dbRows = [
     { baby_id: "a", ...row("footmuff", { availability: "outgrown", insulation: "insulated" }) },
     { baby_id: "a", ...row("winter_overall", { waterproof: "yes", availability: "available" }) },
@@ -254,7 +290,11 @@ describe("phone-kept, signed-in and assistant paths agree", () => {
       expect([...fromDb.setAside]).toEqual([...fromGuest.setAside]);
       expect(Object.fromEntries(fromDb.details)).toEqual(Object.fromEntries(fromGuest.details));
     }
-    expect(calls[0]).toEqual({ table: "wardrobe_items", columns: WARDROBE_ITEM_COLUMNS, filters: [["baby_id", "a"]] });
+    expect(calls[0]).toEqual({
+      table: "wardrobe_items",
+      columns: WARDROBE_ITEM_COLUMNS,
+      filters: [["baby_id", "a"]],
+    });
   });
 
   it("only reads the requested child's rows", async () => {

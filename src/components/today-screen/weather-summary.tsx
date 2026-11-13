@@ -33,13 +33,14 @@ export function WeatherSummary({
             {formatTemp(weather.tempC, unit)}
           </span>
           <span className="text-sm text-ink/70">{weather.condition}</span>
-          <span className="text-sm text-ink/40">· Feels like {formatTemp(weather.feelsLikeC, unit)}</span>
+          <span className="text-sm text-ink/40">
+            · Feels like {formatTemp(weather.feelsLikeC, unit)}
+          </span>
         </div>
         {timeSelector && timeSelector.value > 0 && (
           <p className="mt-1 text-xs text-ink/60">
-            Forecast for{" "}
-            {hourLabel(new Date(Date.now() + (timeSelector.value + 30) * 60_000))} — outfit below is
-            for then too.
+            Forecast for {hourLabel(new Date(Date.now() + (timeSelector.value + 30) * 60_000))} —
+            outfit below is for then too.
           </p>
         )}
       </div>

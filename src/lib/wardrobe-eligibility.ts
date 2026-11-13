@@ -84,8 +84,14 @@ export function guestWardrobeRows(profile: {
 type WardrobeReader = Pick<SupabaseClient<Database>, "from">;
 
 /** One child's wardrobe rows (owned and unowned) with every detail column. */
-export async function fetchWardrobeItems(client: WardrobeReader, babyId: string): Promise<WardrobeItemRow[]> {
-  const { data, error } = await client.from("wardrobe_items").select(WARDROBE_ITEM_COLUMNS).eq("baby_id", babyId);
+export async function fetchWardrobeItems(
+  client: WardrobeReader,
+  babyId: string,
+): Promise<WardrobeItemRow[]> {
+  const { data, error } = await client
+    .from("wardrobe_items")
+    .select(WARDROBE_ITEM_COLUMNS)
+    .eq("baby_id", babyId);
   if (error) throw new Error(error.message);
   return (data ?? []) as WardrobeItemRow[];
 }

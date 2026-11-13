@@ -95,7 +95,10 @@ export function GarmentDetailsDialog({
           )}
         </div>
         {error && (
-          <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          <p
+            role="alert"
+            className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+          >
             {error}
           </p>
         )}
@@ -146,7 +149,9 @@ function FieldGroup({
               key={o.value}
               className={
                 "cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-colors focus-within:ring-2 focus-within:ring-primary/50 " +
-                (checked ? "border-primary bg-primary text-primary-foreground" : "border-black/10 bg-surface text-ink/75")
+                (checked
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-black/10 bg-surface text-ink/75")
               }
             >
               <input
@@ -167,7 +172,15 @@ function FieldGroup({
 }
 
 /** Compact "Details" action shown beside an owned item; never toggles ownership. */
-export function GarmentDetailsButton({ label, badge, onClick }: { label: string; badge: string | null; onClick: () => void }) {
+export function GarmentDetailsButton({
+  label,
+  badge,
+  onClick,
+}: {
+  label: string;
+  badge: string | null;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"

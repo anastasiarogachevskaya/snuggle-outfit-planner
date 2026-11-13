@@ -81,16 +81,14 @@ function TodayPage() {
       if (error) throw error;
       const localWardrobe = guest.wardrobe ?? GUEST_DEFAULT_WARDROBE;
       if (localWardrobe.length > 0) {
-        const { error: wErr } = await supabase
-          .from("wardrobe_items")
-          .insert(
-            localWardrobe.map((slug) => ({
-              baby_id: baby.id,
-              slug,
-              owned: true,
-              ...normalizeGarmentDetails(guest.wardrobeDetails?.[slug]),
-            })),
-          );
+        const { error: wErr } = await supabase.from("wardrobe_items").insert(
+          localWardrobe.map((slug) => ({
+            baby_id: baby.id,
+            slug,
+            owned: true,
+            ...normalizeGarmentDetails(guest.wardrobeDetails?.[slug]),
+          })),
+        );
         if (wErr) throw wErr;
       }
       // Comfort ratings tapped before signing up are part of the profile too —
@@ -224,12 +222,7 @@ function TodayPage() {
   // Until the wardrobe has loaded, an empty set would read as "owns nothing".
   if (wardrobeQ.isPending) return <Loading />;
   if (wardrobeQ.isError)
-    return (
-      <LoadFailed
-        title="Couldn't load your wardrobe."
-        onRetry={() => wardrobeQ.refetch()}
-      />
-    );
+    return <LoadFailed title="Couldn't load your wardrobe." onRetry={() => wardrobeQ.refetch()} />;
   const baby = babyQ.data;
 
   return (

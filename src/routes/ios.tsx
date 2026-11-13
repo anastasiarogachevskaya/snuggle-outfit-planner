@@ -31,7 +31,9 @@ function AppStoreBadge() {
         <span className="block whitespace-nowrap text-[10px] font-medium uppercase tracking-wide opacity-80">
           Download on the
         </span>
-        <span className="block whitespace-nowrap text-lg font-semibold leading-none">App Store</span>
+        <span className="block whitespace-nowrap text-lg font-semibold leading-none">
+          App Store
+        </span>
       </span>
     </a>
   );

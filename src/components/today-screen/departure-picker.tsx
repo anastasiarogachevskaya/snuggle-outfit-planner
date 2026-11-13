@@ -38,8 +38,7 @@ export function DepartureTimeWord({
     selectionHaptic();
     onChange(v);
   };
-  const label =
-    value === 0 ? "Now" : hourLabel(new Date(now.getTime() + (value + 30) * 60_000));
+  const label = value === 0 ? "Now" : hourLabel(new Date(now.getTime() + (value + 30) * 60_000));
 
   return (
     <label className="relative inline-flex cursor-pointer items-baseline">

@@ -334,7 +334,8 @@ export function CheckOutfitPanel({
                 {formatTemp(weather.tempC, unit)}
               </div>
               <div className="mt-0.5 text-[9px] font-medium uppercase tracking-wider text-accent">
-                Feels like {formatTemp(weather.feelsLikeC, unit)} · {formatWind(weather.windKph, unit)}
+                Feels like {formatTemp(weather.feelsLikeC, unit)} ·{" "}
+                {formatWind(weather.windKph, unit)}
               </div>
             </div>
           )}

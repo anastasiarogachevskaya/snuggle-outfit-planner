@@ -27,7 +27,8 @@ export function normalizeChildPreferences(raw: unknown): ChildPreferences {
     nappy_use: (NAPPY_USE as readonly unknown[]).includes(r.nappy_use)
       ? (r.nappy_use as ChildPreferences["nappy_use"])
       : d.nappy_use,
-    easy_toilet_access: typeof r.easy_toilet_access === "boolean" ? r.easy_toilet_access : d.easy_toilet_access,
+    easy_toilet_access:
+      typeof r.easy_toilet_access === "boolean" ? r.easy_toilet_access : d.easy_toilet_access,
   };
 }
 

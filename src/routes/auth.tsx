@@ -198,7 +198,9 @@ function AuthPage() {
           </p>
           <h1 className="text-3xl font-serif font-semibold">Sign in to Layerly</h1>
           {mode !== "signin" && (
-            <p className="mt-2 text-sm text-ink/60">Create your account to save your baby's wardrobe.</p>
+            <p className="mt-2 text-sm text-ink/60">
+              Create your account to save your baby's wardrobe.
+            </p>
           )}
         </div>
 

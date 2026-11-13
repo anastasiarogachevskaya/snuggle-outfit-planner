@@ -8,11 +8,7 @@ import {
   Smartphone,
   Sparkles,
 } from "lucide-react";
-import {
-  BodysuitIcon,
-  HatIcon,
-  WardrobeIcon,
-} from "@/components/icons";
+import { BodysuitIcon, HatIcon, WardrobeIcon } from "@/components/icons";
 
 const illustrations = {
   "plan-outfits-ahead": Clock,

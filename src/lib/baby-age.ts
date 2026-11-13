@@ -60,7 +60,10 @@ export function stageFromMonths(months: number | null | undefined): ChildStage {
   return "child_36_plus";
 }
 
-export function childStage(dob: string | null | undefined, reference: string | Date = new Date()): ChildStage {
+export function childStage(
+  dob: string | null | undefined,
+  reference: string | Date = new Date(),
+): ChildStage {
   return stageFromMonths(completedMonths(dob, reference));
 }
 

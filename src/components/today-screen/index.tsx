@@ -19,7 +19,6 @@ import { CheckOutfitPanel } from "./check-outfit-panel";
 import { applyBottomChoice } from "@/lib/recommend/compare-bottoms";
 import type { SetAsideReason } from "@/lib/wardrobe-eligibility";
 
-
 /** Fires a selection haptic only when the value actually changes. */
 function change<T>(current: T, next: T, set: (v: T) => void) {
   if (current === next) return;
@@ -124,7 +123,10 @@ export function TodayScreen({
   const [leaveIn, setLeaveIn] = useState(0);
   const planningAhead = situation === "walk" && leaveIn > 0;
   const weather = useMemo(
-    () => (weatherQ.data && planningAhead ? weatherAtMinutesFromNow(weatherQ.data, leaveIn) : weatherQ.data),
+    () =>
+      weatherQ.data && planningAhead
+        ? weatherAtMinutesFromNow(weatherQ.data, leaveIn)
+        : weatherQ.data,
     [weatherQ.data, planningAhead, leaveIn],
   );
 
@@ -147,7 +149,8 @@ export function TodayScreen({
       cloudCoverPct: weather.cloudCoverPct,
       feelsLikeAtEndC:
         situation === "walk"
-          ? (feelsLikeAtMinutesFromNow(weatherQ.data!, (planningAhead ? leaveIn : 0) + duration) ?? undefined)
+          ? (feelsLikeAtMinutesFromNow(weatherQ.data!, (planningAhead ? leaveIn : 0) + duration) ??
+            undefined)
           : undefined,
     });
   }, [
@@ -219,8 +222,8 @@ export function TodayScreen({
         )}
         {sampleWardrobe && (
           <p className="mb-6 rounded-2xl border border-black/10 bg-surface px-4 py-3 text-xs text-ink/70">
-            <span className="font-semibold">Sample wardrobe.</span> Outfits use common basics, not your own
-            clothes{guest ? "" : " — set up your wardrobe to use what you have"}.
+            <span className="font-semibold">Sample wardrobe.</span> Outfits use common basics, not
+            your own clothes{guest ? "" : " — set up your wardrobe to use what you have"}.
           </p>
         )}
 
@@ -240,7 +243,6 @@ export function TodayScreen({
           />
         </section>
 
-
         <ActivityPicker
           situation={situation}
           onSituationChange={(s) => change(situation, s, setSituation)}
@@ -254,7 +256,6 @@ export function TodayScreen({
           roomTemp={roomTemp}
           onRoomTempChange={setRoomTemp}
         />
-
 
         {/* The warmth-comparison model is clo-based and doesn't apply to
             TOG-rated sleep sacks, so this replaces the recommendation card
@@ -282,7 +283,6 @@ export function TodayScreen({
           )
         )}
 
-
         {rec && !checkingOutfit && !(situation === "home" && homeActivity === "sleeping") && (
           <button
             onClick={() => {
@@ -295,9 +295,7 @@ export function TodayScreen({
             <div className="relative flex items-center justify-between rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-ink/5 transition-transform duration-150 active:scale-[0.98]">
               <div className="flex flex-col">
                 <span className="text-base font-semibold text-ink">Layer up</span>
-                <span className="mt-0.5 text-sm text-ink/60">
-                  Build your own outfit for today
-                </span>
+                <span className="mt-0.5 text-sm text-ink/60">Build your own outfit for today</span>
               </div>
               <div className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <svg

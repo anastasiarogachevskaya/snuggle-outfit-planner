@@ -1,10 +1,17 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { OG_IMAGE, SITE_URL, breadcrumbLd, pageMeta } from "@/lib/seo";
 import { formatPostDate, getPost } from "@/lib/blog";
 import { SiteFooter } from "@/components/site-footer";
 
 export const Route = createFileRoute("/blog/$slug")({
   loader: ({ params }) => {
+    if (params.slug === "dressed-for-when-you-leave") {
+      throw redirect({
+        to: "/blog/$slug",
+        params: { slug: "plan-outfits-ahead" },
+        statusCode: 301,
+      });
+    }
     const post = getPost(params.slug);
     if (!post) throw notFound();
     return { post };

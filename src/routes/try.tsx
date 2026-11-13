@@ -200,21 +200,21 @@ function TryPage() {
           {GUEST_AGE_OPTIONS.map((o) => {
             const comingSoon = o.comingSoon && !toddlerSupportEnabled();
             return (
-            <button
-              key={o.id}
-              disabled={comingSoon}
-              onClick={() => {
-                logEvent("try_age_selected", { age_band: o.id });
-                const p = createGuestProfile(o.id as GuestAgeBand);
-                writeGuestProfile(p);
-                setProfile(p);
-                setStep("location");
-              }}
-              className="flex w-full items-center justify-between rounded-2xl border border-black/5 bg-surface px-5 py-4 text-left text-ink disabled:opacity-40"
-            >
-              <span className="font-medium">{o.label}</span>
-              <span className="text-xs text-ink/40">{comingSoon ? "Coming soon" : "→"}</span>
-            </button>
+              <button
+                key={o.id}
+                disabled={comingSoon}
+                onClick={() => {
+                  logEvent("try_age_selected", { age_band: o.id });
+                  const p = createGuestProfile(o.id as GuestAgeBand);
+                  writeGuestProfile(p);
+                  setProfile(p);
+                  setStep("location");
+                }}
+                className="flex w-full items-center justify-between rounded-2xl border border-black/5 bg-surface px-5 py-4 text-left text-ink disabled:opacity-40"
+              >
+                <span className="font-medium">{o.label}</span>
+                <span className="text-xs text-ink/40">{comingSoon ? "Coming soon" : "→"}</span>
+              </button>
             );
           })}
         </div>
@@ -662,7 +662,10 @@ function LocalProfile({
           </div>
         </div>
         {saveFailed && (
-          <p role="alert" className="mt-8 rounded-xl border border-destructive/25 bg-surface p-3 text-sm text-destructive">
+          <p
+            role="alert"
+            className="mt-8 rounded-xl border border-destructive/25 bg-surface p-3 text-sm text-destructive"
+          >
             This device couldn't save your changes. Your edits are still here — please try again.
           </p>
         )}
@@ -777,34 +780,34 @@ function LocalWardrobe({
                   const label = localizeClothingText(item.label, unit);
                   return (
                     <div key={item.slug} className="flex min-w-0 items-center gap-2">
-                    <button
-                      aria-pressed={selected}
-                      onClick={() => {
-                        const next = new Set(owned);
-                        if (selected) next.delete(item.slug);
-                        else next.add(item.slug);
-                        onChange([...next]);
-                        lightHaptic();
-                      }}
-                      className={`flex min-w-0 flex-1 items-center gap-3 rounded-2xl border p-3 text-left ${selected ? "border-primary/30 bg-surface" : "border-black/5 opacity-60"}`}
-                    >
-                      <span
-                        className={`flex size-6 items-center justify-center rounded-full text-xs ${selected ? "bg-primary text-primary-foreground" : "border border-black/10 bg-white"}`}
+                      <button
+                        aria-pressed={selected}
+                        onClick={() => {
+                          const next = new Set(owned);
+                          if (selected) next.delete(item.slug);
+                          else next.add(item.slug);
+                          onChange([...next]);
+                          lightHaptic();
+                        }}
+                        className={`flex min-w-0 flex-1 items-center gap-3 rounded-2xl border p-3 text-left ${selected ? "border-primary/30 bg-surface" : "border-black/5 opacity-60"}`}
                       >
-                        {selected ? "✓" : ""}
-                      </span>
-                      <span className={selected ? "text-primary" : "text-ink/50"}>
-                        <ClothingIcon slug={item.slug} size={22} />
-                      </span>
-                      <span className="min-w-0 text-sm font-medium">{label}</span>
-                    </button>
-                    {selected && (
-                      <GarmentDetailsButton
-                        label={label}
-                        badge={availabilityBadge(detailsFor(item.slug).availability)}
-                        onClick={() => setEditing({ slug: item.slug, label })}
-                      />
-                    )}
+                        <span
+                          className={`flex size-6 items-center justify-center rounded-full text-xs ${selected ? "bg-primary text-primary-foreground" : "border border-black/10 bg-white"}`}
+                        >
+                          {selected ? "✓" : ""}
+                        </span>
+                        <span className={selected ? "text-primary" : "text-ink/50"}>
+                          <ClothingIcon slug={item.slug} size={22} />
+                        </span>
+                        <span className="min-w-0 text-sm font-medium">{label}</span>
+                      </button>
+                      {selected && (
+                        <GarmentDetailsButton
+                          label={label}
+                          badge={availabilityBadge(detailsFor(item.slug).availability)}
+                          onClick={() => setEditing({ slug: item.slug, label })}
+                        />
+                      )}
                     </div>
                   );
                 })}

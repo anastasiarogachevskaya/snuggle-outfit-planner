@@ -1,4 +1,8 @@
-import { compactChildPreferences, normalizeChildPreferences, type ChildPreferences } from "@/lib/child-preferences";
+import {
+  compactChildPreferences,
+  normalizeChildPreferences,
+  type ChildPreferences,
+} from "@/lib/child-preferences";
 import { useCallback, useEffect, useState } from "react";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 import {
@@ -172,13 +176,16 @@ export function upgradeGuestProfile(
 
   // v2: optional garment details keyed by slug; missing = unknown / available.
   const rawDetails =
-    parsed.wardrobeDetails && typeof parsed.wardrobeDetails === "object" ? parsed.wardrobeDetails : {};
+    parsed.wardrobeDetails && typeof parsed.wardrobeDetails === "object"
+      ? parsed.wardrobeDetails
+      : {};
   const wardrobeDetails: Partial<Record<WardrobeSlug, Partial<GarmentDetails>>> = {};
   for (const [slug, d] of Object.entries(rawDetails)) {
     const compact = compactGarmentDetails(normalizeGarmentDetails(d));
     if (Object.keys(compact).length) wardrobeDetails[slug as WardrobeSlug] = compact;
   }
-  if (JSON.stringify(wardrobeDetails) !== JSON.stringify(parsed.wardrobeDetails ?? {})) changed = true;
+  if (JSON.stringify(wardrobeDetails) !== JSON.stringify(parsed.wardrobeDetails ?? {}))
+    changed = true;
   // v3: optional child preferences; missing = both / unknown / no.
   const preferences = compactChildPreferences(normalizeChildPreferences(parsed.preferences));
   if (JSON.stringify(preferences) !== JSON.stringify(parsed.preferences ?? {})) changed = true;
