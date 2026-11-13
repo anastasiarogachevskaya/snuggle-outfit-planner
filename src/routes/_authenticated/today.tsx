@@ -5,7 +5,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import { successHaptic, warningHaptic } from "@/lib/haptics";
 import { TodayScreen, type FeedbackContext } from "@/components/today-screen";
@@ -256,11 +255,17 @@ function Loading() {
   );
 }
 
-function LoadFailed({ onRetry }: { onRetry: () => void }) {
+function LoadFailed({
+  onRetry,
+  title = "Couldn't load your profile.",
+}: {
+  onRetry: () => void;
+  title?: string;
+}) {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas font-sans">
       <div className="mx-auto w-full max-w-md px-6 py-16 text-center">
-        <h1 className="text-2xl font-serif font-semibold mb-3">Couldn't load your profile.</h1>
+        <h1 className="text-2xl font-serif font-semibold mb-3">{title}</h1>
         <p className="text-ink/60 mb-8">
           Your data is safe — we just couldn't reach it. Check your connection and try again.
         </p>

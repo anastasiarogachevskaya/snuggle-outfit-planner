@@ -12,6 +12,7 @@ import { localizeClothingText } from "@/lib/clothing-text";
 import { GarmentDetailsButton, GarmentDetailsDialog } from "@/components/garment-details-dialog";
 import { availabilityBadge, normalizeGarmentDetails, type GarmentDetails } from "@/lib/garment-details";
 import { saveSignedInGarmentDetails } from "@/lib/garment-details-save";
+import { fetchWardrobeItems } from "@/lib/wardrobe-eligibility";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
   head: () => ({
@@ -50,14 +51,8 @@ function WardrobePage() {
   const wardrobeQ = useQuery({
     queryKey: ["wardrobe", babyQ.data?.id],
     enabled: !!babyQ.data?.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("wardrobe_items")
-        .select("slug,owned,insulation,waterproof,availability,sleepwear_shape,foot_coverage,leggings_use")
-        .eq("baby_id", babyQ.data!.id);
-      if (error) throw error;
-      return data ?? [];
-    },
+    // Shared with Today's cache entry; every item, including unavailable ones.
+    queryFn: () => fetchWardrobeItems(supabase, babyQ.data!.id),
   });
 
   const ownedMap = useMemo(() => {
