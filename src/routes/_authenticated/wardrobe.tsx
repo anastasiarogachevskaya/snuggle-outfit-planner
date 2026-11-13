@@ -57,7 +57,7 @@ function WardrobePage() {
 
   const ownedMap = useMemo(() => {
     const m = new Map<string, boolean>();
-    (wardrobeQ.data ?? []).forEach((i) => m.set(i.slug, i.owned));
+    (wardrobeQ.data ?? []).forEach((i) => m.set(i.slug, i.owned === true));
     return m;
   }, [wardrobeQ.data]);
   const detailsMap = useMemo(() => {
