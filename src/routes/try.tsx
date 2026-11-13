@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { toddlerRulesApply, toddlerSupportEnabled } from "@/lib/feature-flags";
 import { ageInMonths } from "@/lib/baby-age";
@@ -22,6 +22,7 @@ import {
 import { GarmentDetailsButton, GarmentDetailsDialog } from "@/components/garment-details-dialog";
 import { availabilityBadge, type GarmentDetails } from "@/lib/garment-details";
 import { WardrobeSetup } from "@/components/wardrobe-setup";
+import { guestWardrobeRows, resolveEligibleWardrobe } from "@/lib/wardrobe-eligibility";
 import {
   getCurrentLocation,
   locationErrorMessage,
@@ -129,6 +130,21 @@ function TryPage() {
   useEffect(() => {
     if (step === "today") logEvent("try_recommendation_viewed");
   }, [step]);
+
+  // The phone-kept wardrobe goes through the same eligibility rule as the
+  // signed-in one. Depends on the details too, so an availability-only edit
+  // (same slugs, same ownership) still changes the outfit. An empty
+  // wardrobe stays empty — the sample is only used for the web trial.
+  const profileWardrobe = profile?.wardrobe;
+  const profileDetails = profile?.wardrobeDetails;
+  const localWardrobe = useMemo(
+    () =>
+      resolveEligibleWardrobe(
+        guestWardrobeRows({ wardrobe: profileWardrobe ?? [], wardrobeDetails: profileDetails }),
+      ),
+    [profileWardrobe, profileDetails],
+  );
+  const sampleTrialWardrobe = useMemo(() => new Set(GUEST_DEFAULT_WARDROBE), []);
 
   if (!loaded || step === null) return <div className="min-h-screen bg-canvas" />;
 
@@ -304,7 +320,8 @@ function TryPage() {
           longitude: profile.longitude,
           location_label: profile.locationLabel,
         }}
-        owned={new Set(localFirst ? profile.wardrobe : GUEST_DEFAULT_WARDROBE)}
+        owned={localFirst ? localWardrobe.eligible : sampleTrialWardrobe}
+        setAside={localFirst ? localWardrobe.setAside : undefined}
         confirmation={confirmation}
         onFeedback={(rating, ctx) => {
           logEvent("try_feedback_submitted", { rating });
