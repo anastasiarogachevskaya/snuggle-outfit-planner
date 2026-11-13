@@ -1,3 +1,4 @@
+import { missingItemNote, type SetAsideReason } from "@/lib/wardrobe-eligibility";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import type { Recommendation } from "@/lib/recommend";
@@ -246,11 +247,13 @@ function isEmptyOutfit(o: ActualOutfit): boolean {
 export function CheckOutfitPanel({
   rec,
   owned,
+  setAside,
   weather,
   onBack,
 }: {
   rec: Recommendation;
   owned: Set<WardrobeSlug>;
+  setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>;
   weather?: PanelWeather;
   onBack: () => void;
 }) {
@@ -477,7 +480,7 @@ export function CheckOutfitPanel({
                         key={e.slug}
                         label={localizeClothingText(e.label, unit)}
                         muted
-                        note={e.owned ? undefined : "Not in your wardrobe"}
+                        note={e.owned ? undefined : missingItemNote(e.slug, setAside)}
                         value={actual.transportExtras.includes(e.slug)}
                         onChange={() => toggleTransportExtra(e.slug)}
                       />

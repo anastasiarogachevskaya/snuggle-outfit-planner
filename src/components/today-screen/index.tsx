@@ -17,6 +17,7 @@ import { OutfitResult } from "./outfit-result";
 import { FeedbackPanel } from "./feedback-panel";
 import { CheckOutfitPanel } from "./check-outfit-panel";
 import { applyBottomChoice } from "@/lib/recommend/compare-bottoms";
+import type { SetAsideReason } from "@/lib/wardrobe-eligibility";
 
 
 /** Fires a selection haptic only when the value actually changes. */
@@ -50,6 +51,7 @@ export type FeedbackContext = {
 export function TodayScreen({
   baby,
   owned,
+  setAside,
   guest = false,
   sampleWardrobe = false,
   feedbackPending = false,
@@ -60,7 +62,10 @@ export function TodayScreen({
   secondaryAction,
 }: {
   baby: TodayBaby;
+  /** Eligible wardrobe: owned and (when filtering applies) available. */
   owned: Set<WardrobeSlug>;
+  /** Owned items the parent marked unavailable — shown as such, never used. */
+  setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>;
   guest?: boolean;
   /** The outfit uses Layerly's sample wardrobe, not the parent's clothes. */
   sampleWardrobe?: boolean;
@@ -258,6 +263,7 @@ export function TodayScreen({
           <CheckOutfitPanel
             rec={rec}
             owned={owned}
+            setAside={setAside}
             weather={weather}
             onBack={() => setCheckingOutfit(false)}
           />
@@ -265,7 +271,12 @@ export function TodayScreen({
           rec &&
           displayedRec && (
             <>
-              <OutfitResult rec={displayedRec} owned={owned} onOpenWardrobe={onOpenWardrobe} />
+              <OutfitResult
+                rec={displayedRec}
+                owned={owned}
+                setAside={setAside}
+                onOpenWardrobe={onOpenWardrobe}
+              />
               {/* Compare bottoms (BottomsPreview) hidden for now — owner is rethinking it. */}
             </>
           )

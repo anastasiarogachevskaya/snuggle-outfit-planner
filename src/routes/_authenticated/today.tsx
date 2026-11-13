@@ -5,7 +5,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { toast } from "sonner";
 import { successHaptic, warningHaptic } from "@/lib/haptics";
 import { TodayScreen, type FeedbackContext } from "@/components/today-screen";
@@ -16,6 +15,7 @@ import {
   type GuestFeedbackEntry,
 } from "@/lib/guest-profile";
 import { logEvent } from "@/lib/analytics";
+import { fetchWardrobeItems, resolveEligibleWardrobe } from "@/lib/wardrobe-eligibility";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({
@@ -51,14 +51,9 @@ function TodayPage() {
   const wardrobeQ = useQuery({
     queryKey: ["wardrobe", babyQ.data?.id],
     enabled: !!babyQ.data?.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("wardrobe_items")
-        .select("slug,owned")
-        .eq("baby_id", babyQ.data!.id);
-      if (error) throw error;
-      return data ?? [];
-    },
+    // Same columns as the Wardrobe page (they share this cache entry), so a
+    // refetch after an availability edit always carries availability.
+    queryFn: () => fetchWardrobeItems(supabase, babyQ.data!.id),
   });
 
   // Convert a guest trial into a real saved profile once the parent signs up.
@@ -145,13 +140,10 @@ function TodayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [babyQ.isLoading, babyQ.data]);
 
-  const owned = useMemo(
-    () =>
-      new Set<WardrobeSlug>(
-        (wardrobeQ.data ?? []).filter((i) => i.owned).map((i) => i.slug as WardrobeSlug),
-      ),
-    [wardrobeQ.data],
-  );
+  // Only owned and (while availability filtering is on) available items;
+  // recomputed whenever the rows change, including availability-only edits.
+  const wardrobe = useMemo(() => resolveEligibleWardrobe(wardrobeQ.data ?? []), [wardrobeQ.data]);
+  const owned = wardrobe.eligible;
 
   const [confirmation, setConfirmation] = useState<null | "cold" | "comfortable" | "warm">(null);
 
@@ -229,12 +221,22 @@ function TodayPage() {
   // with a saved profile to "tell us about your baby" reads as lost data.
   if (babyQ.isError) return <LoadFailed onRetry={() => babyQ.refetch()} />;
   if (!babyQ.data) return <NoBaby />;
+  // Until the wardrobe has loaded, an empty set would read as "owns nothing".
+  if (wardrobeQ.isPending) return <Loading />;
+  if (wardrobeQ.isError)
+    return (
+      <LoadFailed
+        title="Couldn't load your wardrobe."
+        onRetry={() => wardrobeQ.refetch()}
+      />
+    );
   const baby = babyQ.data;
 
   return (
     <TodayScreen
       baby={baby}
       owned={owned}
+      setAside={wardrobe.setAside}
       feedbackPending={feedback.isPending}
       confirmation={confirmation}
       onFeedback={(rating, ctx) => feedback.mutate({ rating, ctx })}
@@ -253,11 +255,17 @@ function Loading() {
   );
 }
 
-function LoadFailed({ onRetry }: { onRetry: () => void }) {
+function LoadFailed({
+  onRetry,
+  title = "Couldn't load your profile.",
+}: {
+  onRetry: () => void;
+  title?: string;
+}) {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-canvas font-sans">
       <div className="mx-auto w-full max-w-md px-6 py-16 text-center">
-        <h1 className="text-2xl font-serif font-semibold mb-3">Couldn't load your profile.</h1>
+        <h1 className="text-2xl font-serif font-semibold mb-3">{title}</h1>
         <p className="text-ink/60 mb-8">
           Your data is safe — we just couldn't reach it. Check your connection and try again.
         </p>

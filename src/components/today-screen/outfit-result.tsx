@@ -3,14 +3,17 @@ import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { useTempUnit } from "@/hooks/use-temp-unit";
 import { localizeClothingText } from "@/lib/clothing-text";
 import { ClothingIcon } from "@/components/icons";
+import { missingItemNote, type SetAsideReason } from "@/lib/wardrobe-eligibility";
 
 export function OutfitResult({
   rec,
   owned,
+  setAside,
   onOpenWardrobe,
 }: {
   rec: NonNullable<ReturnType<typeof recommend>>;
   owned: Set<WardrobeSlug>;
+  setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>;
   onOpenWardrobe: () => void;
 }) {
   const [unit] = useTempUnit();
@@ -52,7 +55,7 @@ export function OutfitResult({
                   l.usingLabel
                     ? `Using your ${localizeClothingText(l.usingLabel, unit)}`
                     : !isSynthetic && !isOwned
-                      ? "Not in your wardrobe"
+                      ? missingItemNote(l.slug as WardrobeSlug, setAside)
                       : undefined
                 }
                 dim={!isSynthetic && !isOwned}
@@ -69,7 +72,7 @@ export function OutfitResult({
                 a.usingLabel
                   ? `Using your ${localizeClothingText(a.usingLabel, unit)}`
                   : !owned.has(a.slug)
-                    ? "Not in your wardrobe"
+                    ? missingItemNote(a.slug, setAside)
                     : undefined
               }
               accent
@@ -144,6 +147,7 @@ export function OutfitResult({
                   slug={a.slug}
                   chip="?"
                   label={localizeClothingText(a.label, unit)}
+                  sub={setAside?.has(a.slug) ? missingItemNote(a.slug, setAside) : undefined}
                   accent
                   dim
                 />

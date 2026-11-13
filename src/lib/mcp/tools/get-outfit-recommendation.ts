@@ -3,7 +3,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { fetchWeather, isRainingCode } from "@/lib/weather";
-import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { fetchWardrobeItems, resolveEligibleWardrobe, type EligibleWardrobe } from "@/lib/wardrobe-eligibility";
 import { ageInMonths } from "@/lib/baby-age";
 import { errorResult, supabaseForUser, textResult } from "../supabase";
 
@@ -42,13 +42,14 @@ export default defineTool({
     if (error) return errorResult(error.message);
     if (!baby) return errorResult("Baby profile not found.");
 
-    const { data: items, error: itemsError } = await supabase
-      .from("wardrobe_items")
-      .select("slug")
-      .eq("baby_id", baby.id)
-      .eq("owned", true);
-    if (itemsError) return errorResult(itemsError.message);
-    const owned = new Set((items ?? []).map((r) => r.slug as WardrobeSlug));
+    // Same read and eligibility rule as the app's Today screen.
+    let wardrobe: EligibleWardrobe;
+    try {
+      wardrobe = resolveEligibleWardrobe(await fetchWardrobeItems(supabase, baby.id));
+    } catch (e) {
+      return errorResult(e instanceof Error ? e.message : "Couldn't load the wardrobe.");
+    }
+    const owned = wardrobe.eligible;
 
     const ageMonths = ageInMonths(baby.dob);
 
@@ -96,6 +97,12 @@ export default defineTool({
             location: baby.location_label,
           }
         : null,
+      wardrobe: {
+        eligible_items: owned.size,
+        availability_filter_applied: wardrobe.availabilityApplied,
+        // Owned but marked outgrown / temporarily unavailable — not used.
+        set_aside: [...wardrobe.setAside].map(([slug, availability]) => ({ slug, availability })),
+      },
       recommendation: rec,
     };
     return textResult(result, result as unknown as Record<string, unknown>);
