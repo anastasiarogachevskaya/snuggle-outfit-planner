@@ -158,10 +158,14 @@ describe("recommendations use only the eligible wardrobe", () => {
   });
 
   it("substitutes an available garment for an outgrown one", () => {
+    // At 12°C the engine asks for a sweater; the parent also owns a hoodie.
+    const mild = { ...COLD_WALK, feelsLikeC: 12 };
+    const all = resolveEligibleWardrobe(rowsWith({}), ON);
+    expect(recommend({ ...mild, owned: all.eligible }).babyClothing.find((l) => l.slot === "mid")?.slug).toBe("sweater");
     const w = resolveEligibleWardrobe(rowsWith({ sweater: "outgrown" }), ON);
-    const mid = recommend({ ...COLD_WALK, owned: w.eligible }).babyClothing.find((l) => l.slot === "mid");
-    expect(mid?.slug).not.toBe("sweater");
-    expect(w.eligible.has(mid!.slug as WardrobeSlug)).toBe(true);
+    const mid = recommend({ ...mild, owned: w.eligible }).babyClothing.find((l) => l.slot === "mid");
+    expect(mid?.slug).toBe("hoodie");
+    expect(mid?.usingLabel).toBeDefined();
   });
 
   it("marks a required garment as missing when its only match is outgrown", () => {
