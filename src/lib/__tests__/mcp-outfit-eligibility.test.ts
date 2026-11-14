@@ -53,6 +53,7 @@ const run = async () => {
       recommendation: {
         transportExtras: { slug: string }[];
         missingHelpfulItems: { slug: string }[];
+        notes: string[];
       };
     };
   };
@@ -102,5 +103,23 @@ describe("assistant outfit tool", () => {
     const out = await run();
     expect(out.recommendation.transportExtras).toEqual([]);
     expect(out.recommendation.missingHelpfulItems.map((e) => e.slug)).toContain("footmuff");
+  });
+
+  it("tips name a set-aside footmuff as unavailable, an unowned one as missing", async () => {
+    tables = {
+      babies: [baby],
+      wardrobe_items: [item("footmuff", { availability: "temporarily_unavailable" })],
+    };
+    const away = (await run()).recommendation.notes;
+    if (toddlerSupportEnabled()) {
+      expect(away).toContain("Your footmuff is marked temporarily unavailable.");
+      expect(away.some((n) => n.startsWith("No footmuff"))).toBe(false);
+    } else {
+      expect(away.some((n) => /footmuff/i.test(n))).toBe(false);
+    }
+    tables = { babies: [baby], wardrobe_items: [item("footmuff", { owned: false })] };
+    expect((await run()).recommendation.notes).toContain(
+      "No footmuff in your wardrobe — consider one for cold stroller walks.",
+    );
   });
 });
