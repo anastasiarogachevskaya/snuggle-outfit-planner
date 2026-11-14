@@ -16,7 +16,11 @@ import {
   type GarmentDetails,
 } from "@/lib/garment-details";
 import { saveSignedInGarmentDetails } from "@/lib/garment-details-save";
-import { fetchWardrobeItems } from "@/lib/wardrobe-eligibility";
+import {
+  availabilityFilteringEnabled,
+  fetchWardrobeItems,
+  hasDetailQuestions,
+} from "@/lib/wardrobe-eligibility";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
   head: () => ({
@@ -178,7 +182,10 @@ function WardrobePage() {
                 {WARDROBE_CATALOG.filter((i) => i.group === g).map((item) => {
                   const owned = ownedMap.get(item.slug) ?? false;
                   const badge = owned
-                    ? availabilityBadge(detailsMap.get(item.slug)?.availability ?? "available")
+                    ? availabilityBadge(
+                        detailsMap.get(item.slug)?.availability ?? "available",
+                        availabilityFilteringEnabled(),
+                      )
                     : null;
                   return (
                     <div key={item.slug} className="flex min-w-0 items-center gap-2">
@@ -240,7 +247,7 @@ function WardrobePage() {
                           )}
                         </span>
                       </button>
-                      {owned && (
+                      {owned && hasDetailQuestions(item.slug) && (
                         <GarmentDetailsButton
                           label={localizeClothingText(item.label, unit)}
                           badge={badge}

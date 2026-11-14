@@ -17,7 +17,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { toddlerSupportEnabled } from "@/lib/feature-flags";
-import { normalizeGarmentDetails, type GarmentDetails } from "@/lib/garment-details";
+import {
+  garmentDetailFields,
+  normalizeGarmentDetails,
+  type GarmentDetails,
+} from "@/lib/garment-details";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 
 /** Columns every wardrobe read uses, so cached rows always carry availability. */
@@ -45,6 +49,18 @@ export type EligibleWardrobe = {
 /** Availability filtering follows the toddler rollout switch (T01). */
 export function availabilityFilteringEnabled(): boolean {
   return toddlerSupportEnabled();
+}
+
+/**
+ * Whether an owned item has any detail question to show right now. With
+ * availability filtering off, items whose only question is Availability
+ * get no Details action; their stored availability is untouched.
+ */
+export function hasDetailQuestions(
+  slug: string,
+  availability = availabilityFilteringEnabled(),
+): boolean {
+  return garmentDetailFields(slug, { availability }).length > 0;
 }
 
 export function resolveEligibleWardrobe(
@@ -105,4 +121,21 @@ export function missingItemNote(
   if (reason === "outgrown") return "Marked outgrown in your wardrobe";
   if (reason === "temporarily_unavailable") return "Marked unavailable in your wardrobe";
   return "Not in your wardrobe";
+}
+
+/**
+ * Tip for a helpful extra the outfit can't use. An owned item the parent set
+ * aside is named as such; only a truly unowned item gets the "No … in your
+ * wardrobe" wording (`unownedTip`). `name` is the lower-case garment name.
+ */
+export function extraItemTip(
+  slug: WardrobeSlug,
+  name: string,
+  unownedTip: string,
+  setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>,
+): string {
+  const reason = setAside?.get(slug);
+  if (reason === "outgrown") return `Your ${name} is marked outgrown.`;
+  if (reason === "temporarily_unavailable") return `Your ${name} is marked temporarily unavailable.`;
+  return unownedTip;
 }

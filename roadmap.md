@@ -22,6 +22,7 @@
 - [x] Balance the two-column wardrobe setup cards and move longer guidance below the grid
 
 - [x] T09 Outfits use only owned and available clothes (phone-kept, signed-in, checker, bottoms comparison, assistant)
+- [x] T09A Availability controls follow the rollout switch; tips say "marked outgrown/temporarily unavailable" for set-aside items
 - [ ] T28 Live signed-in browser check of Wardrobe Details and availability on Today (needs a dedicated test account)
 
 ## Open (needs the user)

@@ -3,6 +3,7 @@ import { pickOutdoor, type OutdoorContext } from "./recommend/pick-outdoor";
 import { pickHome } from "./recommend/pick-home";
 import { mapWardrobe } from "./recommend/map-wardrobe";
 import { TEMP } from "./recommend/temperature";
+import { extraItemTip, type SetAsideReason } from "./wardrobe-eligibility";
 
 export type Situation = "home" | "walk" | "car";
 export type TransportMode = "pram" | "sitting-stroller" | "carrier";
@@ -17,6 +18,11 @@ export type RecommendInput = {
   isRaining?: boolean;
   durationMin?: number;
   owned: Set<WardrobeSlug>;
+  /**
+   * Owned items left out of `owned` because the parent set them aside
+   * (from resolveEligibleWardrobe). Only changes tip wording, never choices.
+   */
+  setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>;
   homeActivity?: HomeActivity;
   ageMonths?: number | null;
   uvIndex?: number;
@@ -149,9 +155,23 @@ export function recommend(input: RecommendInput): Recommendation {
   const notes = [...out.notes];
   if (input.situation === "walk") {
     if (missingExtras.has("footmuff"))
-      notes.push("No footmuff in your wardrobe — consider one for cold stroller walks.");
+      notes.push(
+        extraItemTip(
+          "footmuff",
+          "footmuff",
+          "No footmuff in your wardrobe — consider one for cold stroller walks.",
+          input.setAside,
+        ),
+      );
     if (missingExtras.has("rain_cover") && input.isRaining)
-      notes.push("No rain cover in your wardrobe — consider one to keep baby dry.");
+      notes.push(
+        extraItemTip(
+          "rain_cover",
+          "rain cover",
+          "No rain cover in your wardrobe — consider one to keep baby dry.",
+          input.setAside,
+        ),
+      );
     if (usedExtras.has("rain_cover"))
       notes.push(
         "Rain cover makes the stroller warmer and reduces airflow. Check baby's neck or chest regularly.",

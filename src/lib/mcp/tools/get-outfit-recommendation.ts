@@ -82,6 +82,7 @@ export default defineTool({
       isRaining: weather ? isRainingCode(weather.code) : undefined,
       durationMin: input.duration_min,
       owned,
+      setAside: wardrobe.setAside,
       homeActivity: input.home_activity as HomeActivity | undefined,
       ageMonths,
       uvIndex: weather?.uvIndex,

@@ -22,7 +22,12 @@ import {
 import { GarmentDetailsButton, GarmentDetailsDialog } from "@/components/garment-details-dialog";
 import { availabilityBadge, type GarmentDetails } from "@/lib/garment-details";
 import { WardrobeSetup } from "@/components/wardrobe-setup";
-import { guestWardrobeRows, resolveEligibleWardrobe } from "@/lib/wardrobe-eligibility";
+import {
+  availabilityFilteringEnabled,
+  guestWardrobeRows,
+  hasDetailQuestions,
+  resolveEligibleWardrobe,
+} from "@/lib/wardrobe-eligibility";
 import {
   getCurrentLocation,
   locationErrorMessage,
@@ -801,10 +806,13 @@ function LocalWardrobe({
                         </span>
                         <span className="min-w-0 text-sm font-medium">{label}</span>
                       </button>
-                      {selected && (
+                      {selected && hasDetailQuestions(item.slug) && (
                         <GarmentDetailsButton
                           label={label}
-                          badge={availabilityBadge(detailsFor(item.slug).availability)}
+                          badge={availabilityBadge(
+                            detailsFor(item.slug).availability,
+                            availabilityFilteringEnabled(),
+                          )}
                           onClick={() => setEditing({ slug: item.slug, label })}
                         />
                       )}

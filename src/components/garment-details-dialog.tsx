@@ -15,12 +15,17 @@ import {
   type GarmentDetails,
 } from "@/lib/garment-details";
 import { submitGarmentDetails } from "@/lib/garment-details-save";
+import { availabilityFilteringEnabled } from "@/lib/wardrobe-eligibility";
 
 /**
  * Edit the optional details of one owned garment. Unset values show as
  * "Not sure"; nothing is prefilled from the name, picture or warmth tag.
  * Only changed fields are passed to onSave. A failed save keeps the dialog
  * open with the parent's edits.
+ *
+ * Availability is asked only while availability filtering is on. When it's
+ * hidden, the stored value is still carried in the draft and never written
+ * (only changed fields are saved), so it survives editing other details.
  */
 export function GarmentDetailsDialog({
   open,
@@ -29,6 +34,7 @@ export function GarmentDetailsDialog({
   details,
   onOpenChange,
   onSave,
+  showAvailability = availabilityFilteringEnabled(),
 }: {
   open: boolean;
   slug: string;
@@ -36,6 +42,7 @@ export function GarmentDetailsDialog({
   details: GarmentDetails;
   onOpenChange: (open: boolean) => void;
   onSave: (patch: Partial<GarmentDetails>) => Promise<void>;
+  showAvailability?: boolean;
 }) {
   const [draft, setDraft] = useState<GarmentDetails>(details);
   const [saving, setSaving] = useState(false);
@@ -50,7 +57,7 @@ export function GarmentDetailsDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, slug]);
 
-  const fields = garmentDetailFields(slug);
+  const fields = garmentDetailFields(slug, { availability: showAvailability });
   const patch = changedGarmentDetails(details, draft);
   const dirty = Object.keys(patch).length > 0;
 
@@ -88,7 +95,7 @@ export function GarmentDetailsDialog({
               onChange={(v) => setDraft((d) => ({ ...d, [field]: v }))}
             />
           ))}
-          {draft.availability !== "available" && (
+          {showAvailability && draft.availability !== "available" && (
             <p className="text-xs text-ink/55">
               This stays in your wardrobe with its details. Set it back to Available any time.
             </p>
