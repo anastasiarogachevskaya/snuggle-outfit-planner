@@ -166,6 +166,7 @@ export function TodayScreen({
     isRaining,
     duration,
     owned,
+    setAside,
     homeActivity,
     ageMonths,
   ]);

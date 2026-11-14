@@ -801,10 +801,13 @@ function LocalWardrobe({
                         </span>
                         <span className="min-w-0 text-sm font-medium">{label}</span>
                       </button>
-                      {selected && (
+                      {selected && hasDetailQuestions(item.slug) && (
                         <GarmentDetailsButton
                           label={label}
-                          badge={availabilityBadge(detailsFor(item.slug).availability)}
+                          badge={availabilityBadge(
+                            detailsFor(item.slug).availability,
+                            availabilityFilteringEnabled(),
+                          )}
                           onClick={() => setEditing({ slug: item.slug, label })}
                         />
                       )}
