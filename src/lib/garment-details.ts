@@ -104,14 +104,20 @@ const WATERPROOF_SLUGS = new Set([
 /**
  * Which detail questions apply to a garment type. This only decides which
  * questions to *ask*; it never supplies an answer.
+ *
+ * `availability: false` hides the Availability question (while availability
+ * filtering is off). Hiding never changes the stored value.
  */
-export function garmentDetailFields(slug: string): GarmentDetailField[] {
+export function garmentDetailFields(
+  slug: string,
+  opts: { availability: boolean } = { availability: true },
+): GarmentDetailField[] {
   const out: GarmentDetailField[] = [];
   if (INSULATION_SLUGS.has(slug)) out.push("insulation");
   if (WATERPROOF_SLUGS.has(slug)) out.push("waterproof");
   if (slug === "pajamas") out.push("sleepwear_shape", "foot_coverage");
   if (slug === "wool_leggings") out.push("leggings_use");
-  out.push("availability");
+  if (opts.availability) out.push("availability");
   return out;
 }
 
@@ -184,8 +190,15 @@ export function changedGarmentDetails(
   return out;
 }
 
-/** Short badge for an owned item that isn't usable today; null when available. */
-export function availabilityBadge(availability: GarmentDetails["availability"]): string | null {
+/**
+ * Short badge for an owned item that isn't usable today; null when available,
+ * or when availability isn't shown (`shown: false`, filtering off).
+ */
+export function availabilityBadge(
+  availability: GarmentDetails["availability"],
+  shown = true,
+): string | null {
+  if (!shown) return null;
   if (availability === "outgrown") return "Outgrown";
   if (availability === "temporarily_unavailable") return "Unavailable";
   return null;

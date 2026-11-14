@@ -106,3 +106,20 @@ export function missingItemNote(
   if (reason === "temporarily_unavailable") return "Marked unavailable in your wardrobe";
   return "Not in your wardrobe";
 }
+
+/**
+ * Tip for a helpful extra the outfit can't use. An owned item the parent set
+ * aside is named as such; only a truly unowned item gets the "No … in your
+ * wardrobe" wording (`unownedTip`). `name` is the lower-case garment name.
+ */
+export function extraItemTip(
+  slug: WardrobeSlug,
+  name: string,
+  unownedTip: string,
+  setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>,
+): string {
+  const reason = setAside?.get(slug);
+  if (reason === "outgrown") return `Your ${name} is marked outgrown.`;
+  if (reason === "temporarily_unavailable") return `Your ${name} is marked temporarily unavailable.`;
+  return unownedTip;
+}
