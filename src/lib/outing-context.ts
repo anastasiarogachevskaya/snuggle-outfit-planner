@@ -52,6 +52,8 @@ export type OutingInput = {
   situation: Situation;
   transportMode?: string | null;
   movement?: string | null;
+  /** "transport" marks a movement implied by a seat, so re-normalizing keeps it implied. */
+  movementSource?: string | null;
   activity?: string | null;
   ground?: string | null;
 };
@@ -69,7 +71,8 @@ export function normalizeOutingContext(input: OutingInput): OutingContext {
 
   const out: OutingContext = { situation };
   const transport = pick(OUTING_TRANSPORTS, input.transportMode);
-  const movement = pick(OUTING_MOVEMENTS, input.movement);
+  const movement =
+    input.movementSource === "transport" ? undefined : pick(OUTING_MOVEMENTS, input.movement);
   const activity = pick(OUTDOOR_ACTIVITIES, input.activity);
   const ground = pick(GROUND_CONDITIONS, input.ground);
 
@@ -102,6 +105,7 @@ export function parseOutingContext(raw: unknown): OutingContext | null {
     situation,
     transportMode: str(r.transport_mode ?? r.transportMode ?? r.transport),
     movement: str(r.movement),
+    movementSource: str(r.movement_source ?? r.movementSource),
     activity: str(r.outdoor_activity ?? r.outdoorActivity),
     ground: str(r.ground ?? r.ground_conditions ?? r.groundConditions),
   });

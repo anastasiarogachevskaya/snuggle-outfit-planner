@@ -4,7 +4,6 @@ import {
   normalizeOutingContext,
   outingEngineFields,
   parseOutingContext,
-  type OutingContext,
   type OutingInput,
 } from "../outing-context";
 import { recommend, resolveRecommendOuting, type RecommendInput } from "../recommend";
@@ -121,13 +120,8 @@ describe("stated values are kept, unstated stay unknown", () => {
     for (const i of inputs) {
       const once = normalizeOutingContext(i);
       const twice = normalizeOutingContext({ ...once, transportMode: once.transport });
-      // The legacy-implied movement is re-derived, so compare without it.
-      const strip = (o: OutingContext) =>
-        o.movementSource === "transport" ? { ...o, movement: undefined, movementSource: undefined } : o;
-      expect(JSON.parse(JSON.stringify(strip(twice)))).toEqual(
-        JSON.parse(JSON.stringify(strip(once))),
-      );
-      expect(twice.movement).toBe(once.movement);
+      expect(twice).toEqual(once);
+      expect(parseOutingContext(JSON.parse(JSON.stringify(once)))).toEqual(once);
     }
   });
 });
