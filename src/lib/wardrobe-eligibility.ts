@@ -17,7 +17,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { toddlerSupportEnabled } from "@/lib/feature-flags";
-import { normalizeGarmentDetails, type GarmentDetails } from "@/lib/garment-details";
+import {
+  garmentDetailFields,
+  normalizeGarmentDetails,
+  type GarmentDetails,
+} from "@/lib/garment-details";
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 
 /** Columns every wardrobe read uses, so cached rows always carry availability. */
@@ -45,6 +49,18 @@ export type EligibleWardrobe = {
 /** Availability filtering follows the toddler rollout switch (T01). */
 export function availabilityFilteringEnabled(): boolean {
   return toddlerSupportEnabled();
+}
+
+/**
+ * Whether an owned item has any detail question to show right now. With
+ * availability filtering off, items whose only question is Availability
+ * get no Details action; their stored availability is untouched.
+ */
+export function hasDetailQuestions(
+  slug: string,
+  availability = availabilityFilteringEnabled(),
+): boolean {
+  return garmentDetailFields(slug, { availability }).length > 0;
 }
 
 export function resolveEligibleWardrobe(

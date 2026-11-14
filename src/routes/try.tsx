@@ -22,7 +22,12 @@ import {
 import { GarmentDetailsButton, GarmentDetailsDialog } from "@/components/garment-details-dialog";
 import { availabilityBadge, type GarmentDetails } from "@/lib/garment-details";
 import { WardrobeSetup } from "@/components/wardrobe-setup";
-import { guestWardrobeRows, resolveEligibleWardrobe } from "@/lib/wardrobe-eligibility";
+import {
+  availabilityFilteringEnabled,
+  guestWardrobeRows,
+  hasDetailQuestions,
+  resolveEligibleWardrobe,
+} from "@/lib/wardrobe-eligibility";
 import {
   getCurrentLocation,
   locationErrorMessage,

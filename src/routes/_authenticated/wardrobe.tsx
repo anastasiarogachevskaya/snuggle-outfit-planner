@@ -16,7 +16,11 @@ import {
   type GarmentDetails,
 } from "@/lib/garment-details";
 import { saveSignedInGarmentDetails } from "@/lib/garment-details-save";
-import { fetchWardrobeItems } from "@/lib/wardrobe-eligibility";
+import {
+  availabilityFilteringEnabled,
+  fetchWardrobeItems,
+  hasDetailQuestions,
+} from "@/lib/wardrobe-eligibility";
 
 export const Route = createFileRoute("/_authenticated/wardrobe")({
   head: () => ({
