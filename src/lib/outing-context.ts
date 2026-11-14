@@ -95,7 +95,7 @@ export function normalizeOutingContext(input: OutingInput): OutingContext {
 export function parseOutingContext(raw: unknown): OutingContext | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
-  const situation = pick(SITUATIONS, r.situation ?? r.activity_situation);
+  const situation = pick(SITUATIONS, r.situation);
   if (!situation) return null;
   const str = (v: unknown) => (typeof v === "string" ? v : undefined);
   return normalizeOutingContext({
