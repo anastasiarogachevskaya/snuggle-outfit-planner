@@ -106,7 +106,9 @@ export function parseOutingContext(raw: unknown): OutingContext | null {
     transportMode: str(r.transport_mode ?? r.transportMode ?? r.transport),
     movement: str(r.movement),
     movementSource: str(r.movement_source ?? r.movementSource),
-    activity: str(r.outdoor_activity ?? r.outdoorActivity),
+    // Saved feedback rows use `activity` for the situation ("walk"); those
+    // values aren't outdoor activities, so pick() drops them.
+    activity: str(r.outdoor_activity ?? r.outdoorActivity ?? r.activity),
     ground: str(r.ground ?? r.ground_conditions ?? r.groundConditions),
   });
 }

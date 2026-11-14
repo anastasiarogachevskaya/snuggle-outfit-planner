@@ -6,7 +6,12 @@ import {
   parseOutingContext,
   type OutingInput,
 } from "../outing-context";
-import { recommend, resolveRecommendOuting, type RecommendInput } from "../recommend";
+import {
+  recommend,
+  resolveRecommendOuting,
+  type RecommendInput,
+  type TransportMode,
+} from "../recommend";
 import type { WardrobeSlug } from "../wardrobe-catalog";
 
 describe("legacy home / walk / car", () => {
@@ -32,7 +37,7 @@ describe("legacy home / walk / car", () => {
 describe("seated stroller / carrier outings", () => {
   it.each([["pram"], ["sitting-stroller"], ["carrier"]] as const)(
     "%s without a stated movement keeps seated/carried",
-    (transportMode) => {
+    (transportMode: TransportMode) => {
       expect(normalizeOutingContext({ situation: "walk", transportMode })).toEqual({
         situation: "walk",
         transport: transportMode,
@@ -70,7 +75,7 @@ describe("walking without transport", () => {
 describe("mixed outings", () => {
   it.each([["sitting-stroller"], ["pram"], ["carrier"]] as const)(
     "mixed + %s keeps both",
-    (transportMode) => {
+    (transportMode: TransportMode) => {
       const o = normalizeOutingContext({ situation: "walk", transportMode, movement: "mixed" });
       expect(o).toEqual({
         situation: "walk",
@@ -176,7 +181,7 @@ describe("consistency across consumers", () => {
     { situation: "walk", transportMode: undefined },
   ] as const;
 
-  it.each(cases)("%o normalizes the same everywhere", (c) => {
+  it.each(cases)("%o normalizes the same everywhere", (c: (typeof cases)[number]) => {
     const today = normalizeOutingContext(c);
     const assistant = normalizeOutingContext({ situation: c.situation, transportMode: c.transportMode });
     const saved = parseOutingContext({ situation: c.situation, transport_mode: c.transportMode ?? null });
