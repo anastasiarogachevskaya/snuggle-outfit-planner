@@ -143,6 +143,7 @@ export function TodayScreen({
       isRaining: situation === "walk" ? isRaining : undefined,
       durationMin: duration,
       owned,
+      setAside,
       homeActivity: situation === "home" ? homeActivity : undefined,
       ageMonths,
       uvIndex: weather.uvIndex,
