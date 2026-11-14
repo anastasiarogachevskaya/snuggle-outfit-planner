@@ -2,6 +2,7 @@ import { TEMP, ageAdjustmentC, ageGroup, ageUnder, bandFor } from "./temperature
 import type { LayerNeed, AccessoryNeed } from "./layers";
 import type { Situation, TransportMode } from "../recommend";
 import type { WardrobeSlug } from "../wardrobe-catalog";
+import type { OutingContext } from "../outing-context";
 
 export type OutdoorContext = {
   feelsLikeC: number;
@@ -16,6 +17,8 @@ export type OutdoorContext = {
   cloudCoverPct?: number;
   /** Forecast "feels like" for roughly `durationMin` minutes from now. */
   feelsLikeAtEndC?: number;
+  /** Shared outing context. Carried for later tickets; not read by any rule yet. */
+  outing?: OutingContext;
 };
 
 export type OutdoorPick = {

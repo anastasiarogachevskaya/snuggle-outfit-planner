@@ -4,6 +4,7 @@ import { pickHome } from "./recommend/pick-home";
 import { mapWardrobe } from "./recommend/map-wardrobe";
 import { TEMP } from "./recommend/temperature";
 import { extraItemTip, type SetAsideReason } from "./wardrobe-eligibility";
+import { normalizeOutingContext, type OutingContext } from "./outing-context";
 
 export type Situation = "home" | "walk" | "car";
 export type TransportMode = "pram" | "sitting-stroller" | "carrier";
@@ -30,7 +31,33 @@ export type RecommendInput = {
   cloudCoverPct?: number;
   /** Forecast "feels like" for roughly `durationMin` minutes from now. */
   feelsLikeAtEndC?: number;
+  /**
+   * Shared outing context (see outing-context.ts). Pass it with
+   * `...outingEngineFields(outing)` so `situation`/`transportMode` agree.
+   * Older callers may omit it; it's then normalized from those two fields.
+   * Carried only — no rule reads movement, activity or ground yet.
+   */
+  outing?: OutingContext;
 };
+
+/**
+ * The outing a recommendation is made for. A supplied context is used when it
+ * matches the engine fields; otherwise (older callers, or a mismatch) it's
+ * normalized from `situation` and `transportMode`, which stay authoritative.
+ */
+export function resolveRecommendOuting(
+  input: Pick<RecommendInput, "situation" | "transportMode" | "outing">,
+): OutingContext {
+  const fromEngine = normalizeOutingContext({
+    situation: input.situation,
+    transportMode: input.transportMode,
+  });
+  const o = input.outing;
+  if (!o || o.situation !== input.situation) return fromEngine;
+  const seat = o.transport && o.transport !== "none" ? o.transport : undefined;
+  if (input.situation === "walk" && seat !== input.transportMode) return fromEngine;
+  return o;
+}
 
 // slug can be a real WardrobeSlug or a synthetic display-only value like "diaper_only"
 export type Layer = {
@@ -127,6 +154,7 @@ export function recommend(input: RecommendInput): Recommendation {
     uvIndex: input.uvIndex,
     cloudCoverPct: input.cloudCoverPct,
     feelsLikeAtEndC: input.feelsLikeAtEndC,
+    outing: resolveRecommendOuting(input),
   };
   const out = pickOutdoor(ctx);
   const mapped = mapWardrobe(out.layers, out.accessories, input.owned, input.situation === "car");

@@ -1,7 +1,8 @@
 import { toddlerRulesApply } from "@/lib/feature-flags";
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
-import { recommend, type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
+import { recommend, type Situation, type HomeActivity } from "@/lib/recommend";
+import { normalizeOutingContext, outingEngineFields } from "@/lib/outing-context";
 import { fetchWeather, isRainingCode } from "@/lib/weather";
 import {
   fetchWardrobeItems,
@@ -76,9 +77,14 @@ export default defineTool({
     const rec = recommend({
       feelsLikeC: feelsLikeC ?? 20,
       tempPref: baby.temperature_pref,
-      situation: input.situation as Situation,
+      // Same outing normalization as the app's Today screen.
+      ...outingEngineFields(
+        normalizeOutingContext({
+          situation: input.situation as Situation,
+          transportMode: input.transport_mode,
+        }),
+      ),
       roomTempC: input.room_temp_c,
-      transportMode: input.transport_mode as TransportMode | undefined,
       isRaining: weather ? isRainingCode(weather.code) : undefined,
       durationMin: input.duration_min,
       owned,

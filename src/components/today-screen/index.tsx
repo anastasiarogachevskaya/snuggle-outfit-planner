@@ -17,6 +17,7 @@ import { OutfitResult } from "./outfit-result";
 import { FeedbackPanel } from "./feedback-panel";
 import { CheckOutfitPanel } from "./check-outfit-panel";
 import { applyBottomChoice } from "@/lib/recommend/compare-bottoms";
+import { normalizeOutingContext, outingEngineFields } from "@/lib/outing-context";
 import type { SetAsideReason } from "@/lib/wardrobe-eligibility";
 
 /** Fires a selection haptic only when the value actually changes. */
@@ -132,14 +133,21 @@ export function TodayScreen({
 
   const isRaining = weather ? isRainingCode(weather.code) : false;
 
+  // Shared outing context (same normalization as the assistant tool). The
+  // picker only offers situation + transport today, so movement stays
+  // seated/carried for stroller and carrier walks, as before.
+  const outing = useMemo(
+    () => normalizeOutingContext({ situation, transportMode }),
+    [situation, transportMode],
+  );
+
   const rec = useMemo(() => {
     if (!weather) return null;
     return recommend({
       feelsLikeC: weather.feelsLikeC,
       tempPref: baby.temperature_pref,
-      situation,
+      ...outingEngineFields(outing),
       roomTempC: situation === "home" ? roomTemp : undefined,
-      transportMode: situation === "walk" ? transportMode : undefined,
       isRaining: situation === "walk" ? isRaining : undefined,
       durationMin: duration,
       owned,
@@ -161,8 +169,8 @@ export function TodayScreen({
     planningAhead,
     leaveIn,
     situation,
+    outing,
     roomTemp,
-    transportMode,
     isRaining,
     duration,
     owned,

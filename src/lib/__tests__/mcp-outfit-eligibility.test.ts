@@ -1,6 +1,10 @@
 // @ts-expect-error bun:test is provided by the bun test runner
 import { describe, expect, it, mock } from "bun:test";
 import { toddlerSupportEnabled } from "@/lib/feature-flags";
+import { recommend } from "@/lib/recommend";
+import { normalizeOutingContext, outingEngineFields } from "@/lib/outing-context";
+import { resolveEligibleWardrobe } from "@/lib/wardrobe-eligibility";
+import { ageInMonths } from "@/lib/baby-age";
 
 type Row = Record<string, unknown>;
 let tables: Record<string, Row[]> = {};
@@ -37,7 +41,7 @@ mock.module("@/lib/mcp/supabase", () => ({
 const { default: tool } = await import("@/lib/mcp/tools/get-outfit-recommendation");
 
 const ctx = { isAuthenticated: () => true, getToken: () => "t" } as never;
-const run = async () => {
+const run = async (overrides: Row = {}) => {
   const res = (await tool.handler(
     {
       baby_id: "a",
@@ -45,6 +49,7 @@ const run = async () => {
       transport_mode: "sitting-stroller",
       duration_min: 60,
       feels_like_c: -5,
+      ...overrides,
     } as never,
     ctx,
   )) as {
@@ -121,5 +126,36 @@ describe("assistant outfit tool", () => {
     expect((await run()).recommendation.notes).toContain(
       "No footmuff in your wardrobe — consider one for cold stroller walks.",
     );
+  });
+
+  it("normalizes the outing the same way as Today, without changing outfits", async () => {
+    tables = {
+      babies: [baby],
+      wardrobe_items: ["winter_overall", "footmuff", "blanket", "babywearing_cover", "warm_hat"].map(
+        (s) => item(s),
+      ),
+    };
+    const eligible = resolveEligibleWardrobe(tables.wardrobe_items as never);
+    const ageMonths = ageInMonths(baby.dob);
+    for (const [situation, transport_mode] of [
+      ["walk", "sitting-stroller"],
+      ["walk", "carrier"],
+      ["walk", undefined],
+      ["car", "pram"],
+      ["home", "pram"],
+    ] as const) {
+      const out = await run({ situation, transport_mode, room_temp_c: 21 });
+      const expected = recommend({
+        feelsLikeC: -5,
+        tempPref: 3,
+        ...outingEngineFields(normalizeOutingContext({ situation, transportMode: transport_mode })),
+        roomTempC: 21,
+        durationMin: 60,
+        owned: eligible.eligible,
+        setAside: eligible.setAside,
+        ageMonths,
+      });
+      expect(out.recommendation).toEqual(expected as never);
+    }
   });
 });
