@@ -23,6 +23,7 @@
 
 - [x] T09 Outfits use only owned and available clothes (phone-kept, signed-in, checker, bottoms comparison, assistant)
 - [x] T09A Availability controls follow the rollout switch; tips say "marked outgrown/temporarily unavailable" for set-aside items
+- [x] T10 Shared outing context (movement, activity, ground, transport) carried through every recommendation path; outfits unchanged
 - [ ] T28 Live signed-in browser check of Wardrobe Details and availability on Today (needs a dedicated test account)
 
 ## Open (needs the user)
