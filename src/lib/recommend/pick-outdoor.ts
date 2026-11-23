@@ -17,7 +17,7 @@ export type OutdoorContext = {
   cloudCoverPct?: number;
   /** Forecast "feels like" for roughly `durationMin` minutes from now. */
   feelsLikeAtEndC?: number;
-  /** Shared outing context. Carried for later tickets; not read by any rule yet. */
+  /** Shared outing context. Not read here; recommend() uses it for toddler walking footwear. */
   outing?: OutingContext;
 };
 

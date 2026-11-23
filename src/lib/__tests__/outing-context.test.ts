@@ -1,5 +1,6 @@
 // @ts-expect-error bun:test is provided by the bun test runner
 import { describe, expect, it } from "bun:test";
+import { toddlerSupportEnabled } from "../feature-flags";
 import {
   normalizeOutingContext,
   outingEngineFields,
@@ -263,7 +264,7 @@ describe("outfits are unchanged", () => {
     }
   });
 
-  it("stated movement, activity and ground don't change outfits yet", () => {
+  it("stated movement, activity and ground change nothing but toddler walking footwear (T14)", () => {
     const base = {
       tempPref: 3,
       owned,
@@ -280,6 +281,21 @@ describe("outfits are unchanged", () => {
       activity: "playground",
       ground: "wet",
     });
-    expect(recommend({ ...base, ...outingEngineFields(mixed) })).toEqual(ref);
+    const got = recommend({ ...base, ...outingEngineFields(mixed) });
+    if (!toddlerSupportEnabled()) return expect(got).toEqual(ref);
+    // Only the footwear role is added; everything else matches.
+    const foot = new Set(["everyday_shoes", "rain_boots", "winter_boots"]);
+    const { footwear, ...rest } = got;
+    expect(footwear?.movement).toBe("mixed");
+    expect({
+      ...rest,
+      accessories: rest.accessories.filter((a) => !foot.has(a.slug)),
+      missing: rest.missing.filter((m) => !foot.has(m)),
+      notes: rest.notes.filter((n) => !(footwear?.notes ?? []).includes(n)),
+    }).toEqual(ref);
+    // An infant on the same outing is unchanged.
+    expect(recommend({ ...base, ageMonths: 8, ...outingEngineFields(mixed) })).toEqual(
+      recommend({ ...base, ageMonths: 8, situation: "walk", transportMode: "sitting-stroller" }),
+    );
   });
 });

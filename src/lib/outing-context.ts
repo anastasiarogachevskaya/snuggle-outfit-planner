@@ -2,8 +2,9 @@
  * Shared outing context: what the child will do (movement, activity, ground)
  * kept separate from how they travel (transport).
  *
- * Data foundation only. No outfit rule reads movement, activity or ground yet;
- * the engine still uses `situation` and `transportMode`, which
+ * Only the gated toddler walking-footwear rule (recommend/footwear.ts) reads
+ * a stated movement and ground; everything else still uses `situation` and
+ * `transportMode`, which
  * `outingEngineFields` derives from this model so every consumer stays in
  * agreement.
  *

@@ -28,6 +28,8 @@
 - [x] T12 Toddler everyday tops follow clothing style and easy toilet access (gated)
 - [x] T13 Thermal underlayers alongside everyday and outer bottoms (gated)
 - [x] T13A Bottoms comparison follows the same wool-leggings eligibility as outfit selection
+- [x] T14 Footwear selection for walking, active and mixed outdoor outings (gated)
+- [ ] Footwear policy (not scheduled): when footwear must be insulated, and whether stated-waterproof shoes should beat unconfirmed rain boots
 - [ ] Thermal activation (not scheduled): needs explicit "thermals needed" rules, validated thermal warmth values (current 0 is a placeholder), and Layer up thermal controls with end-to-end checks
 - [ ] T28 Live signed-in browser check of Wardrobe Details and availability on Today (needs a dedicated test account)
 

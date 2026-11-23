@@ -1,4 +1,4 @@
-import { type WardrobeSlug } from "./wardrobe-catalog";
+import { LABEL_BY_SLUG, type WardrobeSlug } from "./wardrobe-catalog";
 import { pickOutdoor, type OutdoorContext } from "./recommend/pick-outdoor";
 import { pickHome } from "./recommend/pick-home";
 import { mapWardrobe } from "./recommend/map-wardrobe";
@@ -8,6 +8,11 @@ import { normalizeOutingContext, type OutingContext } from "./outing-context";
 import type { ChildPreferences } from "./child-preferences";
 import type { GarmentDetails } from "./garment-details";
 import { everydayTopRules } from "./recommend/everyday-tops";
+import {
+  selectWalkingFootwear,
+  walkingFootwearApplies,
+  type FootwearNeed,
+} from "./recommend/footwear";
 
 export type Situation = "home" | "walk" | "car";
 export type TransportMode = "pram" | "sitting-stroller" | "carrier";
@@ -38,7 +43,8 @@ export type RecommendInput = {
    * Shared outing context (see outing-context.ts). Pass it with
    * `...outingEngineFields(outing)` so `situation`/`transportMode` agree.
    * Older callers may omit it; it's then normalized from those two fields.
-   * Carried only — no rule reads movement, activity or ground yet.
+   * Read only by the gated toddler walking-footwear rule (recommend/footwear.ts):
+   * a stated walking/active/mixed movement and the stated ground.
    */
   outing?: OutingContext;
   /**
@@ -124,6 +130,12 @@ export type Recommendation = {
   notes: string[];
   safetyAdvice: string[];
   effectiveTempC: number;
+  /**
+   * Walking-footwear decision (toddler walking/active/mixed outings only;
+   * omitted otherwise so existing outputs are unchanged). The chosen or
+   * missing footwear is also in `accessories`, once, after socks.
+   */
+  footwear?: FootwearNeed;
 };
 
 export function recommend(input: RecommendInput): Recommendation {
@@ -194,6 +206,29 @@ export function recommend(input: RecommendInput): Recommendation {
     input.garmentDetails,
   );
 
+  // Toddler walking footwear: its own role beside socks, one item at most.
+  const walkingMovement = walkingFootwearApplies({
+    situation: input.situation,
+    ageMonths: input.ageMonths,
+    outing: ctx.outing,
+  });
+  const footwear = walkingMovement
+    ? selectWalkingFootwear({
+        movement: walkingMovement,
+        ground: ctx.outing?.ground,
+        owned: input.owned,
+        setAside: input.setAside,
+        details: input.garmentDetails,
+      })
+    : null;
+  if (footwear) {
+    const slug = footwear.selected ?? footwear.missingSlug;
+    if (slug) {
+      mapped.accessories.push({ slug, label: LABEL_BY_SLUG[slug] });
+      if (!footwear.selected) mapped.missing.push(slug);
+    }
+  }
+
   const transportExtras: Accessory[] = [];
   const missingHelpfulItems: Accessory[] = [];
   const usedExtras = new Set<WardrobeSlug>();
@@ -215,7 +250,7 @@ export function recommend(input: RecommendInput): Recommendation {
   }
 
   // Extra notes about missing helpful items
-  const notes = [...out.notes];
+  const notes = [...out.notes, ...(footwear?.notes ?? [])];
   if (input.situation === "walk") {
     if (missingExtras.has("footmuff"))
       notes.push(
@@ -269,6 +304,7 @@ export function recommend(input: RecommendInput): Recommendation {
     notes,
     safetyAdvice: out.safetyAdvice,
     effectiveTempC: out.effectiveC,
+    ...(footwear ? { footwear } : {}),
   };
 }
 
