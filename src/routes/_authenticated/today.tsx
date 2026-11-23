@@ -224,12 +224,14 @@ function TodayPage() {
   if (wardrobeQ.isError)
     return <LoadFailed title="Couldn't load your wardrobe." onRetry={() => wardrobeQ.refetch()} />;
   const baby = babyQ.data;
+  const preferences = normalizeChildPreferences(baby);
 
   return (
     <TodayScreen
       baby={baby}
       owned={owned}
       setAside={wardrobe.setAside}
+      preferences={preferences}
       feedbackPending={feedback.isPending}
       confirmation={confirmation}
       onFeedback={(rating, ctx) => feedback.mutate({ rating, ctx })}

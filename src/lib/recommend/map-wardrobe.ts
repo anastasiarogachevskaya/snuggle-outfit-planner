@@ -10,6 +10,15 @@ import type {
   HatKind,
   SockKind,
 } from "./layers";
+import {
+  EVERYDAY_BASE_TIERS,
+  baseOptionRank,
+  compareRank,
+  isEverydayTop,
+  missingBaseSlug,
+  type BaseOption,
+  type EverydayTopRules,
+} from "./everyday-tops";
 
 // Ordered fallback lists — first match in `owned` wins.
 const BASE_MAP: Record<BaseKind, { slugs: WardrobeSlug[]; label: string } | null> = {
@@ -144,6 +153,12 @@ export function mapWardrobe(
    * flag it would put a jacket straight back on.
    */
   harnessed = false,
+  /**
+   * Toddler everyday-top rules (everyday-tops.ts), or null for the existing
+   * bodysuit-only behaviour. Only changes which owned garment fills the
+   * base slot, and pairs a top with the bottoms it needs.
+   */
+  tops: EverydayTopRules | null = null,
 ): MappedOutput {
   const baby: Layer[] = [];
   const accs: Accessory[] = [];
@@ -186,9 +201,24 @@ export function mapWardrobe(
     ? (BASE_DOWNGRADE_FOR_JACKET[layers.base] as BaseKind)
     : layers.base;
 
+  const topChoice =
+    tops && EVERYDAY_BASE_TIERS[effectiveBase]
+      ? chooseEverydayBase(effectiveBase, layers.bottom, owned, tops, onePiece?.slug ?? null)
+      : null;
+
   // Base
   if (effectiveBase === "diaper_only") {
     baby.push({ slot: "base", slug: "diaper_only", label: "Diaper only" });
+  } else if (topChoice) {
+    if (topChoice.onePiece) {
+      baby.push({
+        slot: "base",
+        slug: topChoice.picked.slug,
+        label: LABEL_BY_SLUG[topChoice.picked.slug] ?? topChoice.picked.slug,
+      });
+    } else {
+      addLayer("base", topChoice.picked);
+    }
   } else if (onePiece) {
     baby.push({
       slot: "base",
@@ -200,7 +230,12 @@ export function mapWardrobe(
     if (b) addLayer("base", b);
   }
 
-  if (!onePiece) {
+  if (topChoice) {
+    if (!topChoice.onePiece) {
+      const bottom = pickSlug(BOTTOM_MAP[topChoice.bottomKind], owned);
+      if (bottom) addLayer("bottom", bottom);
+    }
+  } else if (!onePiece) {
     const bottom = pickSlug(BOTTOM_MAP[layers.bottom], owned);
     if (bottom) addLayer("bottom", bottom);
   }
@@ -239,4 +274,87 @@ export function mapWardrobe(
   }
 
   return { babyClothing: baby, accessories: accs, missing };
+}
+
+/**
+ * Toddler base slot: picks among owned bodysuits, everyday tops and a
+ * suitable one-piece by the parent's preference (see baseOptionRank). A top
+ * covers only the upper body, so it always brings bottoms: the bottoms
+ * today's outfit already asks for, or — where a bodysuit alone was enough —
+ * the lightest existing bottoms (shorts). A one-piece already covers the
+ * legs, so it never adds a second bottom.
+ */
+function chooseEverydayBase(
+  kind: BaseKind,
+  bottomKind: BottomKind,
+  owned: Set<WardrobeSlug>,
+  rules: EverydayTopRules,
+  onePieceSlug: WardrobeSlug | null,
+): { picked: NonNullable<ReturnType<typeof pickSlug>>; onePiece: boolean; bottomKind: BottomKind } {
+  const tiers = EVERYDAY_BASE_TIERS[kind] ?? [];
+  const topBottom: BottomKind = bottomKind === "none" ? "shorts" : bottomKind;
+  const bottomsFor = (slug: WardrobeSlug) => (isEverydayTop(slug) ? topBottom : bottomKind);
+  const bottomOwned = (k: BottomKind) =>
+    k === "none" || (BOTTOM_MAP[k]?.slugs.some((s) => owned.has(s)) ?? false);
+
+  const options: BaseOption[] = [];
+  if (onePieceSlug && owned.has(onePieceSlug)) {
+    options.push({ slug: onePieceSlug, onePiece: true, tier: 0, legacyPos: -1, complete: true });
+  }
+  let pos = 0;
+  tiers.forEach((tier, t) => {
+    for (const slug of tier) {
+      const legacyPos = pos++;
+      if (!owned.has(slug)) continue;
+      options.push({
+        slug,
+        onePiece: false,
+        tier: t,
+        legacyPos,
+        complete: bottomOwned(bottomsFor(slug)),
+      });
+    }
+  });
+  options.sort((a, b) => compareRank(baseOptionRank(a, rules), baseOptionRank(b, rules)));
+
+  const best = options[0];
+  const bodysuitEntry = BASE_MAP[kind];
+  if (best) {
+    if (best.onePiece) {
+      return {
+        picked: { slug: best.slug, label: LABEL_BY_SLUG[best.slug], owned: true },
+        onePiece: true,
+        bottomKind: "none",
+      };
+    }
+    return {
+      picked: labelBase(best.slug, bodysuitEntry, true),
+      onePiece: false,
+      bottomKind: bottomsFor(best.slug),
+    };
+  }
+  const missing = missingBaseSlug(kind, rules) ?? bodysuitEntry?.slugs[0];
+  if (!missing) throw new Error(`No everyday base for ${kind}`);
+  return {
+    picked: labelBase(missing, bodysuitEntry, false),
+    onePiece: false,
+    bottomKind: bottomsFor(missing),
+  };
+}
+
+/** A top is named as itself; a bodysuit keeps the existing kind label. */
+function labelBase(
+  slug: WardrobeSlug,
+  entry: { slugs: WardrobeSlug[]; label: string } | null,
+  owned: boolean,
+): NonNullable<ReturnType<typeof pickSlug>> {
+  if (isEverydayTop(slug) || !entry) return { slug, label: LABEL_BY_SLUG[slug] ?? slug, owned };
+  const actual = LABEL_BY_SLUG[slug];
+  const substituted = slug !== entry.slugs[0] && actual !== undefined && actual !== entry.label;
+  return {
+    slug,
+    label: entry.label,
+    owned,
+    ...(substituted && owned ? { usingLabel: actual } : {}),
+  };
 }

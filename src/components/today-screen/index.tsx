@@ -19,6 +19,8 @@ import { CheckOutfitPanel } from "./check-outfit-panel";
 import { applyBottomChoice } from "@/lib/recommend/compare-bottoms";
 import { normalizeOutingContext, outingEngineFields } from "@/lib/outing-context";
 import type { SetAsideReason } from "@/lib/wardrobe-eligibility";
+import type { ChildPreferences } from "@/lib/child-preferences";
+import { everydayTopRules } from "@/lib/recommend/everyday-tops";
 
 /** Fires a selection haptic only when the value actually changes. */
 function change<T>(current: T, next: T, set: (v: T) => void) {
@@ -52,6 +54,7 @@ export function TodayScreen({
   baby,
   owned,
   setAside,
+  preferences,
   guest = false,
   sampleWardrobe = false,
   feedbackPending = false,
@@ -66,6 +69,8 @@ export function TodayScreen({
   owned: Set<WardrobeSlug>;
   /** Owned items the parent marked unavailable — shown as such, never used. */
   setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>;
+  /** Saved child preferences; only the gated toddler tops rule reads them. */
+  preferences?: ChildPreferences;
   guest?: boolean;
   /** The outfit uses Layerly's sample wardrobe, not the parent's clothes. */
   sampleWardrobe?: boolean;
@@ -141,6 +146,14 @@ export function TodayScreen({
     [situation, transportMode],
   );
 
+  // Primitive deps: callers rebuild the preferences object on every render.
+  const clothingStyle = preferences?.clothing_style ?? "both";
+  const easyToiletAccess = preferences?.easy_toilet_access ?? false;
+  const stylePrefs = useMemo(
+    () => ({ clothing_style: clothingStyle, easy_toilet_access: easyToiletAccess }),
+    [clothingStyle, easyToiletAccess],
+  );
+
   const rec = useMemo(() => {
     if (!weather) return null;
     return recommend({
@@ -152,6 +165,7 @@ export function TodayScreen({
       durationMin: duration,
       owned,
       setAside,
+      childPreferences: stylePrefs,
       homeActivity: situation === "home" ? homeActivity : undefined,
       ageMonths,
       uvIndex: weather.uvIndex,
@@ -175,6 +189,7 @@ export function TodayScreen({
     duration,
     owned,
     setAside,
+    stylePrefs,
     homeActivity,
     ageMonths,
   ]);
@@ -277,6 +292,7 @@ export function TodayScreen({
             setAside={setAside}
             weather={weather}
             onBack={() => setCheckingOutfit(false)}
+            everydayTops={everydayTopRules({ ageMonths }) !== null}
           />
         ) : (
           rec &&

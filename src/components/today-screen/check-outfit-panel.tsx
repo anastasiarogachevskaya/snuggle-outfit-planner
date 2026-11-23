@@ -4,6 +4,7 @@ import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import type { Recommendation } from "@/lib/recommend";
 import {
   BODYSUIT_SLUGS,
+  EVERYDAY_TOP_SLOT_SLUGS,
   SLEEPSUIT_SLUGS,
   BOTTOM_SLUGS,
   MID_SLUGS,
@@ -250,12 +251,15 @@ export function CheckOutfitPanel({
   setAside,
   weather,
   onBack,
+  everydayTops = false,
 }: {
   rec: Recommendation;
   owned: Set<WardrobeSlug>;
   setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>;
   weather?: PanelWeather;
   onBack: () => void;
+  /** Toddler rule on: everyday tops can be picked in the bodysuit row. */
+  everydayTops?: boolean;
 }) {
   const [actual, setActual] = useState<ActualOutfit>(EMPTY_OUTFIT);
   const [unit] = useTempUnit();
@@ -379,8 +383,10 @@ export function CheckOutfitPanel({
 
         <div className="space-y-7">
           <SlotRow
-            label="Bodysuit"
-            options={owns(BODYSUIT_SLUGS)}
+            label={everydayTops ? "Bodysuit or top" : "Bodysuit"}
+            options={owns(
+              everydayTops ? [...BODYSUIT_SLUGS, ...EVERYDAY_TOP_SLOT_SLUGS] : BODYSUIT_SLUGS,
+            )}
             value={actual.bodysuit}
             onChange={(v) => set("bodysuit", v)}
             adjustment={adjustmentBySlot.bodysuit}

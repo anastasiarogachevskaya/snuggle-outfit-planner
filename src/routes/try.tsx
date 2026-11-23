@@ -327,6 +327,7 @@ function TryPage() {
         }}
         owned={localFirst ? localWardrobe.eligible : sampleTrialWardrobe}
         setAside={localFirst ? localWardrobe.setAside : undefined}
+        preferences={guestPreferences(profile)}
         confirmation={confirmation}
         onFeedback={(rating, ctx) => {
           logEvent("try_feedback_submitted", { rating });

@@ -19,6 +19,9 @@ export const CLO_BY_SLUG: Partial<Record<WardrobeSlug, number>> = {
   short_sleeve_bodysuit: 0.2,
   long_sleeve_bodysuit: 0.3,
   romper: 0.3, // one-piece covering base + bottom
+  // Everyday tops (toddlers) — same warmth as the matching bodysuit.
+  short_sleeve_top: 0.2,
+  long_sleeve_top: 0.3,
   pajamas: 0.4,
 
   // Bottoms
@@ -115,6 +118,11 @@ export const BODYSUIT_SLUGS: WardrobeSlug[] = [
   "short_sleeve_bodysuit",
   "long_sleeve_bodysuit",
 ];
+/**
+ * Everyday tops worn instead of a bodysuit (toddler rule, see
+ * everyday-tops.ts). They fill the same single "bodysuit" slot.
+ */
+export const EVERYDAY_TOP_SLOT_SLUGS: WardrobeSlug[] = ["short_sleeve_top", "long_sleeve_top"];
 /** A sleepsuit/romper can be worn instead of, or layered over, a bodysuit. */
 export const SLEEPSUIT_SLUGS: WardrobeSlug[] = ["pajamas", "romper"];
 export const BOTTOM_SLUGS: WardrobeSlug[] = [
@@ -205,7 +213,8 @@ export function idealOutfitFrom(rec: Recommendation): ActualOutfit {
     if (l.slug === "diaper_only") continue;
     const slug = l.slug as WardrobeSlug;
     if (l.slot === "base") {
-      if (BODYSUIT_SLUGS.includes(slug)) out.bodysuit = slug;
+      if (BODYSUIT_SLUGS.includes(slug) || EVERYDAY_TOP_SLOT_SLUGS.includes(slug))
+        out.bodysuit = slug;
       else if (SLEEPSUIT_SLUGS.includes(slug)) out.sleepsuit = slug;
     } else if (l.slot === "bottom") {
       out.bottom = slug;

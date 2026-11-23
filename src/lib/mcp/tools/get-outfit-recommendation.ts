@@ -10,6 +10,7 @@ import {
   type EligibleWardrobe,
 } from "@/lib/wardrobe-eligibility";
 import { ageInMonths } from "@/lib/baby-age";
+import { normalizeChildPreferences } from "@/lib/child-preferences";
 import { errorResult, supabaseForUser, textResult } from "../supabase";
 
 export default defineTool({
@@ -41,7 +42,9 @@ export default defineTool({
     const supabase = supabaseForUser(ctx);
     const { data: baby, error } = await supabase
       .from("babies")
-      .select("id, name, dob, temperature_pref, latitude, longitude, location_label")
+      .select(
+        "id, name, dob, temperature_pref, latitude, longitude, location_label, clothing_style, easy_toilet_access",
+      )
       .eq("id", input.baby_id)
       .maybeSingle();
     if (error) return errorResult(error.message);
@@ -89,6 +92,8 @@ export default defineTool({
       durationMin: input.duration_min,
       owned,
       setAside: wardrobe.setAside,
+      // Same saved preferences the app's Today screen passes.
+      childPreferences: normalizeChildPreferences(baby),
       homeActivity: input.home_activity as HomeActivity | undefined,
       ageMonths,
       uvIndex: weather?.uvIndex,

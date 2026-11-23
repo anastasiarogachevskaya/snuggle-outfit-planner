@@ -5,6 +5,8 @@ import { mapWardrobe } from "./recommend/map-wardrobe";
 import { TEMP } from "./recommend/temperature";
 import { extraItemTip, type SetAsideReason } from "./wardrobe-eligibility";
 import { normalizeOutingContext, type OutingContext } from "./outing-context";
+import type { ChildPreferences } from "./child-preferences";
+import { everydayTopRules } from "./recommend/everyday-tops";
 
 export type Situation = "home" | "walk" | "car";
 export type TransportMode = "pram" | "sitting-stroller" | "carrier";
@@ -38,6 +40,12 @@ export type RecommendInput = {
    * Carried only — no rule reads movement, activity or ground yet.
    */
   outing?: OutingContext;
+  /**
+   * The parent's saved clothing style and easy-toilet-access choice. Read
+   * only by the gated toddler everyday-tops rule (recommend/everyday-tops.ts);
+   * nappy use is never read here.
+   */
+  childPreferences?: Partial<Pick<ChildPreferences, "clothing_style" | "easy_toilet_access">>;
 };
 
 /**
@@ -112,6 +120,12 @@ export type Recommendation = {
 };
 
 export function recommend(input: RecommendInput): Recommendation {
+  const tops = everydayTopRules({
+    ageMonths: input.ageMonths,
+    preferences: input.childPreferences,
+    // Sleepwear has its own later ticket.
+    sleeping: input.situation === "home" && (input.homeActivity ?? "playing") === "sleeping",
+  });
   if (input.situation === "home") {
     const home = pickHome({
       roomTempC: input.roomTempC ?? 21,
@@ -119,7 +133,7 @@ export function recommend(input: RecommendInput): Recommendation {
       ageMonths: input.ageMonths ?? null,
       owned: input.owned,
     });
-    const mapped = mapWardrobe(home.layers, home.accessories, input.owned);
+    const mapped = mapWardrobe(home.layers, home.accessories, input.owned, false, tops);
     const sleepAccessories: Accessory[] = home.sleepAccessories.map((s) => ({
       slug: s.slug,
       label: s.label,
@@ -157,7 +171,13 @@ export function recommend(input: RecommendInput): Recommendation {
     outing: resolveRecommendOuting(input),
   };
   const out = pickOutdoor(ctx);
-  const mapped = mapWardrobe(out.layers, out.accessories, input.owned, input.situation === "car");
+  const mapped = mapWardrobe(
+    out.layers,
+    out.accessories,
+    input.owned,
+    input.situation === "car",
+    tops,
+  );
 
   const transportExtras: Accessory[] = [];
   const missingHelpfulItems: Accessory[] = [];

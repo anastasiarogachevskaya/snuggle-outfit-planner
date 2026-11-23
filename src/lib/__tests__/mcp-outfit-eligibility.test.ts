@@ -131,9 +131,13 @@ describe("assistant outfit tool", () => {
   it("normalizes the outing the same way as Today, without changing outfits", async () => {
     tables = {
       babies: [baby],
-      wardrobe_items: ["winter_overall", "footmuff", "blanket", "babywearing_cover", "warm_hat"].map(
-        (s) => item(s),
-      ),
+      wardrobe_items: [
+        "winter_overall",
+        "footmuff",
+        "blanket",
+        "babywearing_cover",
+        "warm_hat",
+      ].map((s) => item(s)),
     };
     const eligible = resolveEligibleWardrobe(tables.wardrobe_items as never);
     const ageMonths = ageInMonths(baby.dob);
@@ -157,5 +161,48 @@ describe("assistant outfit tool", () => {
       });
       expect(out.recommendation).toEqual(expected as never);
     }
+  });
+});
+
+describe("assistant outfit tool: toddler everyday tops", () => {
+  const monthsAgo = (n: number) => {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - n);
+    return d.toISOString().slice(0, 10);
+  };
+  const toddler = { ...baby, dob: monthsAgo(20) };
+  const slugs = ["long_sleeve_bodysuit", "long_sleeve_top", "pants", "thin_hat", "cotton_socks"];
+
+  it("uses the saved clothing style the same way as Today", async () => {
+    for (const clothing_style of ["tops", "bodysuits", "both"] as const)
+      for (const easy_toilet_access of [false, true]) {
+        tables = {
+          babies: [{ ...toddler, clothing_style, easy_toilet_access, nappy_use: "yes" }],
+          wardrobe_items: slugs.map((s) => item(s)),
+        };
+        const out = (await run({ feels_like_c: 19, duration_min: 30 })) as unknown as {
+          recommendation: ReturnType<typeof recommend>;
+        };
+        const eligible = resolveEligibleWardrobe(tables.wardrobe_items as never);
+        const today = recommend({
+          feelsLikeC: 19,
+          tempPref: 3,
+          ...outingEngineFields(
+            normalizeOutingContext({ situation: "walk", transportMode: "sitting-stroller" }),
+          ),
+          durationMin: 30,
+          owned: eligible.eligible,
+          setAside: eligible.setAside,
+          ageMonths: ageInMonths(toddler.dob),
+          childPreferences: { clothing_style, easy_toilet_access },
+        });
+        expect(out.recommendation).toEqual(today);
+        const base = out.recommendation.babyClothing.find((l) => l.slot === "base")?.slug;
+        const wantsTop =
+          toddlerSupportEnabled() &&
+          (clothing_style === "tops" || (clothing_style === "both" && easy_toilet_access));
+        expect(base).toBe(wantsTop ? "long_sleeve_top" : "long_sleeve_bodysuit");
+      }
   });
 });

@@ -1,6 +1,7 @@
 import type { WardrobeSlug } from "@/lib/wardrobe-catalog";
 import {
   BODYSUIT_SLUGS,
+  EVERYDAY_TOP_SLOT_SLUGS,
   SLEEPSUIT_SLUGS,
   BOTTOM_SLUGS,
   MID_SLUGS,
@@ -12,7 +13,7 @@ import {
 } from "./warmth";
 
 const SLOT_OPTIONS: Partial<Record<SlotKey, WardrobeSlug[]>> = {
-  bodysuit: BODYSUIT_SLUGS,
+  bodysuit: [...BODYSUIT_SLUGS, ...EVERYDAY_TOP_SLOT_SLUGS],
   sleepsuit: SLEEPSUIT_SLUGS,
   bottom: BOTTOM_SLUGS,
   mid: MID_SLUGS,

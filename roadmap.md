@@ -25,6 +25,7 @@
 - [x] T09A Availability controls follow the rollout switch; tips say "marked outgrown/temporarily unavailable" for set-aside items
 - [x] T10 Shared outing context (movement, activity, ground, transport) carried through every recommendation path; outfits unchanged
 - [x] T11 Shared clothing-needs model (roles, body coverage, separate transport) with exact compatibility adapters; outfits unchanged
+- [x] T12 Toddler everyday tops follow clothing style and easy toilet access (gated)
 - [ ] T28 Live signed-in browser check of Wardrobe Details and availability on Today (needs a dedicated test account)
 
 ## Open (needs the user)
