@@ -264,7 +264,7 @@ describe("outfits are unchanged", () => {
     }
   });
 
-  it("stated movement, activity and ground change nothing but toddler walking footwear (T14)", () => {
+  it("stated movement, activity and ground change nothing but toddler footwear and rain gear (T14/T15)", () => {
     const base = {
       tempPref: 3,
       owned,
@@ -283,15 +283,19 @@ describe("outfits are unchanged", () => {
     });
     const got = recommend({ ...base, ...outingEngineFields(mixed) });
     if (!toddlerSupportEnabled()) return expect(got).toEqual(ref);
-    // Only the footwear role is added; everything else matches.
+    // Only the footwear role and worn rain shells (T15) are added; the rest matches.
     const foot = new Set(["everyday_shoes", "rain_boots", "winter_boots"]);
-    const { footwear, ...rest } = got;
+    const { footwear, rainProtection, ...rest } = got;
     expect(footwear?.movement).toBe("mixed");
+    expect(rainProtection?.movement).toBe("mixed");
+    const rain = new Set<string>(rainProtection?.added ?? []);
+    const extraNotes = [...(footwear?.notes ?? []), ...(rainProtection?.notes ?? [])];
     expect({
       ...rest,
+      babyClothing: rest.babyClothing.filter((l) => !rain.has(l.slug)),
       accessories: rest.accessories.filter((a) => !foot.has(a.slug)),
-      missing: rest.missing.filter((m) => !foot.has(m)),
-      notes: rest.notes.filter((n) => !(footwear?.notes ?? []).includes(n)),
+      missing: rest.missing.filter((m) => !foot.has(m) && !rain.has(m)),
+      notes: rest.notes.filter((n) => !extraNotes.includes(n)),
     }).toEqual(ref);
     // An infant on the same outing is unchanged.
     expect(recommend({ ...base, ageMonths: 8, ...outingEngineFields(mixed) })).toEqual(

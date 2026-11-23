@@ -216,8 +216,11 @@ export function idealOutfitFrom(rec: Recommendation): ActualOutfit {
     ...EMPTY_OUTFIT,
     transportExtras: rec.transportExtras.map((e) => e.slug),
   };
+  // Rain shells added for wearable protection (rain-protection.ts) carry no
+  // validated warmth, so the warmth comparison ignores them.
+  const rainAdded = new Set<string>(rec.rainProtection?.added ?? []);
   for (const l of rec.babyClothing) {
-    if (l.slug === "diaper_only") continue;
+    if (l.slug === "diaper_only" || rainAdded.has(l.slug)) continue;
     const slug = l.slug as WardrobeSlug;
     if (l.slot === "thermal") {
       out.thermal = [...(out.thermal ?? []), slug];

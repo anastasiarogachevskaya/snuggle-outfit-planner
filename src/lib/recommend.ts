@@ -13,6 +13,7 @@ import {
   walkingFootwearApplies,
   type FootwearNeed,
 } from "./recommend/footwear";
+import { selectRainProtection, type RainProtectionNeed } from "./recommend/rain-protection";
 
 export type Situation = "home" | "walk" | "car";
 export type TransportMode = "pram" | "sitting-stroller" | "carrier";
@@ -43,8 +44,9 @@ export type RecommendInput = {
    * Shared outing context (see outing-context.ts). Pass it with
    * `...outingEngineFields(outing)` so `situation`/`transportMode` agree.
    * Older callers may omit it; it's then normalized from those two fields.
-   * Read only by the gated toddler walking-footwear rule (recommend/footwear.ts):
-   * a stated walking/active/mixed movement and the stated ground.
+   * Read only by the gated toddler walking rules (recommend/footwear.ts and
+   * recommend/rain-protection.ts): a stated walking/active/mixed movement,
+   * the stated ground and (for a note only) the activity.
    */
   outing?: OutingContext;
   /**
@@ -55,7 +57,8 @@ export type RecommendInput = {
   childPreferences?: Partial<Pick<ChildPreferences, "clothing_style" | "easy_toilet_access">>;
   /**
    * Saved garment details (`details` from resolveEligibleWardrobe). Read only
-   * on the gated toddler path, for the parent's wool-leggings answer.
+   * on the gated toddler path: the wool-leggings answer and the stated
+   * waterproofing of footwear and rain shells.
    */
   garmentDetails?: ReadonlyMap<WardrobeSlug, Partial<GarmentDetails>>;
 };
@@ -136,6 +139,12 @@ export type Recommendation = {
    * missing footwear is also in `accessories`, once, after socks.
    */
   footwear?: FootwearNeed;
+  /**
+   * Wearable rain-protection decision (same toddler walking/active/mixed
+   * outings as `footwear`; omitted otherwise). Shells it adds are in
+   * `babyClothing` (outer slot), listed in `rainProtection.added`.
+   */
+  rainProtection?: RainProtectionNeed;
 };
 
 export function recommend(input: RecommendInput): Recommendation {
@@ -221,6 +230,33 @@ export function recommend(input: RecommendInput): Recommendation {
         details: input.garmentDetails,
       })
     : null;
+  // Toddler wearable rain protection: shells only added over the outfit,
+  // never replacing an insulating layer or bottoms (recommend/rain-protection.ts).
+  const rainProtection = walkingMovement
+    ? selectRainProtection({
+        movement: walkingMovement,
+        isRaining: input.isRaining,
+        outing: ctx.outing,
+        outfit: mapped.babyClothing,
+        outfitMissing: mapped.missing,
+        owned: input.owned,
+        setAside: input.setAside,
+        details: input.garmentDetails,
+        transportExtras: out.extras.map((e) => e.slug).filter((s) => input.owned.has(s)),
+      })
+    : null;
+  if (rainProtection && rainProtection.added.length) {
+    // `missing` lists clothing before accessories (as mapWardrobe builds it).
+    const clothing = new Set<string>(mapped.babyClothing.map((l) => l.slug));
+    const clothingMissing = mapped.missing.filter((s) => clothing.has(s));
+    const accessoryMissing = mapped.missing.filter((s) => !clothing.has(s));
+    for (const slug of rainProtection.added) {
+      mapped.babyClothing.push({ slot: "outer", slug, label: LABEL_BY_SLUG[slug] });
+      if (!input.owned.has(slug)) clothingMissing.push(slug);
+    }
+    mapped.missing = [...clothingMissing, ...accessoryMissing];
+  }
+
   if (footwear) {
     const slug = footwear.selected ?? footwear.missingSlug;
     if (slug) {
@@ -250,7 +286,7 @@ export function recommend(input: RecommendInput): Recommendation {
   }
 
   // Extra notes about missing helpful items
-  const notes = [...out.notes, ...(footwear?.notes ?? [])];
+  const notes = [...out.notes, ...(rainProtection?.notes ?? []), ...(footwear?.notes ?? [])];
   if (input.situation === "walk") {
     if (missingExtras.has("footmuff"))
       notes.push(
@@ -305,6 +341,7 @@ export function recommend(input: RecommendInput): Recommendation {
     safetyAdvice: out.safetyAdvice,
     effectiveTempC: out.effectiveC,
     ...(footwear ? { footwear } : {}),
+    ...(rainProtection ? { rainProtection } : {}),
   };
 }
 

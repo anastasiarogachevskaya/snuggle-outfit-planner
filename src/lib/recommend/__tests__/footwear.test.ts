@@ -270,7 +270,9 @@ describe("recommend(): Today and assistant share this path", () => {
     const seated = run({ transportMode: "sitting-stroller" });
     const mixed = run({ movement: "mixed", transportMode: "sitting-stroller", ground: "wet" });
     expect(mixed.transportExtras).toEqual(seated.transportExtras);
-    expect(mixed.babyClothing).toEqual(seated.babyClothing);
+    // Worn rain shells for wet ground (T15) may be added; nothing else changes.
+    const rain = new Set<string>(mixed.rainProtection?.added ?? []);
+    expect(mixed.babyClothing.filter((l) => !rain.has(l.slug))).toEqual(seated.babyClothing);
     if (!on) return expect(mixed).toEqual(seated);
     expect(footwearIn(mixed.accessories.map((a) => a.slug))).toEqual(["rain_boots"]);
     expect(mixed.notes.join(" ")).toContain("aren't confirmed as waterproof");
