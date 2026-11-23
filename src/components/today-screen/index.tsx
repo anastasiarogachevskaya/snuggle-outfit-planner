@@ -20,6 +20,7 @@ import { applyBottomChoice } from "@/lib/recommend/compare-bottoms";
 import { normalizeOutingContext, outingEngineFields } from "@/lib/outing-context";
 import type { SetAsideReason } from "@/lib/wardrobe-eligibility";
 import type { ChildPreferences } from "@/lib/child-preferences";
+import type { GarmentDetails } from "@/lib/garment-details";
 import { everydayTopRules } from "@/lib/recommend/everyday-tops";
 
 /** Fires a selection haptic only when the value actually changes. */
@@ -54,6 +55,7 @@ export function TodayScreen({
   baby,
   owned,
   setAside,
+  details,
   preferences,
   guest = false,
   sampleWardrobe = false,
@@ -69,6 +71,8 @@ export function TodayScreen({
   owned: Set<WardrobeSlug>;
   /** Owned items the parent marked unavailable — shown as such, never used. */
   setAside?: ReadonlyMap<WardrobeSlug, SetAsideReason>;
+  /** Saved garment details (eligible wardrobe); read only by toddler rules. */
+  details?: ReadonlyMap<WardrobeSlug, Partial<GarmentDetails>>;
   /** Saved child preferences; only the gated toddler tops rule reads them. */
   preferences?: ChildPreferences;
   guest?: boolean;
@@ -166,6 +170,7 @@ export function TodayScreen({
       owned,
       setAside,
       childPreferences: stylePrefs,
+      garmentDetails: details,
       homeActivity: situation === "home" ? homeActivity : undefined,
       ageMonths,
       uvIndex: weather.uvIndex,
@@ -190,6 +195,7 @@ export function TodayScreen({
     owned,
     setAside,
     stylePrefs,
+    details,
     homeActivity,
     ageMonths,
   ]);

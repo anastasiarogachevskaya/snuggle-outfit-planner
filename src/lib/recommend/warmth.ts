@@ -171,6 +171,12 @@ export type ActualOutfit = {
   mittens: boolean;
   /** Stroller/carrier gear (footmuff, blanket, rain cover…) confirmed in use. */
   transportExtras: WardrobeSlug[];
+  /**
+   * Thermal underlayers (toddler path), each counted once and kept apart
+   * from the everyday bottoms. Thermal tops/bottoms have no warmth value
+   * yet, so they add nothing until a later ticket sets one.
+   */
+  thermal?: WardrobeSlug[];
 };
 
 export const EMPTY_OUTFIT: ActualOutfit = {
@@ -200,6 +206,7 @@ export function outfitClo(o: ActualOutfit): number {
   if (o.snowPants) total += CLO_BY_SLUG.snow_pants ?? 0;
   if (o.mittens) total += CLO_BY_SLUG.mittens ?? 0;
   for (const slug of o.transportExtras) total += TRANSPORT_CLO_BY_SLUG[slug] ?? 0;
+  for (const slug of o.thermal ?? []) total += CLO_BY_SLUG[slug] ?? 0;
   return total;
 }
 
@@ -212,7 +219,9 @@ export function idealOutfitFrom(rec: Recommendation): ActualOutfit {
   for (const l of rec.babyClothing) {
     if (l.slug === "diaper_only") continue;
     const slug = l.slug as WardrobeSlug;
-    if (l.slot === "base") {
+    if (l.slot === "thermal") {
+      out.thermal = [...(out.thermal ?? []), slug];
+    } else if (l.slot === "base") {
       if (BODYSUIT_SLUGS.includes(slug) || EVERYDAY_TOP_SLOT_SLUGS.includes(slug))
         out.bodysuit = slug;
       else if (SLEEPSUIT_SLUGS.includes(slug)) out.sleepsuit = slug;

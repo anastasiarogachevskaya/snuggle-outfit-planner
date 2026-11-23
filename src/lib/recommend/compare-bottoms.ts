@@ -140,7 +140,13 @@ export function bottomClo(slug: WardrobeSlug): number {
   return CLO_BY_SLUG[slug] ?? 0;
 }
 
-const SLOT_ORDER: Record<Layer["slot"], number> = { base: 0, bottom: 1, mid: 2, outer: 3 };
+const SLOT_ORDER: Record<Layer["slot"], number> = {
+  thermal: -1,
+  base: 0,
+  bottom: 1,
+  mid: 2,
+  outer: 3,
+};
 
 /**
  * Rewrites today's recommendation around a bottom the parent picked in the

@@ -206,3 +206,54 @@ describe("assistant outfit tool: toddler everyday tops", () => {
       }
   });
 });
+
+describe("assistant outfit tool: wool-leggings answer", () => {
+  const monthsAgo = (n: number) => {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - n);
+    return d.toISOString().slice(0, 10);
+  };
+  const toddler = { ...baby, dob: monthsAgo(20) };
+  const slugs = [
+    "long_sleeve_bodysuit",
+    "wool_leggings",
+    "pants",
+    "fleece_layer",
+    "winter_overall",
+    "thermal_bottom",
+  ];
+
+  it("reads saved garment details the same way as Today", async () => {
+    for (const leggings_use of ["unknown", "thermal_base", "standalone"]) {
+      tables = {
+        babies: [toddler],
+        wardrobe_items: slugs.map((s) => item(s, s === "wool_leggings" ? { leggings_use } : {})),
+      };
+      const out = (await run({ feels_like_c: -5, duration_min: 30 })) as unknown as {
+        recommendation: ReturnType<typeof recommend>;
+      };
+      const w = resolveEligibleWardrobe(tables.wardrobe_items as never);
+      const today = recommend({
+        feelsLikeC: -5,
+        tempPref: 3,
+        ...outingEngineFields(
+          normalizeOutingContext({ situation: "walk", transportMode: "sitting-stroller" }),
+        ),
+        durationMin: 30,
+        owned: w.eligible,
+        setAside: w.setAside,
+        garmentDetails: w.details,
+        ageMonths: ageInMonths(toddler.dob),
+        childPreferences: { clothing_style: "both", easy_toilet_access: false },
+      });
+      expect(out.recommendation).toEqual(today);
+      const bottom = out.recommendation.babyClothing.find((l) => l.slot === "bottom")?.slug;
+      expect(bottom).toBe(
+        leggings_use === "thermal_base" && toddlerSupportEnabled() ? "pants" : "wool_leggings",
+      );
+      // Owning a thermal bottom never adds it on its own.
+      expect(out.recommendation.babyClothing.some((l) => l.slot === "thermal")).toBe(false);
+    }
+  });
+});

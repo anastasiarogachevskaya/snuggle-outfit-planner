@@ -6,6 +6,7 @@ import { TEMP } from "./recommend/temperature";
 import { extraItemTip, type SetAsideReason } from "./wardrobe-eligibility";
 import { normalizeOutingContext, type OutingContext } from "./outing-context";
 import type { ChildPreferences } from "./child-preferences";
+import type { GarmentDetails } from "./garment-details";
 import { everydayTopRules } from "./recommend/everyday-tops";
 
 export type Situation = "home" | "walk" | "car";
@@ -46,6 +47,11 @@ export type RecommendInput = {
    * nappy use is never read here.
    */
   childPreferences?: Partial<Pick<ChildPreferences, "clothing_style" | "easy_toilet_access">>;
+  /**
+   * Saved garment details (`details` from resolveEligibleWardrobe). Read only
+   * on the gated toddler path, for the parent's wool-leggings answer.
+   */
+  garmentDetails?: ReadonlyMap<WardrobeSlug, Partial<GarmentDetails>>;
 };
 
 /**
@@ -69,7 +75,8 @@ export function resolveRecommendOuting(
 
 // slug can be a real WardrobeSlug or a synthetic display-only value like "diaper_only"
 export type Layer = {
-  slot: "base" | "bottom" | "mid" | "outer";
+  /** "thermal" is an underlayer worn under the base and bottoms. */
+  slot: "thermal" | "base" | "bottom" | "mid" | "outer";
   slug: WardrobeSlug | "diaper_only";
   label: string;
   /** Set when `slug` is a stand-in: the name of the item actually owned. */
@@ -133,7 +140,14 @@ export function recommend(input: RecommendInput): Recommendation {
       ageMonths: input.ageMonths ?? null,
       owned: input.owned,
     });
-    const mapped = mapWardrobe(home.layers, home.accessories, input.owned, false, tops);
+    const mapped = mapWardrobe(
+      home.layers,
+      home.accessories,
+      input.owned,
+      false,
+      tops,
+      input.garmentDetails,
+    );
     const sleepAccessories: Accessory[] = home.sleepAccessories.map((s) => ({
       slug: s.slug,
       label: s.label,
@@ -177,6 +191,7 @@ export function recommend(input: RecommendInput): Recommendation {
     input.owned,
     input.situation === "car",
     tops,
+    input.garmentDetails,
   );
 
   const transportExtras: Accessory[] = [];

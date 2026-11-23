@@ -19,6 +19,7 @@ import {
   type BaseOption,
   type EverydayTopRules,
 } from "./everyday-tops";
+import { allowedAsEverydayBottom, thermalEntry, type GarmentDetailsMap } from "./thermal-layers";
 
 // Ordered fallback lists — first match in `owned` wins.
 const BASE_MAP: Record<BaseKind, { slugs: WardrobeSlug[]; label: string } | null> = {
@@ -115,10 +116,12 @@ const SOCK_MAP: Record<SockKind, { slugs: WardrobeSlug[]; label: string } | null
 function pickSlug(
   entry: { slugs: WardrobeSlug[]; label: string } | null,
   owned: Set<WardrobeSlug>,
+  /** Garments that can't fill this slot in this outfit (toddler roles). */
+  allowed?: (slug: WardrobeSlug) => boolean,
 ): { slug: WardrobeSlug; label: string; owned: boolean; usingLabel?: string } | null {
   if (!entry) return null;
   for (const s of entry.slugs) {
-    if (!owned.has(s)) continue;
+    if (!owned.has(s) || (allowed && !allowed(s))) continue;
     // The label keeps naming the layer kind, but when the match is a stand-in
     // rather than the item itself, the real garment is carried alongside it —
     // otherwise the screen claims a "Sleeveless bodysuit" is in a wardrobe
@@ -132,8 +135,10 @@ function pickSlug(
       ...(substituted ? { usingLabel: actual } : {}),
     };
   }
-  // Nothing owned — use the primary as the "missing" recommendation.
-  return { slug: entry.slugs[0], label: entry.label, owned: false };
+  // Nothing owned — use the primary as the "missing" recommendation (the
+  // first one that may fill the slot, so an owned thermal is never "missing").
+  const primary = (allowed ? entry.slugs.find(allowed) : undefined) ?? entry.slugs[0];
+  return { slug: primary, label: entry.label, owned: false };
 }
 
 export type MappedOutput = {
@@ -159,6 +164,11 @@ export function mapWardrobe(
    * base slot, and pairs a top with the bottoms it needs.
    */
   tops: EverydayTopRules | null = null,
+  /**
+   * Saved garment details, read only on the toddler path (`tops` set) for
+   * the wool-leggings answer and the separate lower-body roles.
+   */
+  details: GarmentDetailsMap | null = null,
 ): MappedOutput {
   const baby: Layer[] = [];
   const accs: Accessory[] = [];
@@ -201,9 +211,30 @@ export function mapWardrobe(
     ? (BASE_DOWNGRADE_FOR_JACKET[layers.base] as BaseKind)
     : layers.base;
 
+  // Toddler lower-body roles: thermal underlayer, everyday bottoms and outer
+  // bottoms stay separate (thermal-layers.ts). Infants keep the old lists.
+  const toddler = tops !== null;
+  const thermalUpper =
+    toddler && layers.thermal?.upper ? pickSlug(thermalEntry("upper", details), owned) : null;
+  const thermalLower =
+    toddler && layers.thermal?.lower ? pickSlug(thermalEntry("lower", details), owned) : null;
+  const bottomAllowed = toddler
+    ? (s: WardrobeSlug) =>
+        allowedAsEverydayBottom(s, { details, thermalLower: thermalLower?.slug ?? null })
+    : undefined;
+  if (thermalUpper) addLayer("thermal", thermalUpper);
+  if (thermalLower) addLayer("thermal", thermalLower);
+
   const topChoice =
     tops && EVERYDAY_BASE_TIERS[effectiveBase]
-      ? chooseEverydayBase(effectiveBase, layers.bottom, owned, tops, onePiece?.slug ?? null)
+      ? chooseEverydayBase(
+          effectiveBase,
+          layers.bottom,
+          owned,
+          tops,
+          onePiece?.slug ?? null,
+          bottomAllowed,
+        )
       : null;
 
   // Base
@@ -232,11 +263,11 @@ export function mapWardrobe(
 
   if (topChoice) {
     if (!topChoice.onePiece) {
-      const bottom = pickSlug(BOTTOM_MAP[topChoice.bottomKind], owned);
+      const bottom = pickSlug(BOTTOM_MAP[topChoice.bottomKind], owned, bottomAllowed);
       if (bottom) addLayer("bottom", bottom);
     }
   } else if (!onePiece) {
-    const bottom = pickSlug(BOTTOM_MAP[layers.bottom], owned);
+    const bottom = pickSlug(BOTTOM_MAP[layers.bottom], owned, bottomAllowed);
     if (bottom) addLayer("bottom", bottom);
   }
 
@@ -290,12 +321,15 @@ function chooseEverydayBase(
   owned: Set<WardrobeSlug>,
   rules: EverydayTopRules,
   onePieceSlug: WardrobeSlug | null,
+  bottomAllowed?: (slug: WardrobeSlug) => boolean,
 ): { picked: NonNullable<ReturnType<typeof pickSlug>>; onePiece: boolean; bottomKind: BottomKind } {
   const tiers = EVERYDAY_BASE_TIERS[kind] ?? [];
   const topBottom: BottomKind = bottomKind === "none" ? "shorts" : bottomKind;
   const bottomsFor = (slug: WardrobeSlug) => (isEverydayTop(slug) ? topBottom : bottomKind);
   const bottomOwned = (k: BottomKind) =>
-    k === "none" || (BOTTOM_MAP[k]?.slugs.some((s) => owned.has(s)) ?? false);
+    k === "none" ||
+    (BOTTOM_MAP[k]?.slugs.some((s) => owned.has(s) && (!bottomAllowed || bottomAllowed(s))) ??
+      false);
 
   const options: BaseOption[] = [];
   if (onePieceSlug && owned.has(onePieceSlug)) {

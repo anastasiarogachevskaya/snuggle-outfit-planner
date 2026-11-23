@@ -94,6 +94,7 @@ export default defineTool({
       setAside: wardrobe.setAside,
       // Same saved preferences the app's Today screen passes.
       childPreferences: normalizeChildPreferences(baby),
+      garmentDetails: wardrobe.details,
       homeActivity: input.home_activity as HomeActivity | undefined,
       ageMonths,
       uvIndex: weather?.uvIndex,

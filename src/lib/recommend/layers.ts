@@ -20,11 +20,19 @@ export type OuterKind = "none" | "winter_overall";
 export type HatKind = "none" | "sun" | "thin" | "warm";
 export type SockKind = "none" | "cotton" | "wool";
 
+/**
+ * A thermal underlayer worn next to the skin under everyday clothes. No
+ * existing rule asks for one yet (see thermal-layers.ts), so every rule
+ * leaves this unset; the toddler path fills it only when it is set.
+ */
+export type ThermalNeed = { upper: boolean; lower: boolean };
+
 export type LayerNeed = {
   base: BaseKind;
   bottom: BottomKind;
   mid: MidKind;
   outer: OuterKind;
+  thermal?: ThermalNeed;
 };
 
 export type AccessoryNeed = {

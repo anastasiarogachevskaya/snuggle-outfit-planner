@@ -49,7 +49,7 @@ export function OutfitResult({
               <Row
                 key={l.slot + l.slug}
                 slug={isSynthetic ? undefined : (l.slug as WardrobeSlug)}
-                chip={l.slot.slice(0, 3).toUpperCase()}
+                chip={l.slot === "thermal" ? "THM" : l.slot.slice(0, 3).toUpperCase()}
                 label={localizeClothingText(l.label, unit)}
                 sub={
                   l.usingLabel

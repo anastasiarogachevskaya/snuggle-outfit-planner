@@ -26,6 +26,7 @@
 - [x] T10 Shared outing context (movement, activity, ground, transport) carried through every recommendation path; outfits unchanged
 - [x] T11 Shared clothing-needs model (roles, body coverage, separate transport) with exact compatibility adapters; outfits unchanged
 - [x] T12 Toddler everyday tops follow clothing style and easy toilet access (gated)
+- [x] T13 Thermal underlayers alongside everyday and outer bottoms (gated)
 - [ ] T28 Live signed-in browser check of Wardrobe Details and availability on Today (needs a dedicated test account)
 
 ## Open (needs the user)

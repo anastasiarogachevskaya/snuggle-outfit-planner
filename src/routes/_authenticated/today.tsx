@@ -231,6 +231,7 @@ function TodayPage() {
       baby={baby}
       owned={owned}
       setAside={wardrobe.setAside}
+      details={wardrobe.details}
       preferences={preferences}
       feedbackPending={feedback.isPending}
       confirmation={confirmation}
