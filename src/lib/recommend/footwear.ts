@@ -19,6 +19,16 @@
  *   - Wet or snowy ground asks for waterproofing (stated "yes" first).
  *     No temperature cutoff, warmth score or activity offset is used.
  *
+ * Three things are kept apart (T14A):
+ *   1. Ownership and availability: `selected`, `missingSlug`, `unusable`.
+ *      A pair with weak or unstated protection is still owned and available.
+ *   2. Protection confirmation: `protection` (as stated) and `waterproof`
+ *      (confirmed / unconfirmed / unmet). Only a stated "yes" confirms.
+ *   3. What is still unresolved: `gaps` — a missing garment, or an
+ *      unconfirmed/unmet waterproofing need beside the owned pair chosen.
+ *   A waterproof answer covers waterproofing only; insulation, grip and
+ *   overall suitability are never judged (`notJudged`).
+ *
  * Policy gaps (not decided here):
  *   - No rule says when footwear must be insulated, so temperature never
  *     changes the choice; snowy ground prefers winter boots by type only.
@@ -48,6 +58,23 @@ export const FOOTWEAR_TYPE_ORDER: Record<FootwearGround, readonly WalkingFootwea
 
 export type UnusableReason = "not_owned" | SetAsideReason;
 
+/** Waterproofing outcome; "not_assessed" when the ground doesn't ask for it. */
+export type WaterproofStatus = "confirmed" | "unconfirmed" | "unmet" | "not_assessed";
+
+/** Footwear qualities Layerly doesn't judge, whatever the waterproof answer. */
+export const FOOTWEAR_NOT_JUDGED = ["insulation", "grip", "overall_suitability"] as const;
+
+/** Something the outing needs that the chosen footwear doesn't resolve. */
+export type FootwearGap =
+  /** No owned, available walking footwear: this type is shown as missing. */
+  | { kind: "missing_footwear"; slug: WalkingFootwearSlug; waterproofRequired: boolean }
+  /** An owned pair is chosen, but its waterproofing isn't confirmed or is stated no. */
+  | {
+      kind: "waterproofing";
+      status: "unconfirmed" | "unmet";
+      slug: WalkingFootwearSlug;
+    };
+
 export type FootwearNeed = {
   need: "walking";
   movement: WalkingMovement;
@@ -61,10 +88,21 @@ export type FootwearNeed = {
   /** Parent-stated protection of the selected item ("unknown" when unstated). */
   protection: Pick<GarmentDetails, "waterproof" | "insulation"> | null;
   /**
-   * confirmed / unconfirmed / stated_no when waterproofing is required;
-   * not_assessed when the ground doesn't ask for it (or nothing is selected).
+   * When waterproofing is required: confirmed (stated yes), unconfirmed
+   * (unstated), or unmet (stated no, or no eligible footwear at all).
+   * not_assessed when the ground doesn't ask for it.
    */
-  waterproof: "confirmed" | "unconfirmed" | "stated_no" | "not_assessed";
+  waterproof: WaterproofStatus;
+  /**
+   * True only when a pair is chosen and its waterproofing is confirmed;
+   * false when required but unconfirmed or unmet; null when not required.
+   * Says nothing about insulation, grip or overall suitability.
+   */
+  waterproofingMet: boolean | null;
+  /** Unresolved needs: a missing garment or a protection gap. Empty when none. */
+  gaps: FootwearGap[];
+  /** Never judged here, even with a waterproof "yes". */
+  notJudged: typeof FOOTWEAR_NOT_JUDGED;
   /** Every candidate that couldn't be used, with why. */
   unusable: { slug: WalkingFootwearSlug; reason: UnusableReason }[];
   /** Explanations shown with the outfit. */
@@ -142,23 +180,30 @@ export function selectWalkingFootwear(input: {
       selected: null,
       missingSlug,
       protection: null,
-      waterproof: "not_assessed",
+      // Nothing to wear can't meet a waterproofing need.
+      waterproof: waterproofRequired ? "unmet" : "not_assessed",
+      waterproofingMet: waterproofRequired ? false : null,
+      gaps: [{ kind: "missing_footwear", slug: missingSlug, waterproofRequired }],
+      notJudged: FOOTWEAR_NOT_JUDGED,
       unusable,
       notes,
     };
   }
 
   const protection = stated(selected);
-  let waterproof: FootwearNeed["waterproof"] = "not_assessed";
+  let waterproof: WaterproofStatus = "not_assessed";
+  const gaps: FootwearGap[] = [];
   if (waterproofRequired) {
     if (protection.waterproof === "yes") waterproof = "confirmed";
     else if (protection.waterproof === "no") {
-      waterproof = "stated_no";
+      waterproof = "unmet";
+      gaps.push({ kind: "waterproofing", status: "unmet", slug: selected });
       notes.push(
-        `Your ${name(selected)} are marked not waterproof — feet may get wet on ${groundWord} ground.`,
+        `Your ${name(selected)} are marked not waterproof, so ${groundWord} ground still needs waterproof footwear — feet may get wet.`,
       );
     } else {
       waterproof = "unconfirmed";
+      gaps.push({ kind: "waterproofing", status: "unconfirmed", slug: selected });
       notes.push(
         `Your ${name(selected)} aren't confirmed as waterproof — check them before ${groundWord} ground, or add it in Wardrobe details.`,
       );
@@ -180,6 +225,9 @@ export function selectWalkingFootwear(input: {
     missingSlug: null,
     protection,
     waterproof,
+    waterproofingMet: waterproofRequired ? waterproof === "confirmed" : null,
+    gaps,
+    notJudged: FOOTWEAR_NOT_JUDGED,
     unusable,
     notes,
   };

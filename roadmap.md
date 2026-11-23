@@ -29,6 +29,8 @@
 - [x] T13 Thermal underlayers alongside everyday and outer bottoms (gated)
 - [x] T13A Bottoms comparison follows the same wool-leggings eligibility as outfit selection
 - [x] T14 Footwear selection for walking, active and mixed outdoor outings (gated)
+- [x] T14A Owned footwear with unconfirmed or not-waterproof protection stays owned while its waterproofing gap stays visible
+- [ ] Before public toddler release: footwear warmth rules, footwear in the outfit check, and footwear in Layer up (plus a browser check once movement can be chosen on Today)
 - [ ] Footwear policy (not scheduled): when footwear must be insulated, and whether stated-waterproof shoes should beat unconfirmed rain boots
 - [ ] Thermal activation (not scheduled): needs explicit "thermals needed" rules, validated thermal warmth values (current 0 is a placeholder), and Layer up thermal controls with end-to-end checks
 - [ ] T28 Live signed-in browser check of Wardrobe Details and availability on Today (needs a dedicated test account)

@@ -1,6 +1,7 @@
 // @ts-expect-error bun:test is provided by the bun test runner
 import { describe, expect, it } from "bun:test";
 import {
+  FOOTWEAR_NOT_JUDGED,
   selectWalkingFootwear,
   walkingFootwearApplies,
   WALKING_FOOTWEAR_SLUGS,
@@ -130,7 +131,7 @@ describe("selection by ground", () => {
       details: wp([["everyday_shoes", "no"]]),
     });
     expect(only.selected).toBe("everyday_shoes");
-    expect(only.waterproof).toBe("stated_no");
+    expect(only.waterproof).toBe("unmet");
     expect(only.notes.join(" ")).toContain("marked not waterproof");
   });
 
@@ -328,5 +329,199 @@ describe("recommend(): Today and assistant share this path", () => {
     const roles = needs.worn.filter((g) => g.coverage.includes("feet")).map((g) => g.role);
     expect(roles.filter((x) => x === "footwear")).toHaveLength(1);
     expect(roles).toContain("socks");
+  });
+});
+
+// T14A — an owned pair never makes an unmet or uncertain waterproofing need
+// look resolved, and protection never changes ownership.
+describe("T14A: available footwear vs satisfied protection", () => {
+  const pick = (
+    owned: Set<WardrobeSlug>,
+    details: [WardrobeSlug, GarmentDetails["waterproof"]][] = [],
+    ground: "wet" | "snow" = "wet",
+  ) => selectWalkingFootwear({ movement: "walking", ground, owned, details: wp(details) });
+
+  it("waterproof yes: requirement confirmed, no gap", () => {
+    for (const ground of ["wet", "snow"] as const) {
+      const f = pick(own("rain_boots"), [["rain_boots", "yes"]], ground);
+      expect(f.selected).toBe("rain_boots");
+      expect(f.waterproof).toBe("confirmed");
+      expect(f.waterproofingMet).toBe(true);
+      expect(f.gaps).toEqual([]);
+    }
+  });
+
+  it("waterproof unknown: owned pair kept, requirement unconfirmed, never satisfied", () => {
+    for (const ground of ["wet", "snow"] as const) {
+      const f = pick(own("rain_boots"), [], ground);
+      expect(f.selected).toBe("rain_boots");
+      expect(f.missingSlug).toBeNull();
+      expect(f.unusable.some((u) => u.slug === "rain_boots")).toBe(false);
+      expect(f.waterproof).toBe("unconfirmed");
+      expect(f.waterproofingMet).toBe(false);
+      expect(f.gaps).toEqual([{ kind: "waterproofing", status: "unconfirmed", slug: "rain_boots" }]);
+    }
+  });
+
+  it("waterproof no: owned pair kept, requirement unmet, never satisfied", () => {
+    for (const ground of ["wet", "snow"] as const) {
+      const f = pick(own("everyday_shoes"), [["everyday_shoes", "no"]], ground);
+      expect(f.selected).toBe("everyday_shoes");
+      expect(f.missingSlug).toBeNull();
+      expect(f.waterproof).toBe("unmet");
+      expect(f.waterproofingMet).toBe(false);
+      expect(f.gaps).toEqual([{ kind: "waterproofing", status: "unmet", slug: "everyday_shoes" }]);
+      expect(f.notes.join(" ")).toContain("still needs waterproof footwear");
+    }
+  });
+
+  it("competing pairs keep waterproof-first ordering: yes, then unknown, then no", () => {
+    const all = own("everyday_shoes", "rain_boots", "winter_boots");
+    expect(
+      pick(all, [
+        ["rain_boots", "no"],
+        ["winter_boots", "unknown"],
+        ["everyday_shoes", "yes"],
+      ]).selected,
+    ).toBe("everyday_shoes");
+    // Two unknowns: type order (wet: rain boots before winter boots).
+    const unknowns = pick(all, [["everyday_shoes", "no"]]);
+    expect(unknowns.selected).toBe("rain_boots");
+    expect(unknowns.waterproof).toBe("unconfirmed");
+    // All stated no: still one owned pair, by type order, with the need unmet.
+    const allNo = pick(all, [
+      ["everyday_shoes", "no"],
+      ["rain_boots", "no"],
+      ["winter_boots", "no"],
+    ]);
+    expect(allNo.selected).toBe("rain_boots");
+    expect(allNo.waterproof).toBe("unmet");
+    expect(allNo.gaps).toHaveLength(1);
+    // Snow type order with equal tiers.
+    expect(pick(all, [], "snow").selected).toBe("winter_boots");
+  });
+
+  it("no eligible pair: missing garment, waterproofing unmet, reasons kept apart", () => {
+    const w = resolveEligibleWardrobe(
+      [
+        { slug: "rain_boots", owned: true, availability: "outgrown", waterproof: "yes" },
+        { slug: "winter_boots", owned: true, availability: "temporarily_unavailable" },
+      ],
+      { availabilityFilter: true },
+    );
+    const f = selectWalkingFootwear({
+      movement: "walking",
+      ground: "wet",
+      owned: w.eligible,
+      setAside: w.setAside,
+      details: w.details,
+    });
+    expect(f.selected).toBeNull();
+    expect(f.missingSlug).toBe("rain_boots");
+    expect(f.waterproof).toBe("unmet");
+    expect(f.waterproofingMet).toBe(false);
+    // A set-aside pair's stated "yes" never counts.
+    expect(f.protection).toBeNull();
+    expect(f.gaps).toEqual([{ kind: "missing_footwear", slug: "rain_boots", waterproofRequired: true }]);
+    expect(f.unusable).toEqual([
+      { slug: "rain_boots", reason: "outgrown" },
+      { slug: "winter_boots", reason: "temporarily_unavailable" },
+      { slug: "everyday_shoes", reason: "not_owned" },
+    ]);
+  });
+
+  it("restoring a pair to Available brings it back with its saved protection", () => {
+    const rows = (availability: string): WardrobeItemRow[] => [
+      { slug: "rain_boots", owned: true, availability, waterproof: "yes" },
+      { slug: "everyday_shoes", owned: true, waterproof: "unknown" },
+    ];
+    const at = (availability: string) => {
+      const w = resolveEligibleWardrobe(rows(availability), { availabilityFilter: true });
+      return selectWalkingFootwear({
+        movement: "walking",
+        ground: "wet",
+        owned: w.eligible,
+        setAside: w.setAside,
+        details: w.details,
+      });
+    };
+    const away = at("temporarily_unavailable");
+    expect(away.selected).toBe("everyday_shoes");
+    expect(away.waterproof).toBe("unconfirmed");
+    expect(away.unusable).toContainEqual({ slug: "rain_boots", reason: "temporarily_unavailable" });
+    const back = at("available");
+    expect(back.selected).toBe("rain_boots");
+    expect(back.waterproof).toBe("confirmed");
+    expect(back.gaps).toEqual([]);
+    expect(back.unusable.some((u) => u.slug === "rain_boots")).toBe(false);
+  });
+
+  it("a waterproof yes never claims insulation, grip or overall suitability", () => {
+    const f = pick(own("winter_boots"), [["winter_boots", "yes"]], "snow");
+    expect(f.waterproof).toBe("confirmed");
+    expect(f.protection?.insulation).toBe("unknown");
+    expect(f.notJudged).toEqual(FOOTWEAR_NOT_JUDGED);
+    expect([...f.notJudged]).toEqual(["insulation", "grip", "overall_suitability"]);
+    expect(f.notes.join(" ")).toContain("doesn't yet judge how warm");
+  });
+
+  it("dry and unstated ground keep the stable fallback order with no protection gap", () => {
+    const all = own("everyday_shoes", "rain_boots", "winter_boots");
+    const noShoes = own("rain_boots", "winter_boots");
+    for (const ground of ["dry", undefined] as const) {
+      const f = selectWalkingFootwear({ movement: "walking", ground, owned: all });
+      expect(f.selected).toBe("everyday_shoes");
+      expect(f.waterproofingMet).toBeNull();
+      expect(f.gaps).toEqual([]);
+      expect(selectWalkingFootwear({ movement: "walking", ground, owned: noShoes }).selected).toBe(
+        "winter_boots",
+      );
+    }
+  });
+
+  describe("shared recommendation output", () => {
+    const on = toddlerSupportEnabled();
+    const base = own("long_sleeve_bodysuit", "pants", "sweater", "cotton_socks", "thin_hat");
+    const run = (
+      owned: Set<WardrobeSlug>,
+      details: [WardrobeSlug, GarmentDetails["waterproof"]][] = [],
+    ) =>
+      recommend({
+        feelsLikeC: 10,
+        tempPref: 3,
+        owned,
+        ageMonths: 24,
+        garmentDetails: wp(details),
+        ...outingEngineFields(outing({ movement: "walking", ground: "wet" })),
+      } as RecommendInput);
+
+    it("an owned fallback stays owned, listed once, with its protection gap visible", () => {
+      const r = run(new Set([...base, "everyday_shoes"]), [["everyday_shoes", "no"]]);
+      if (!on) return expect(r.footwear).toBeUndefined();
+      expect(footwearIn(r.accessories.map((a) => a.slug))).toEqual(["everyday_shoes"]);
+      expect(r.missing.filter((s) => FOOT.has(s))).toEqual([]);
+      expect(r.footwear?.waterproofingMet).toBe(false);
+      expect(r.footwear?.gaps).toEqual([
+        { kind: "waterproofing", status: "unmet", slug: "everyday_shoes" },
+      ]);
+      expect(r.notes.join(" ")).toContain("marked not waterproof");
+    });
+
+    it("an unknown fallback stays owned with an unconfirmed gap", () => {
+      const r = run(new Set([...base, "rain_boots"]));
+      if (!on) return expect(r.footwear).toBeUndefined();
+      expect(footwearIn(r.accessories.map((a) => a.slug))).toEqual(["rain_boots"]);
+      expect(r.missing.filter((s) => FOOT.has(s))).toEqual([]);
+      expect(r.footwear?.waterproof).toBe("unconfirmed");
+      expect(r.footwear?.waterproofingMet).toBe(false);
+    });
+
+    it("no eligible pair: one missing footwear item, and the need stays unmet", () => {
+      const r = run(base);
+      if (!on) return expect(r.footwear).toBeUndefined();
+      expect(footwearIn(r.accessories.map((a) => a.slug))).toEqual(["rain_boots"]);
+      expect(r.missing.filter((s) => FOOT.has(s))).toEqual(["rain_boots"]);
+      expect(r.footwear?.waterproofingMet).toBe(false);
+    });
   });
 });
