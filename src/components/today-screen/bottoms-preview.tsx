@@ -3,6 +3,7 @@ import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import type { Recommendation } from "@/lib/recommend";
 import type { OutfitVerdict, SlotAdjustment, SlotKey } from "@/lib/recommend/warmth";
 import { compareBottoms } from "@/lib/recommend/compare-bottoms";
+import type { EverydayBottomRules } from "@/lib/recommend/thermal-layers";
 import { lightHaptic, selectionHaptic } from "@/lib/haptics";
 
 const SLOT_FALLBACK: Record<SlotKey, string> = {
@@ -46,15 +47,18 @@ export function BottomsPreview({
   appliedBottom = null,
   onApply,
   onReset,
+  bottoms = null,
 }: {
   rec: Recommendation;
   owned: Set<WardrobeSlug>;
+  /** Everyday-bottoms rules, built the same way as for today's outfit. */
+  bottoms?: EverydayBottomRules | null;
   /** Bottom the parent already applied to today's card, if any. */
   appliedBottom?: WardrobeSlug | null;
   onApply?: (slug: WardrobeSlug) => void;
   onReset?: () => void;
 }) {
-  const { options } = useMemo(() => compareBottoms(rec, owned), [rec, owned]);
+  const { options } = useMemo(() => compareBottoms(rec, owned, bottoms), [rec, owned, bottoms]);
   const recommended = options.find((o) => o.isRecommended);
   const [selected, setSelected] = useState<WardrobeSlug | null>(null);
 

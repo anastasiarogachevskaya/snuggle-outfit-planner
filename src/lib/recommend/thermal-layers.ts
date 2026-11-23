@@ -14,7 +14,17 @@
  *
  * Nothing here reads insulation or waterproofing, or the catalogue's warmth
  * tags; rain/snow protection selection is a later ticket.
+ *
+ * Everyday-bottoms eligibility (T13A) is shared with the bottoms comparison
+ * through `everydayBottomRules` / `everydayBottomFilter`.
+ *
+ * Before thermal activation (any rule setting `LayerNeed.thermal`):
+ *   1. explicit rules defining when thermals are needed;
+ *   2. supported warmth handling — thermal garments currently count as 0 clo,
+ *      an unvalidated placeholder, not a measured value;
+ *   3. Layer up controls and end-to-end checks for actual thermal outfits.
  */
+import { toddlerOutfitRulesApply } from "../feature-flags";
 import type { GarmentDetails } from "../garment-details";
 import { LABEL_BY_SLUG, type WardrobeSlug } from "../wardrobe-catalog";
 
@@ -58,4 +68,45 @@ export function allowedAsEverydayBottom(
   if (use === "thermal_base") return false;
   if (use === "unknown" && ctx.thermalLower !== null) return false;
   return true;
+}
+
+/**
+ * Everyday-bottoms eligibility shared by outfit selection (`mapWardrobe`) and
+ * the bottoms comparison (`compareBottoms` / `applyBottomChoice`), or null
+ * when the existing behaviour applies (switch off, infant, unknown age, sleep).
+ * The gate is the same one the everyday-top rules use.
+ */
+export type EverydayBottomRules = { details: GarmentDetailsMap | null };
+
+export function everydayBottomRules(
+  input: {
+    ageMonths?: number | null;
+    sleeping?: boolean;
+    details?: GarmentDetailsMap | null;
+  },
+  enabled?: boolean,
+): EverydayBottomRules | null {
+  if (!toddlerOutfitRulesApply(input, enabled)) return null;
+  return { details: input.details ?? null };
+}
+
+/**
+ * The garment filter for the everyday-bottoms slot, or undefined when no
+ * toddler rule applies (every garment keeps its existing eligibility).
+ */
+export function everydayBottomFilter(
+  rules: EverydayBottomRules | null,
+  thermalLower: WardrobeSlug | null,
+): ((slug: WardrobeSlug) => boolean) | undefined {
+  if (!rules) return undefined;
+  return (slug) => allowedAsEverydayBottom(slug, { details: rules.details, thermalLower });
+}
+
+/** The lower-body thermal underlayer already in an outfit, if any. */
+export function thermalLowerIn(
+  layers: readonly { slot: string; slug: string }[],
+): WardrobeSlug | null {
+  const found = layers.find((l) => l.slot === "thermal" && l.slug !== "thermal_top");
+  // The thermal slot only ever holds wardrobe garments (never "diaper_only").
+  return found ? (found.slug as WardrobeSlug) : null;
 }

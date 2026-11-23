@@ -27,6 +27,8 @@
 - [x] T11 Shared clothing-needs model (roles, body coverage, separate transport) with exact compatibility adapters; outfits unchanged
 - [x] T12 Toddler everyday tops follow clothing style and easy toilet access (gated)
 - [x] T13 Thermal underlayers alongside everyday and outer bottoms (gated)
+- [x] T13A Bottoms comparison follows the same wool-leggings eligibility as outfit selection
+- [ ] Thermal activation (not scheduled): needs explicit "thermals needed" rules, validated thermal warmth values (current 0 is a placeholder), and Layer up thermal controls with end-to-end checks
 - [ ] T28 Live signed-in browser check of Wardrobe Details and availability on Today (needs a dedicated test account)
 
 ## Open (needs the user)

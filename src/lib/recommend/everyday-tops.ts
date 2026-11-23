@@ -9,7 +9,7 @@
  * rules and age limits are unchanged, and nothing here reads nappy use or
  * writes a preference. Sleepwear and diaper-only outfits are left alone.
  */
-import { toddlerRulesApply } from "../feature-flags";
+import { toddlerOutfitRulesApply } from "../feature-flags";
 import type { ChildPreferences } from "../child-preferences";
 import type { WardrobeSlug } from "../wardrobe-catalog";
 import type { BaseKind } from "./layers";
@@ -51,12 +51,7 @@ export function everydayTopRules(
   },
   enabled?: boolean,
 ): EverydayTopRules | null {
-  if (input.sleeping) return null;
-  const applies =
-    enabled === undefined
-      ? toddlerRulesApply(input.ageMonths)
-      : toddlerRulesApply(input.ageMonths, enabled);
-  if (!applies) return null;
+  if (!toddlerOutfitRulesApply(input, enabled)) return null;
   const style = input.preferences?.clothing_style;
   return {
     clothingStyle: style === "tops" || style === "bodysuits" ? style : "both",

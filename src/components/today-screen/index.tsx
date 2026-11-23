@@ -22,6 +22,7 @@ import type { SetAsideReason } from "@/lib/wardrobe-eligibility";
 import type { ChildPreferences } from "@/lib/child-preferences";
 import type { GarmentDetails } from "@/lib/garment-details";
 import { everydayTopRules } from "@/lib/recommend/everyday-tops";
+import { everydayBottomRules } from "@/lib/recommend/thermal-layers";
 
 /** Fires a selection haptic only when the value actually changes. */
 function change<T>(current: T, next: T, set: (v: T) => void) {
@@ -207,10 +208,18 @@ export function TodayScreen({
     setAppliedBottom(null);
   }, [situation, homeActivity, transportMode, duration, roomTemp]);
 
+  // Same age, sleep state and garment details recommend() was given, so a
+  // compared bottom follows the outfit's own everyday-bottoms eligibility.
+  const sleeping = situation === "home" && homeActivity === "sleeping";
+  const bottomRules = useMemo(
+    () => everydayBottomRules({ ageMonths, sleeping, details }),
+    [ageMonths, sleeping, details],
+  );
+
   const displayedRec = useMemo(() => {
     if (!rec || !appliedBottom) return rec;
-    return applyBottomChoice(rec, appliedBottom, owned);
-  }, [rec, appliedBottom, owned]);
+    return applyBottomChoice(rec, appliedBottom, owned, bottomRules);
+  }, [rec, appliedBottom, owned, bottomRules]);
 
   const feedbackCtx: FeedbackContext | null =
     weather && rec

@@ -45,3 +45,16 @@ export function toddlerRulesApply(
     ageMonths <= TODDLER_MAX_MONTHS
   );
 }
+
+/**
+ * True when the awake toddler outfit rules apply: everyday tops (T12) and the
+ * separate lower-body roles / wool-leggings answer (T13). Sleepwear keeps the
+ * existing behaviour until its own ticket. One gate so outfit selection and
+ * the bottoms comparison can never disagree.
+ */
+export function toddlerOutfitRulesApply(
+  input: { ageMonths?: number | null; sleeping?: boolean },
+  enabled = toddlerSupportEnabled(),
+): boolean {
+  return !input.sleeping && toddlerRulesApply(input.ageMonths, enabled);
+}

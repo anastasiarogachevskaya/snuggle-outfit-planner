@@ -15,6 +15,7 @@ import {
   type OutfitVerdict,
   type SlotAdjustment,
 } from "./warmth";
+import { everydayBottomFilter, thermalLowerIn, type EverydayBottomRules } from "./thermal-layers";
 
 /** The three everyday bottoms parents compare, lightest first. */
 export const COMPARABLE_BOTTOMS: WardrobeSlug[] = ["leggings", "pants", "wool_leggings"];
@@ -107,12 +108,24 @@ function compensate(
  */
 export function compareBottoms(
   rec: Recommendation,
+  /** The eligible wardrobe (wardrobe-eligibility.ts): owned and available. */
   owned: Set<WardrobeSlug>,
+  /**
+   * Toddler everyday-bottoms rules (`everydayBottomRules`, built from the
+   * same age, sleep state and garment details given to recommend()), or null
+   * for the existing behaviour. Garments that may not be worn as everyday
+   * bottoms here — wool leggings stated as a thermal underlayer — are not
+   * offered, exactly as outfit selection never picks them.
+   */
+  bottoms: EverydayBottomRules | null = null,
 ): { ideal: ActualOutfit; options: BottomOption[] } {
   const ideal = idealOutfitFrom(rec);
   if (ideal.bottom === "none") return { ideal, options: [] };
 
-  const options = COMPARABLE_BOTTOMS.map((slug) => {
+  const allowed = everydayBottomFilter(bottoms, thermalLowerIn(rec.babyClothing));
+  const offered = allowed ? COMPARABLE_BOTTOMS.filter(allowed) : COMPARABLE_BOTTOMS;
+
+  const options = offered.map((slug) => {
     const candidate = withBottom(ideal, slug);
     const { verdict, diff, adjustments } = compareOutfits(ideal, candidate);
     // compareOutfits only flags empty-vs-filled slots, and a bottom swap never
@@ -157,8 +170,10 @@ export function applyBottomChoice(
   rec: Recommendation,
   slug: WardrobeSlug,
   owned: Set<WardrobeSlug>,
+  /** Same rules as `compareBottoms`; a bottom it doesn't offer is ignored. */
+  bottoms: EverydayBottomRules | null = null,
 ): Recommendation {
-  const { options } = compareBottoms(rec, owned);
+  const { options } = compareBottoms(rec, owned, bottoms);
   const option = options.find((o) => o.slug === slug);
   if (!option || option.isRecommended) return rec;
 

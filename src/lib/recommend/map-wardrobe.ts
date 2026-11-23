@@ -19,7 +19,7 @@ import {
   type BaseOption,
   type EverydayTopRules,
 } from "./everyday-tops";
-import { allowedAsEverydayBottom, thermalEntry, type GarmentDetailsMap } from "./thermal-layers";
+import { everydayBottomFilter, thermalEntry, type GarmentDetailsMap } from "./thermal-layers";
 
 // Ordered fallback lists — first match in `owned` wins.
 const BASE_MAP: Record<BaseKind, { slugs: WardrobeSlug[]; label: string } | null> = {
@@ -218,10 +218,11 @@ export function mapWardrobe(
     toddler && layers.thermal?.upper ? pickSlug(thermalEntry("upper", details), owned) : null;
   const thermalLower =
     toddler && layers.thermal?.lower ? pickSlug(thermalEntry("lower", details), owned) : null;
-  const bottomAllowed = toddler
-    ? (s: WardrobeSlug) =>
-        allowedAsEverydayBottom(s, { details, thermalLower: thermalLower?.slug ?? null })
-    : undefined;
+  // Same everyday-bottoms filter the bottoms comparison uses.
+  const bottomAllowed = everydayBottomFilter(
+    toddler ? { details } : null,
+    thermalLower?.slug ?? null,
+  );
   if (thermalUpper) addLayer("thermal", thermalUpper);
   if (thermalLower) addLayer("thermal", thermalLower);
 
