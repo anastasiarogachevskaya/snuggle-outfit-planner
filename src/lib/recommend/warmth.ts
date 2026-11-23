@@ -216,8 +216,10 @@ export function idealOutfitFrom(rec: Recommendation): ActualOutfit {
     ...EMPTY_OUTFIT,
     transportExtras: rec.transportExtras.map((e) => e.slug),
   };
-  // Rain shells added for wearable protection (rain-protection.ts) carry no
-  // validated warmth, so the warmth comparison ignores them.
+  // Rain shells added for wearable protection (rain-protection.ts) have an
+  // unknown thermal effect — not a confirmed zero — so they're left out of
+  // this slotted shape rather than scored; `unassessedWarmth()` names them so
+  // a warmth verdict can say it didn't assess them.
   const rainAdded = new Set<string>(rec.rainProtection?.added ?? []);
   for (const l of rec.babyClothing) {
     if (l.slug === "diaper_only" || rainAdded.has(l.slug)) continue;
@@ -243,6 +245,17 @@ export function idealOutfitFrom(rec: Recommendation): ActualOutfit {
     else if (a.slug === "mittens") out.mittens = true;
   }
   return out;
+}
+
+/**
+ * Garments in a recommendation whose warmth hasn't been assessed (added rain
+ * shells). Their effect is unknown, so they are neither scored nor treated
+ * as adding zero warmth.
+ */
+export function unassessedWarmth(rec: Recommendation): WardrobeSlug[] {
+  return (rec.rainProtection?.garments ?? [])
+    .filter((g) => g.warmth === "unknown")
+    .map((g) => g.slug);
 }
 
 /** Every slot a parent can set in the actual-outfit picker. */

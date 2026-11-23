@@ -15,10 +15,15 @@
  *
  * How it is met:
  *   - One full-body shell (rain overall, …) or separate upper and lower
- *     shells (waterproof jacket + rain pants, …). Outerwear already in the
- *     outfit (winter overall, jacket, rain / snow pants) counts for the areas
- *     it covers, so no redundant shell is added over a garment that already
- *     meets the need.
+ *     shells (waterproof jacket + rain pants, …), worn over everyday
+ *     clothing and mid layers (sweater, fleece…).
+ *   - Warmth outerwear the existing rules put in the outfit (winter overall,
+ *     jacket, rain / snow pants, or any outer garment the parent stated as
+ *     insulated) is never layered over (T15A): how a shell fits and feels
+ *     over it hasn't been assessed. It stays as the outfit's warm layer and
+ *     covers its own areas; stated waterproof confirms them, otherwise they
+ *     stay unconfirmed/unmet (or missing, when the outfit lacks it). No shell
+ *     overlapping those areas is added; open areas may still get a shell.
  *   - Shells are only *added* over the outfit; no insulating layer, everyday
  *     bottoms or other outerwear is ever removed or swapped.
  *   - Each garment is used once. Only owned, available garments are used.
@@ -33,9 +38,10 @@
  *   - Transport covers (stroller rain cover, babywearing cover) are never
  *     worn protection and are left exactly as the transport rules chose them.
  *
- * Not judged here: shell warmth (no warmth values are assumed or invented,
- * and the rest of the outfit isn't adjusted for a shell), grip or overall
- * suitability. Footwear stays with footwear.ts.
+ * Not judged here: shell warmth — an added shell's thermal effect is
+ * "unknown" (never a confirmed zero), so no warmth values are assumed and the
+ * rest of the outfit isn't adjusted for it — grip or overall suitability.
+ * Footwear stays with footwear.ts.
  */
 import type { GarmentDetails } from "../garment-details";
 import { wornProfile } from "../clothing-needs";
@@ -62,6 +68,14 @@ export const RAIN_SHELL_ORDER: readonly WardrobeSlug[] = [
   "light_overall",
   "snow_pants",
 ];
+/**
+ * Outer garments the existing warmth rules place in the outfit for warmth
+ * (map-wardrobe.ts: winter overall, the jacket that stands in for a sweater,
+ * jacket + rain / snow pants). This is the garment's role in the outfit, not
+ * a claim about its insulation detail, which stays parent-stated.
+ */
+export const WARMTH_OUTERWEAR: readonly WardrobeSlug[] = ["winter_overall", "jacket", "snow_pants"];
+
 /** What the outfit needs when nothing owned covers the area. */
 const MISSING_FOR: Record<"both" | RainArea, WardrobeSlug> = {
   both: "rain_overall",
@@ -99,6 +113,22 @@ export type RainGarment = {
   owned: boolean;
   /** Parent-stated only ("unknown" when unstated); null for a missing garment. */
   protection: Pick<GarmentDetails, "waterproof" | "insulation"> | null;
+  /**
+   * "counted": already part of the outfit's warmth. "unknown": an added
+   * shell whose thermal effect hasn't been assessed — never a confirmed zero.
+   */
+  warmth: "counted" | "unknown";
+};
+
+/** Warmth outerwear in the outfit that no shell was layered over (T15A). */
+export type NotLayeredOver = {
+  slug: WardrobeSlug;
+  /** Areas it covers, which therefore get no overlapping shell. */
+  areas: RainArea[];
+  /** False when the outfit needs it but the parent doesn't have it. */
+  owned: boolean;
+  /** Owned, available shells that would overlap it and weren't added. */
+  skipped: WardrobeSlug[];
 };
 
 export type RainProtectionNeed = {
@@ -116,6 +146,8 @@ export type RainProtectionNeed = {
   areas: { area: RainArea; status: RainAreaStatus; slug: WardrobeSlug | null }[];
   /** Slugs this rule placed in `babyClothing` (owned or missing), outer slot. */
   added: WardrobeSlug[];
+  /** Warmth outerwear left without a shell over it, because compatibility is unassessed. */
+  notLayeredOver: NotLayeredOver[];
   /** True only when every required area is confirmed; null when none required. */
   waterproofingMet: boolean | null;
   gaps: RainGap[];
@@ -192,6 +224,7 @@ export function selectRainProtection(input: {
       garments: [],
       areas: [],
       added: [],
+      notLayeredOver: [],
       waterproofingMet: null,
       gaps: [],
       unusable: [],
@@ -209,26 +242,46 @@ export function selectRainProtection(input: {
 
   // Candidates: outerwear already worn, owned shells to add, and a missing
   // placeholder per coverage shape.
+  const isWarmthOuter = (slug: WardrobeSlug) =>
+    WARMTH_OUTERWEAR.includes(slug) ||
+    (["light", "insulated"] as string[]).includes(stated(slug).insulation);
   const pieces: Piece[] = [];
+  const warmthOuter: { slug: WardrobeSlug; coverage: RainArea[]; owned: boolean }[] = [];
   for (const l of input.outfit) {
     if (l.slot !== "outer" || l.slug === "diaper_only") continue;
-    if (missingInOutfit.has(l.slug) || !input.owned.has(l.slug)) continue;
     const coverage = rainCoverage(l.slug);
+    const owned = !missingInOutfit.has(l.slug) && input.owned.has(l.slug);
+    const warm = isWarmthOuter(l.slug);
+    // Warmth outerwear holds every area it covers, even ones this outing
+    // doesn't need covered: a rain overall over a jacket still stacks.
+    if (warm && coverage.length) warmthOuter.push({ slug: l.slug, coverage, owned });
     if (!touches(coverage)) continue;
-    pieces.push({
+    // A missing ordinary outer garment never counts; a missing warmth layer
+    // still holds its areas, because the outfit still needs it there.
+    if (!owned && !warm) continue;
+    const piece: Piece = {
       slug: l.slug,
       coverage,
       source: "outfit",
-      owned: true,
-      status: statusOf(stated(l.slug).waterproof),
+      owned,
+      status: owned ? statusOf(stated(l.slug).waterproof) : "missing",
       order: -1,
-    });
+    };
+    pieces.push(piece);
   }
+  // Areas held by warmth outerwear get no overlapping shell (T15A).
+  const held = new Set<RainArea>(warmthOuter.flatMap((p) => p.coverage));
+  const overlapsHeld = (cov: readonly RainArea[]) => cov.some((a) => held.has(a));
+  const skipped: WardrobeSlug[] = [];
   const unusable: RainProtectionNeed["unusable"] = [];
   RAIN_SHELL_ORDER.forEach((slug, order) => {
     if (inOutfit.has(slug)) return;
     const coverage = rainCoverage(slug);
     if (!touches(coverage)) return;
+    if (overlapsHeld(coverage)) {
+      if (input.owned.has(slug)) skipped.push(slug);
+      return;
+    }
     if (input.owned.has(slug))
       pieces.push({
         slug,
@@ -246,6 +299,7 @@ export function selectRainProtection(input: {
       : [MISSING_FOR.lower_body];
   for (const slug of placeholders) {
     if (input.owned.has(slug) || inOutfit.has(slug)) continue;
+    if (overlapsHeld(rainCoverage(slug))) continue;
     pieces.push({
       slug,
       coverage: rainCoverage(slug),
@@ -311,7 +365,16 @@ export function selectRainProtection(input: {
     source: p.source,
     owned: p.owned,
     protection: p.owned ? stated(p.slug) : null,
+    warmth: p.source === "outfit" ? "counted" : "unknown",
   }));
+  const notLayeredOver: NotLayeredOver[] = warmthOuter
+    .map((p) => ({
+      slug: p.slug,
+      areas: p.coverage,
+      owned: p.owned,
+      skipped: skipped.filter((sk) => rainCoverage(sk).some((a) => p.coverage.includes(a))),
+    }))
+    .filter((n) => touches(n.areas) || n.skipped.length > 0);
   const added = plan.filter((p) => p.source === "added").map((p) => p.slug);
 
   const why = reasons.includes("rain") ? "the rain" : "wet ground";
@@ -320,6 +383,15 @@ export function selectRainProtection(input: {
   for (const g of garments) {
     const p = plan.find((x) => x.slug === g.slug)!;
     if (p.status === "confirmed") continue;
+    if (p.status === "missing" && p.source === "outfit") {
+      // The outfit's own warm layer is missing: it's already listed as
+      // missing clothing, and no shell is put in its place.
+      gaps.push({ kind: "missing_garment", slug: g.slug, areas: g.covers });
+      notes.push(
+        `This outing needs waterproof cover for the ${areaText(g.covers)}, but the ${name(g.slug)} the outfit needs there is missing, so its waterproofing can't be checked.`,
+      );
+      continue;
+    }
     if (p.status === "missing") {
       gaps.push({ kind: "missing_garment", slug: g.slug, areas: g.covers });
       notes.push(
@@ -347,9 +419,17 @@ export function selectRainProtection(input: {
       );
     }
   }
+  for (const n of notLayeredOver) {
+    const st = plan.find((p) => p.slug === n.slug)?.status;
+    if (!touches(n.areas) || st === "confirmed") continue;
+    const verb = plural(n.slug) ? "stay" : "stays";
+    notes.push(
+      `Layerly doesn't put rain gear over ${plural(n.slug) ? "" : "a "}${name(n.slug)} yet — how they fit and feel together hasn't been checked — so ${plural(n.slug) ? "they" : "it"} ${verb} as the warm layer for the ${areaText(n.areas.filter((a) => required.includes(a)))}.`,
+    );
+  }
   if (plan.some((p) => p.source === "added" && p.owned))
     notes.push(
-      "Rain layers go over the outfit. Layerly hasn't adjusted the other layers for them, so check your child isn't getting too warm underneath.",
+      "Rain layers go over the outfit. Layerly doesn't know how much warmth they add, so it hasn't adjusted the other layers — check your child isn't getting too warm or cold underneath.",
     );
   if (input.transportExtras?.includes("rain_cover"))
     notes.push(
@@ -361,6 +441,7 @@ export function selectRainProtection(input: {
     garments,
     areas: areas.map(({ area, status, slug }) => ({ area, status, slug })),
     added,
+    notLayeredOver,
     waterproofingMet: areas.every((a) => a.status === "confirmed"),
     gaps,
     unusable,

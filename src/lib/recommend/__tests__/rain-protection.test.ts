@@ -7,7 +7,7 @@ import { normalizeOutingContext, outingEngineFields, type OutingInput } from "..
 import { clothingNeedsFromRecommendation, withClothingNeeds } from "../../clothing-needs";
 import type { GarmentDetails } from "../../garment-details";
 import { resolveEligibleWardrobe, type WardrobeItemRow } from "../../wardrobe-eligibility";
-import { idealOutfitFrom } from "../warmth";
+import { idealOutfitFrom, unassessedWarmth } from "../warmth";
 import type { WardrobeSlug } from "../../wardrobe-catalog";
 
 const own = (...s: WardrobeSlug[]) => new Set<WardrobeSlug>(s);
@@ -254,36 +254,16 @@ describe("existing outerwear and transport covers", () => {
     expect(r.waterproofingMet).toBe(true);
   });
 
-  it("an unconfirmed winter overall stays; a confirmed shell goes over it", () => {
+  it("an ordinary outer garment the outfit lacks never counts as protection", () => {
     const r = sel({
       isRaining: true,
-      outfit: outer("winter_overall"),
-      owned: own("winter_overall", "rain_overall"),
-      details: wp([["rain_overall", "yes"]]),
-    });
-    expect(r.added).toEqual(["rain_overall"]);
-    expect(r.waterproofingMet).toBe(true);
-  });
-
-  it("an unconfirmed outfit garment isn't stacked with an equally unconfirmed shell", () => {
-    const r = sel({
-      isRaining: true,
-      outfit: outer("winter_overall"),
-      owned: own("winter_overall", "rain_overall"),
-    });
-    expect(r.added).toEqual([]);
-    expect(r.gaps[0]).toMatchObject({ slug: "winter_overall", status: "unconfirmed" });
-  });
-
-  it("a missing outfit garment never counts as protection", () => {
-    const r = sel({
-      isRaining: true,
-      outfit: outer("winter_overall"),
-      outfitMissing: ["winter_overall"],
+      outfit: outer("light_overall"),
+      outfitMissing: ["light_overall"],
       owned: own("rain_overall"),
       details: wp([["rain_overall", "yes"]]),
     });
     expect(r.added).toEqual(["rain_overall"]);
+    expect(r.waterproofingMet).toBe(true);
   });
 
   it("a stroller rain cover never satisfies worn protection", () => {
@@ -300,6 +280,209 @@ describe("existing outerwear and transport covers", () => {
 
   it("states what it doesn't judge", () => {
     expect(sel({ isRaining: true }).notJudged).toEqual(RAIN_NOT_JUDGED);
+  });
+});
+
+describe("T15A: no shell stacked over warmth outerwear", () => {
+  const insul = (entries: [WardrobeSlug, Partial<GarmentDetails>][]) =>
+    new Map<WardrobeSlug, Partial<GarmentDetails>>(entries);
+  const everyday: Layer[] = [
+    { slot: "base", slug: "long_sleeve_bodysuit", label: "" },
+    { slot: "bottom", slug: "pants", label: "" },
+  ];
+
+  it("unconfirmed winter overall: kept, no rain overall over it, waterproofing unresolved", () => {
+    const r = sel({
+      isRaining: true,
+      outfit: [...everyday, ...outer("winter_overall")],
+      owned: own("winter_overall", "rain_overall", "pants", "long_sleeve_bodysuit"),
+      details: wp([["rain_overall", "yes"]]),
+    });
+    expect(r.added).toEqual([]);
+    expect(r.garments).toEqual([
+      expect.objectContaining({ slug: "winter_overall", source: "outfit", owned: true }),
+    ]);
+    expect(statuses(r)).toEqual({ upper_body: "unconfirmed", lower_body: "unconfirmed" });
+    expect(r.waterproofingMet).toBe(false);
+    expect(r.gaps).toEqual([
+      {
+        kind: "waterproofing",
+        status: "unconfirmed",
+        slug: "winter_overall",
+        areas: ["upper_body", "lower_body"],
+      },
+    ]);
+    expect(r.notLayeredOver).toEqual([
+      {
+        slug: "winter_overall",
+        areas: ["upper_body", "lower_body"],
+        owned: true,
+        skipped: ["rain_overall"],
+      },
+    ]);
+    expect(r.notes.join(" ")).toContain("doesn't put rain gear over a winter overall");
+  });
+
+  it("winter overall marked not waterproof: no jacket or rain pants stacked, need stays unmet", () => {
+    const r = sel({
+      isRaining: true,
+      outfit: outer("winter_overall"),
+      owned: own("winter_overall", "waterproof_jacket", "rain_pants"),
+      details: wp([
+        ["winter_overall", "no"],
+        ["waterproof_jacket", "yes"],
+        ["rain_pants", "yes"],
+      ]),
+    });
+    expect(r.added).toEqual([]);
+    expect(statuses(r)).toEqual({ upper_body: "unmet", lower_body: "unmet" });
+    expect(r.gaps[0]).toMatchObject({
+      kind: "waterproofing",
+      status: "unmet",
+      slug: "winter_overall",
+    });
+    expect(r.notLayeredOver[0]?.skipped).toEqual(["waterproof_jacket", "rain_pants"]);
+  });
+
+  it("wet ground only: no rain pants over an unconfirmed winter overall", () => {
+    const r = sel({
+      ground: "wet",
+      isRaining: false,
+      outfit: outer("winter_overall"),
+      owned: own("winter_overall", "rain_pants"),
+      details: wp([["rain_pants", "yes"]]),
+    });
+    expect(r.added).toEqual([]);
+    expect(statuses(r)).toEqual({ lower_body: "unconfirmed" });
+    expect(r.waterproofingMet).toBe(false);
+  });
+
+  it("winter overall marked waterproof satisfies the areas it covers, with no stacking note", () => {
+    const r = sel({
+      isRaining: true,
+      outfit: outer("winter_overall"),
+      owned: own("winter_overall", "rain_overall"),
+      details: wp([["winter_overall", "yes"]]),
+    });
+    expect(r.added).toEqual([]);
+    expect(r.waterproofingMet).toBe(true);
+    expect(r.gaps).toEqual([]);
+    expect(r.notes.join(" ")).not.toContain("doesn't put rain gear over");
+  });
+
+  it("jacket on the upper body: rain pants still go over everyday bottoms, never a rain overall", () => {
+    const r = sel({
+      isRaining: true,
+      outfit: [...everyday, ...outer("jacket")],
+      owned: own("jacket", "rain_overall", "rain_pants"),
+      details: wp([
+        ["jacket", "yes"],
+        ["rain_overall", "yes"],
+        ["rain_pants", "yes"],
+      ]),
+    });
+    expect(r.added).toEqual(["rain_pants"]);
+    expect(r.areas).toEqual([
+      { area: "upper_body", status: "confirmed", slug: "jacket" },
+      { area: "lower_body", status: "confirmed", slug: "rain_pants" },
+    ]);
+    expect(r.waterproofingMet).toBe(true);
+    expect(r.notLayeredOver).toEqual([
+      { slug: "jacket", areas: ["upper_body"], owned: true, skipped: ["rain_overall"] },
+    ]);
+  });
+
+  it("jacket and only a rain overall: the overall isn't stacked; rain pants are shown as missing", () => {
+    for (const ground of ["wet", undefined] as const) {
+      const r = sel({
+        isRaining: ground ? false : true,
+        ground,
+        outfit: [...everyday, ...outer("jacket")],
+        owned: own("jacket", "rain_overall"),
+        details: wp([["rain_overall", "yes"]]),
+      });
+      expect(r.added).toEqual(["rain_pants"]);
+      expect(r.garments.find((g) => g.slug === "rain_pants")?.owned).toBe(false);
+      expect(r.added).not.toContain("rain_overall");
+      expect(r.notLayeredOver[0]).toMatchObject({ slug: "jacket", skipped: ["rain_overall"] });
+    }
+  });
+
+  it("jacket + rain / snow pants: nothing stacked, neither is assumed waterproof or insulated", () => {
+    const r = sel({
+      isRaining: true,
+      outfit: outer("jacket", "snow_pants"),
+      owned: own("jacket", "snow_pants", "rain_overall", "waterproof_jacket", "rain_pants"),
+      details: wp([
+        ["rain_overall", "yes"],
+        ["waterproof_jacket", "yes"],
+        ["rain_pants", "yes"],
+      ]),
+    });
+    expect(r.added).toEqual([]);
+    expect(statuses(r)).toEqual({ upper_body: "unconfirmed", lower_body: "unconfirmed" });
+    expect(r.garments.find((g) => g.slug === "snow_pants")?.protection).toEqual({
+      waterproof: "unknown",
+      insulation: "unknown",
+    });
+  });
+
+  it("a winter overall the outfit needs but the parent lacks: no shell in its place", () => {
+    const r = sel({
+      isRaining: true,
+      outfit: outer("winter_overall"),
+      outfitMissing: ["winter_overall"],
+      owned: own("rain_overall"),
+      details: wp([["rain_overall", "yes"]]),
+    });
+    expect(r.added).toEqual([]);
+    expect(statuses(r)).toEqual({ upper_body: "missing", lower_body: "missing" });
+    expect(r.waterproofingMet).toBe(false);
+    expect(r.gaps).toEqual([
+      { kind: "missing_garment", slug: "winter_overall", areas: ["upper_body", "lower_body"] },
+    ]);
+    expect(r.notLayeredOver[0]).toMatchObject({ owned: false, skipped: ["rain_overall"] });
+  });
+
+  it("outer garments the parent stated as insulated are never layered over", () => {
+    for (const insulation of ["light", "insulated"] as const) {
+      const r = sel({
+        isRaining: true,
+        outfit: outer("light_overall"),
+        owned: own("light_overall", "rain_overall"),
+        details: insul([
+          ["light_overall", { insulation }],
+          ["rain_overall", { waterproof: "yes" }],
+        ]),
+      });
+      expect(r.added).toEqual([]);
+      expect(r.gaps[0]).toMatchObject({ slug: "light_overall", status: "unconfirmed" });
+    }
+  });
+
+  it("shells over everyday clothing and mid layers are still added", () => {
+    for (const mid of ["sweater", "fleece_layer", "fleece_overall"] as WardrobeSlug[]) {
+      const r = sel({
+        isRaining: true,
+        outfit: [...everyday, { slot: "mid", slug: mid, label: "" }],
+        owned: own("long_sleeve_bodysuit", "pants", mid, "rain_overall"),
+        details: wp([["rain_overall", "yes"]]),
+      });
+      expect(r.added).toEqual(["rain_overall"]);
+      expect(r.waterproofingMet).toBe(true);
+      expect(r.notLayeredOver).toEqual([]);
+    }
+  });
+
+  it("an added shell's warmth is unknown, never a confirmed zero", () => {
+    const r = sel({
+      isRaining: true,
+      outfit: [...everyday, ...outer("jacket")],
+      owned: own("jacket", "rain_pants"),
+    });
+    expect(r.garments.find((g) => g.slug === "rain_pants")?.warmth).toBe("unknown");
+    expect(r.garments.find((g) => g.slug === "jacket")?.warmth).toBe("counted");
+    expect(r.notes.join(" ")).toContain("doesn't know how much warmth they add");
   });
 });
 
@@ -388,10 +571,32 @@ describe("recommend(): shared by every recommendation consumer", () => {
     expect(mixed.rainProtection?.added).not.toContain("rain_cover");
   });
 
-  it("the warmth comparison ignores added rain shells", () => {
+  it("the warmth comparison leaves added rain shells unscored and names them as unassessed", () => {
     const legacy = run({ transportMode: "none" });
     const r = run({ movement: "walking" });
     expect(idealOutfitFrom(r)).toEqual(idealOutfitFrom(legacy));
+    expect(unassessedWarmth(legacy)).toEqual([]);
+    if (!on) return expect(unassessedWarmth(r)).toEqual([]);
+    expect(unassessedWarmth(r)).toEqual(r.rainProtection?.added ?? []);
+    expect(unassessedWarmth(r).length).toBeGreaterThan(0);
+  });
+
+  it("T15A: cold days keep the winter overall with no rain overall stacked; mild days still get one", () => {
+    const details = wp([["rain_overall", "yes"]]);
+    for (const feelsLikeC of [0, -10]) {
+      const r = run({ movement: "walking" }, { feelsLikeC, garmentDetails: details });
+      if (!on) continue;
+      const all = slugs(r.babyClothing);
+      expect(all).toContain("winter_overall");
+      expect(all).not.toContain("rain_overall");
+      expect(r.rainProtection?.waterproofingMet).toBe(false);
+      expect(r.rainProtection?.gaps[0]).toMatchObject({ slug: "winter_overall" });
+      expect(r.missing).not.toContain("rain_overall");
+    }
+    const mild = run({ movement: "walking" }, { feelsLikeC: 10, garmentDetails: details });
+    if (!on) return;
+    expect(slugs(mild.babyClothing)).toContain("rain_overall");
+    expect(mild.rainProtection?.waterproofingMet).toBe(true);
   });
 
   it("phone-kept and signed-in wardrobes give the same protection result", () => {
