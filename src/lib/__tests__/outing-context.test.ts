@@ -264,7 +264,7 @@ describe("outfits are unchanged", () => {
     }
   });
 
-  it("stated movement, activity and ground change nothing but toddler footwear and rain gear (T14/T15)", () => {
+  it("stated movement, activity and ground change nothing but toddler footwear, rain gear and walking warmth (T14–T16)", () => {
     const base = {
       tempPref: 3,
       owned,
@@ -283,20 +283,22 @@ describe("outfits are unchanged", () => {
     });
     const got = recommend({ ...base, ...outingEngineFields(mixed) });
     if (!toddlerSupportEnabled()) return expect(got).toEqual(ref);
-    // Only the footwear role and worn rain shells (T15) are added; the rest matches.
+    // Only the footwear role and worn rain shells (T15) are added, and (T16)
+    // worn clothing is chosen for walking without the stroller's offset.
+    const walkRef = recommend({ ...base, situation: "walk" });
     const foot = new Set(["everyday_shoes", "rain_boots", "winter_boots"]);
-    const { footwear, rainProtection, ...rest } = got;
+    const { footwear, rainProtection, walkingWarmth, ...rest } = got;
     expect(footwear?.movement).toBe("mixed");
     expect(rainProtection?.movement).toBe("mixed");
+    expect(walkingWarmth?.transport).toBe("sitting-stroller");
     const rain = new Set<string>(rainProtection?.added ?? []);
-    const extraNotes = [...(footwear?.notes ?? []), ...(rainProtection?.notes ?? [])];
-    expect({
-      ...rest,
-      babyClothing: rest.babyClothing.filter((l) => !rain.has(l.slug)),
-      accessories: rest.accessories.filter((a) => !foot.has(a.slug)),
-      missing: rest.missing.filter((m) => !foot.has(m) && !rain.has(m)),
-      notes: rest.notes.filter((n) => !extraNotes.includes(n)),
-    }).toEqual(ref);
+    expect(rest.babyClothing.filter((l) => !rain.has(l.slug))).toEqual(walkRef.babyClothing);
+    expect(rest.accessories.filter((a) => !foot.has(a.slug))).toEqual(walkRef.accessories);
+    expect(rest.effectiveTempC).toBe(walkRef.effectiveTempC);
+    // Riding equipment is unchanged from the seated stroller outing.
+    expect(rest.transportExtras).toEqual(ref.transportExtras);
+    expect(rest.missingHelpfulItems).toEqual(ref.missingHelpfulItems);
+    expect(rest.optionalTransportExtras).toEqual(ref.optionalTransportExtras);
     // An infant on the same outing is unchanged.
     expect(recommend({ ...base, ageMonths: 8, ...outingEngineFields(mixed) })).toEqual(
       recommend({ ...base, ageMonths: 8, situation: "walk", transportMode: "sitting-stroller" }),

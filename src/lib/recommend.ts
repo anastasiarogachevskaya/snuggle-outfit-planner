@@ -14,6 +14,11 @@ import {
   type FootwearNeed,
 } from "./recommend/footwear";
 import { selectRainProtection, type RainProtectionNeed } from "./recommend/rain-protection";
+import {
+  pickWalkingWithRide,
+  rideTransport,
+  type WalkingWarmthPhases,
+} from "./recommend/walking-warmth";
 
 export type Situation = "home" | "walk" | "car";
 export type TransportMode = "pram" | "sitting-stroller" | "carrier";
@@ -145,6 +150,12 @@ export type Recommendation = {
    * `babyClothing` (outer slot), listed in `rainProtection.added`.
    */
   rainProtection?: RainProtectionNeed;
+  /**
+   * Toddler walking/active/mixed outings with a stroller or carrier only
+   * (omitted otherwise): worn clothing is chosen for walking without the
+   * ride's warmth offset; transport extras stay for riding.
+   */
+  walkingWarmth?: WalkingWarmthPhases;
 };
 
 export function recommend(input: RecommendInput): Recommendation {
@@ -205,7 +216,15 @@ export function recommend(input: RecommendInput): Recommendation {
     feelsLikeAtEndC: input.feelsLikeAtEndC,
     outing: resolveRecommendOuting(input),
   };
-  const out = pickOutdoor(ctx);
+  // Toddler walking footwear / rain / walking warmth share one gate.
+  const walkingMovement = walkingFootwearApplies({
+    situation: input.situation,
+    ageMonths: input.ageMonths,
+    outing: ctx.outing,
+  });
+  const ride = walkingMovement ? rideTransport(ctx.outing) : null;
+  const walkingRide = walkingMovement && ride ? pickWalkingWithRide(ctx, walkingMovement, ride) : null;
+  const out = walkingRide ? walkingRide.pick : pickOutdoor(ctx);
   const mapped = mapWardrobe(
     out.layers,
     out.accessories,
@@ -216,11 +235,6 @@ export function recommend(input: RecommendInput): Recommendation {
   );
 
   // Toddler walking footwear: its own role beside socks, one item at most.
-  const walkingMovement = walkingFootwearApplies({
-    situation: input.situation,
-    ageMonths: input.ageMonths,
-    outing: ctx.outing,
-  });
   const footwear = walkingMovement
     ? selectWalkingFootwear({
         movement: walkingMovement,
@@ -312,7 +326,9 @@ export function recommend(input: RecommendInput): Recommendation {
       );
   }
 
-  const reason = buildReason(input, out.effectiveC, usedExtras);
+  const reason = walkingRide
+    ? `Feels like ${Math.round(input.feelsLikeC)}°C. Clothing is chosen for walking (${Math.round(out.effectiveC)}°C with preference and context); the ${ride === "carrier" ? "carrier" : ride === "pram" ? "pram" : "stroller"} and its extras don't make it lighter.`
+    : buildReason(input, out.effectiveC, usedExtras);
 
   // Everything else that fits this trip: shown as quiet, optional choices so a
   // parent can build any outfit in Layer up, not only the recommended one.
@@ -342,6 +358,7 @@ export function recommend(input: RecommendInput): Recommendation {
     effectiveTempC: out.effectiveC,
     ...(footwear ? { footwear } : {}),
     ...(rainProtection ? { rainProtection } : {}),
+    ...(walkingRide ? { walkingWarmth: walkingRide.phases } : {}),
   };
 }
 

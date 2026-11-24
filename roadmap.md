@@ -32,6 +32,8 @@
 - [x] T14A Owned footwear with unconfirmed or not-waterproof protection stays owned while its waterproofing gap stays visible
 - [x] T15 Wearable rain protection (rain overall or jacket + rain pants) for toddler walking, active and mixed outings (gated)
 - [x] T15A No rain shell stacked over warm outerwear (winter overall, jacket, rain / snow pants) while compatibility is unassessed; added shell warmth is unknown, not zero
+- [x] T16 Walking clothing never lightened by a stroller/carrier offset on stated walking/active/mixed toddler outings; riding extras kept separate
+- [ ] Walking/riding policy (not scheduled): whether a mixed outing's walking outfit is warm enough for sitting in an exposed stroller, or too warm when carried
 - [ ] Before public toddler release: rain shells in the outfit check and Layer up, a policy for shell warmth and for layering a shell over warm outerwear, and a browser check once movement can be chosen on Today (T17)
 - [ ] Rain policy (not scheduled): whether snowy ground needs waterproof legs, and whether a warm jacket or winter overall may be added just for rain
 - [ ] Before public toddler release: footwear warmth rules, footwear in the outfit check, and footwear in Layer up (plus a browser check once movement can be chosen on Today)
