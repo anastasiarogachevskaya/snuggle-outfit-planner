@@ -1,5 +1,5 @@
 import { type recommend } from "@/lib/recommend";
-import { type WardrobeSlug } from "@/lib/wardrobe-catalog";
+import { LABEL_BY_SLUG, type WardrobeSlug } from "@/lib/wardrobe-catalog";
 import { useTempUnit } from "@/hooks/use-temp-unit";
 import { localizeClothingText } from "@/lib/clothing-text";
 import { ClothingIcon } from "@/components/icons";
@@ -17,6 +17,15 @@ export function OutfitResult({
   onOpenWardrobe: () => void;
 }) {
   const [unit] = useTempUnit();
+  // Walking footwear is its own role (T14): shown apart from socks/accessories.
+  const fw = rec.footwear;
+  const footwearSlug = fw ? (fw.selected ?? fw.missingSlug) : null;
+  const accessories = rec.accessories.filter((a) => a.slug !== footwearSlug);
+  const footwearItem = footwearSlug
+    ? rec.accessories.find((a) => a.slug === footwearSlug)
+    : undefined;
+  const rainAdded = new Set<string>(rec.rainProtection?.added ?? []);
+  const openNeeds = protectionNeeds(rec, unit);
   return (
     <section className="mb-10">
       <div className="w-full max-w-full overflow-hidden bg-surface rounded-[32px] p-7 shadow-sm border border-black/5">
@@ -52,17 +61,22 @@ export function OutfitResult({
                 chip={l.slot === "thermal" ? "THM" : l.slot.slice(0, 3).toUpperCase()}
                 label={localizeClothingText(l.label, unit)}
                 sub={
-                  l.usingLabel
-                    ? `Using your ${localizeClothingText(l.usingLabel, unit)}`
-                    : !isSynthetic && !isOwned
-                      ? missingItemNote(l.slug as WardrobeSlug, setAside)
-                      : undefined
+                  [
+                    rainAdded.has(l.slug) ? "Rain layer" : undefined,
+                    l.usingLabel
+                      ? `Using your ${localizeClothingText(l.usingLabel, unit)}`
+                      : !isSynthetic && !isOwned
+                        ? missingItemNote(l.slug as WardrobeSlug, setAside)
+                        : undefined,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || undefined
                 }
                 dim={!isSynthetic && !isOwned}
               />
             );
           })}
-          {rec.accessories.map((a) => (
+          {accessories.map((a) => (
             <Row
               key={"acc-" + a.slug}
               slug={a.slug}
@@ -80,6 +94,45 @@ export function OutfitResult({
             />
           ))}
         </div>
+
+        {footwearItem && (
+          <>
+            <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
+              Footwear
+            </p>
+            <Row
+              slug={footwearItem.slug}
+              chip="FT"
+              label={localizeClothingText(footwearItem.label, unit)}
+              sub={
+                footwearItem.usingLabel
+                  ? `Using your ${localizeClothingText(footwearItem.usingLabel, unit)}`
+                  : !owned.has(footwearItem.slug)
+                    ? missingItemNote(footwearItem.slug, setAside)
+                    : undefined
+              }
+              dim={!owned.has(footwearItem.slug)}
+            />
+          </>
+        )}
+
+        {openNeeds.length > 0 && (
+          <>
+            <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-accent/70 mb-2">
+              Still open
+            </p>
+            <ul className="space-y-2">
+              {openNeeds.map((n) => (
+                <li
+                  key={n}
+                  className="text-sm text-ink/80 bg-accent/5 border border-accent/10 rounded-2xl px-4 py-3"
+                >
+                  {n}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
         {rec.sleepAccessories.length > 0 && (
           <>
@@ -102,8 +155,14 @@ export function OutfitResult({
         {rec.transportExtras.length > 0 && (
           <>
             <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
-              Transport extras
+              {rec.walkingWarmth ? "For the ride" : "Transport extras"}
             </p>
+            {rec.walkingWarmth && (
+              <p className="mb-2 text-xs text-ink/60">
+                Equipment for the {rideName(rec.walkingWarmth.transport)}, not worn clothing. The
+                clothes above are chosen for walking.
+              </p>
+            )}
             <div className="space-y-3">
               {rec.transportExtras.map((a) => (
                 <Row
@@ -205,4 +264,37 @@ function Row({
       </div>
     </div>
   );
+}
+
+function rideName(t: string): string {
+  return t === "sitting-stroller" ? "stroller" : t;
+}
+
+const STATUS_TEXT = {
+  unconfirmed: "isn't confirmed waterproof",
+  unmet: "is marked not waterproof",
+} as const;
+
+const AREA_TEXT: Record<string, string> = { upper_body: "upper body", lower_body: "legs" };
+
+/** Unresolved protection from the shared output, worded for parents. Missing garments are already shown dimmed above. */
+function protectionNeeds(
+  rec: NonNullable<ReturnType<typeof recommend>>,
+  unit: Parameters<typeof localizeClothingText>[1],
+): string[] {
+  const out: string[] = [];
+  const name = (slug: string) =>
+    localizeClothingText((LABEL_BY_SLUG[slug as WardrobeSlug] ?? slug).toLowerCase(), unit);
+  for (const g of rec.footwear?.gaps ?? []) {
+    if (g.kind === "waterproofing")
+      out.push(`Waterproof footwear: your ${name(g.slug)} ${STATUS_TEXT[g.status]}.`);
+    else if (g.waterproofRequired) out.push("Waterproof footwear: none available to use.");
+  }
+  for (const g of rec.rainProtection?.gaps ?? []) {
+    const areas = g.areas.map((a) => AREA_TEXT[a] ?? a).join(" and ");
+    if (g.kind === "waterproofing")
+      out.push(`Rain cover for ${areas}: your ${name(g.slug)} ${STATUS_TEXT[g.status]}.`);
+    else out.push(`Rain cover for ${areas}: no ${name(g.slug)} available to use.`);
+  }
+  return [...new Set(out)];
 }

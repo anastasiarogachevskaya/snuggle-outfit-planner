@@ -33,6 +33,7 @@
 - [x] T15 Wearable rain protection (rain overall or jacket + rain pants) for toddler walking, active and mixed outings (gated)
 - [x] T15A No rain shell stacked over warm outerwear (winter overall, jacket, rain / snow pants) while compatibility is unassessed; added shell warmth is unknown, not zero
 - [x] T16 Walking clothing never lightened by a stroller/carrier offset on stated walking/active/mixed toddler outings; riding extras kept separate
+- [x] T17 Toddler outing controls on Today (movement, transport incl. none, activity, ground); footwear, rain layers and open protection shown separately
 - [ ] Walking/riding policy (not scheduled): whether a mixed outing's walking outfit is warm enough for sitting in an exposed stroller, or too warm when carried
 - [ ] Before public toddler release: rain shells in the outfit check and Layer up, a policy for shell warmth and for layering a shell over warm outerwear, and a browser check once movement can be chosen on Today (T17)
 - [ ] Rain policy (not scheduled): whether snowy ground needs waterproof legs, and whether a warm jacket or winter overall may be added just for rain

@@ -17,7 +17,14 @@ import { OutfitResult } from "./outfit-result";
 import { FeedbackPanel } from "./feedback-panel";
 import { CheckOutfitPanel } from "./check-outfit-panel";
 import { applyBottomChoice } from "@/lib/recommend/compare-bottoms";
-import { normalizeOutingContext, outingEngineFields } from "@/lib/outing-context";
+import {
+  outingEngineFields,
+  type GroundCondition,
+  type OutdoorActivity,
+  type OutingMovement,
+  type OutingTransport,
+} from "@/lib/outing-context";
+import { todayOutingContext, todayOutingControlsShown } from "@/lib/today-outing";
 import type { SetAsideReason } from "@/lib/wardrobe-eligibility";
 import type { ChildPreferences } from "@/lib/child-preferences";
 import type { GarmentDetails } from "@/lib/garment-details";
@@ -143,12 +150,22 @@ export function TodayScreen({
 
   const isRaining = weather ? isRainingCode(weather.code) : false;
 
-  // Shared outing context (same normalization as the assistant tool). The
-  // picker only offers situation + transport today, so movement stays
-  // seated/carried for stroller and carrier walks, as before.
+  // Toddler outing answers (T17). Kept while the parent switches to home/car
+  // so they come back on return; the shared normalizer drops them there.
+  const outingControls = todayOutingControlsShown(ageMonths);
+  const [movement, setMovement] = useState<OutingMovement | undefined>(undefined);
+  const [toddlerTransport, setToddlerTransport] = useState<OutingTransport | undefined>(undefined);
+  const [activity, setActivity] = useState<OutdoorActivity | undefined>(undefined);
+  const [ground, setGround] = useState<GroundCondition | undefined>(undefined);
+
+  // Shared outing context (same normalization as the assistant tool).
   const outing = useMemo(
-    () => normalizeOutingContext({ situation, transportMode }),
-    [situation, transportMode],
+    () =>
+      todayOutingContext(
+        { situation, transportMode, toddlerTransport, movement, activity, ground },
+        ageMonths,
+      ),
+    [situation, transportMode, toddlerTransport, movement, activity, ground, ageMonths],
   );
 
   // Primitive deps: callers rebuild the preferences object on every render.
@@ -206,7 +223,7 @@ export function TodayScreen({
   const [appliedBottom, setAppliedBottom] = useState<WardrobeSlug | null>(null);
   useEffect(() => {
     setAppliedBottom(null);
-  }, [situation, homeActivity, transportMode, duration, roomTemp]);
+  }, [situation, homeActivity, transportMode, outing, duration, roomTemp]);
 
   // Same age, sleep state and garment details recommend() was given, so a
   // compared bottom follows the outfit's own everyday-bottoms eligibility.
@@ -295,6 +312,23 @@ export function TodayScreen({
           onHomeActivityChange={(a) => change(homeActivity, a, setHomeActivity)}
           roomTemp={roomTemp}
           onRoomTempChange={setRoomTemp}
+          toddlerOuting={
+            outingControls
+              ? {
+                  movement,
+                  onMovementChange: (v) => change(movement, v, setMovement),
+                  transport: toddlerTransport ?? transportMode,
+                  onTransportChange: (v) => {
+                    if (v !== "none") change(transportMode, v, setTransportMode);
+                    change(toddlerTransport, v, setToddlerTransport);
+                  },
+                  activity,
+                  onActivityChange: (v) => change(activity, v, setActivity),
+                  ground,
+                  onGroundChange: (v) => change(ground, v, setGround),
+                }
+              : undefined
+          }
         />
 
         {/* The warmth-comparison model is clo-based and doesn't apply to

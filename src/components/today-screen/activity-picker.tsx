@@ -16,6 +16,85 @@ const situationOptions: {
 import { useTempUnit } from "@/hooks/use-temp-unit";
 import { formatTemp, roomTemperatureRange, roomTemperatureToC, toUnit } from "@/lib/units";
 import { localizeClothingText } from "@/lib/clothing-text";
+import type {
+  GroundCondition,
+  OutdoorActivity,
+  OutingMovement,
+  OutingTransport,
+} from "@/lib/outing-context";
+
+export type ToddlerOutingControls = {
+  movement: OutingMovement | undefined;
+  onMovementChange: (v: OutingMovement | undefined) => void;
+  transport: OutingTransport;
+  onTransportChange: (v: OutingTransport) => void;
+  activity: OutdoorActivity | undefined;
+  onActivityChange: (v: OutdoorActivity | undefined) => void;
+  ground: GroundCondition | undefined;
+  onGroundChange: (v: GroundCondition | undefined) => void;
+};
+
+const MOVEMENT_OPTIONS: { id: OutingMovement | undefined; label: string }[] = [
+  { id: undefined, label: "Not sure" },
+  { id: "seated", label: "Sitting / being carried" },
+  { id: "walking", label: "Gentle walking" },
+  { id: "active", label: "Active play" },
+  { id: "mixed", label: "Mixed walking and riding" },
+];
+const ACTIVITY_OPTIONS: { id: OutdoorActivity; label: string }[] = [
+  { id: "stroll", label: "Stroll" },
+  { id: "playground", label: "Playground" },
+  { id: "wet_play", label: "Wet play" },
+  { id: "snow_play", label: "Snow play" },
+];
+const GROUND_OPTIONS: { id: GroundCondition | undefined; label: string }[] = [
+  { id: undefined, label: "Not sure" },
+  { id: "dry", label: "Dry" },
+  { id: "wet", label: "Wet" },
+  { id: "snow", label: "Snow" },
+];
+
+const chipClass = (on: boolean) =>
+  "min-h-11 px-3 py-2 rounded-xl text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary " +
+  (on ? "bg-primary/15 text-primary font-medium" : "bg-canvas text-ink/70");
+
+function ChoiceGroup<T>({
+  label,
+  hint,
+  options,
+  value,
+  onChange,
+  cols,
+}: {
+  label: string;
+  hint?: string;
+  options: { id: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  cols: string;
+}) {
+  return (
+    <div role="group" aria-label={label}>
+      <p className="text-sm text-ink/70 mb-2">
+        {label}
+        {hint && <span className="ml-1 text-xs text-ink/50">{hint}</span>}
+      </p>
+      <div className={"grid gap-2 " + cols}>
+        {options.map((o) => (
+          <button
+            key={String(o.id ?? "unsure")}
+            type="button"
+            onClick={() => onChange(o.id)}
+            aria-pressed={value === o.id}
+            className={chipClass(value === o.id)}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function ActivityPicker({
   situation,
@@ -29,6 +108,7 @@ export function ActivityPicker({
   onHomeActivityChange,
   roomTemp,
   onRoomTempChange,
+  toddlerOuting,
 }: {
   situation: Situation;
   onSituationChange: (s: Situation) => void;
@@ -41,6 +121,8 @@ export function ActivityPicker({
   onHomeActivityChange: (a: HomeActivity) => void;
   roomTemp: number;
   onRoomTempChange: (t: number) => void;
+  /** Toddler outdoor controls (T17); omitted for infants and switch-off. */
+  toddlerOuting?: ToddlerOutingControls;
 }) {
   const [unit] = useTempUnit();
   const transportOptions: { id: TransportMode; label: string }[] = [
@@ -135,30 +217,72 @@ export function ActivityPicker({
         )}
         {situation === "walk" && (
           <div className="space-y-4">
-            <div>
-              <p className="text-sm text-ink/70 mb-2">How will baby travel?</p>
-              <div
-                className={
-                  "grid gap-2 " + (transportOptions.length === 3 ? "grid-cols-3" : "grid-cols-2")
-                }
-              >
-                {transportOptions.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => onTransportModeChange(m.id)}
-                    aria-pressed={transportMode === m.id}
-                    className={
-                      "min-h-11 py-2 rounded-xl text-sm " +
-                      (transportMode === m.id
-                        ? "bg-primary/15 text-primary font-medium"
-                        : "bg-canvas text-ink/70")
-                    }
-                  >
-                    {localizeClothingText(m.label, unit)}
-                  </button>
-                ))}
+            {toddlerOuting ? (
+              <>
+                <ChoiceGroup
+                  label="How will they move?"
+                  options={MOVEMENT_OPTIONS}
+                  value={toddlerOuting.movement}
+                  onChange={toddlerOuting.onMovementChange}
+                  cols="grid-cols-2"
+                />
+                <ChoiceGroup
+                  label="Transport"
+                  options={[
+                    ...transportOptions.map((m) => ({
+                      id: m.id as OutingTransport,
+                      label: localizeClothingText(m.label, unit),
+                    })),
+                    { id: "none" as OutingTransport, label: "No transport" },
+                  ]}
+                  value={toddlerOuting.transport}
+                  onChange={toddlerOuting.onTransportChange}
+                  cols={transportOptions.length === 3 ? "grid-cols-2" : "grid-cols-3"}
+                />
+                <ChoiceGroup
+                  label="Activity"
+                  hint="(optional, tap again to clear)"
+                  options={ACTIVITY_OPTIONS}
+                  value={toddlerOuting.activity}
+                  onChange={(v) =>
+                    toddlerOuting.onActivityChange(toddlerOuting.activity === v ? undefined : v)
+                  }
+                  cols="grid-cols-2"
+                />
+                <ChoiceGroup
+                  label="Ground"
+                  options={GROUND_OPTIONS}
+                  value={toddlerOuting.ground}
+                  onChange={toddlerOuting.onGroundChange}
+                  cols="grid-cols-2 sm:grid-cols-4"
+                />
+              </>
+            ) : (
+              <div>
+                <p className="text-sm text-ink/70 mb-2">How will baby travel?</p>
+                <div
+                  className={
+                    "grid gap-2 " + (transportOptions.length === 3 ? "grid-cols-3" : "grid-cols-2")
+                  }
+                >
+                  {transportOptions.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => onTransportModeChange(m.id)}
+                      aria-pressed={transportMode === m.id}
+                      className={
+                        "min-h-11 py-2 rounded-xl text-sm " +
+                        (transportMode === m.id
+                          ? "bg-primary/15 text-primary font-medium"
+                          : "bg-canvas text-ink/70")
+                      }
+                    >
+                      {localizeClothingText(m.label, unit)}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
             <div>
               <p className="text-sm text-ink/70 mb-2">Duration</p>
               <div className="grid grid-cols-3 gap-2">
