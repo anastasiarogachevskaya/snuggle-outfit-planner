@@ -1,0 +1,1 @@
+- Toddler walking warmth comes only from `walking-warmth.ts` (via `recommend()`, footwear gate, stroller/carrier present): worn clothing skips the ride's temperature offset; transport extras keep the riding calculation and never fill clothing gaps. Why: Today and MCP stay consistent; legacy outputs unchanged.
