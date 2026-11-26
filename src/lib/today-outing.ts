@@ -12,6 +12,10 @@
 import { toddlerRulesApply } from "./feature-flags";
 import {
   normalizeOutingContext,
+  GROUND_CONDITIONS,
+  OUTDOOR_ACTIVITIES,
+  OUTING_MOVEMENTS,
+  OUTING_TRANSPORTS,
   type GroundCondition,
   type OutdoorActivity,
   type OutingContext,
@@ -50,4 +54,39 @@ export function todayOutingContext(
     activity: a.activity ?? null,
     ground: a.ground ?? null,
   });
+}
+
+/**
+ * The toddler outing answers kept for this browser session (T17A), so they
+ * survive leaving Today for Wardrobe or Profile and coming back. Only stated
+ * answers are stored; anything unrecognised reads back as unanswered.
+ */
+export type StoredOutingAnswers = Pick<
+  TodayOutingAnswers,
+  "toddlerTransport" | "movement" | "activity" | "ground"
+>;
+
+export const outingAnswersKey = (babyId: string) => `layerly:outing:${babyId}`;
+
+const pick = <T extends string>(list: readonly T[], v: unknown): T | undefined =>
+  typeof v === "string" && (list as readonly string[]).includes(v) ? (v as T) : undefined;
+
+export function parseStoredOutingAnswers(raw: string | null): StoredOutingAnswers {
+  let v: Record<string, unknown> = {};
+  try {
+    const parsed: unknown = raw ? JSON.parse(raw) : {};
+    if (parsed && typeof parsed === "object") v = parsed as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+  const out: StoredOutingAnswers = {};
+  const t = pick(OUTING_TRANSPORTS, v["toddlerTransport"]);
+  const m = pick(OUTING_MOVEMENTS, v["movement"]);
+  const a = pick(OUTDOOR_ACTIVITIES, v["activity"]);
+  const g = pick(GROUND_CONDITIONS, v["ground"]);
+  if (t) out.toddlerTransport = t;
+  if (m) out.movement = m;
+  if (a) out.activity = a;
+  if (g) out.ground = g;
+  return out;
 }

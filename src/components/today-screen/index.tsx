@@ -24,7 +24,12 @@ import {
   type OutingMovement,
   type OutingTransport,
 } from "@/lib/outing-context";
-import { todayOutingContext, todayOutingControlsShown } from "@/lib/today-outing";
+import {
+  outingAnswersKey,
+  parseStoredOutingAnswers,
+  todayOutingContext,
+  todayOutingControlsShown,
+} from "@/lib/today-outing";
 import type { SetAsideReason } from "@/lib/wardrobe-eligibility";
 import type { ChildPreferences } from "@/lib/child-preferences";
 import type { GarmentDetails } from "@/lib/garment-details";
@@ -157,6 +162,24 @@ export function TodayScreen({
   const [toddlerTransport, setToddlerTransport] = useState<OutingTransport | undefined>(undefined);
   const [activity, setActivity] = useState<OutdoorActivity | undefined>(undefined);
   const [ground, setGround] = useState<GroundCondition | undefined>(undefined);
+  // Kept for the session so a trip to Wardrobe or Profile doesn't reset them (T17A).
+  const [loadedOutingBaby, setLoadedOutingBaby] = useState<string | null>(null);
+  useEffect(() => {
+    if (!babyId || typeof window === "undefined") return;
+    const saved = parseStoredOutingAnswers(window.sessionStorage.getItem(outingAnswersKey(babyId)));
+    setMovement(saved.movement);
+    setToddlerTransport(saved.toddlerTransport);
+    setActivity(saved.activity);
+    setGround(saved.ground);
+    setLoadedOutingBaby(babyId);
+  }, [babyId]);
+  useEffect(() => {
+    if (!babyId || loadedOutingBaby !== babyId || typeof window === "undefined") return;
+    window.sessionStorage.setItem(
+      outingAnswersKey(babyId),
+      JSON.stringify({ movement, toddlerTransport, activity, ground }),
+    );
+  }, [babyId, loadedOutingBaby, movement, toddlerTransport, activity, ground]);
 
   // Shared outing context (same normalization as the assistant tool).
   const outing = useMemo(
