@@ -81,7 +81,8 @@ describe("T18 duration policy", () => {
       hourlyFeelsLikeC: [8, 6, 4],
     };
     expect(feelsLikeAtMinutesFromNow(weather, outingEndOffset(105))).toBe(6);
-    expect(feelsLikeAtMinutesFromNow(weather, outingEndOffset(105, 60))).toBe(4);
+    // 02:15 is beyond the final 02:00 instant: no silent endpoint clamping.
+    expect(feelsLikeAtMinutesFromNow(weather, outingEndOffset(105, 60))).toBeNull();
   });
   it("custom duration reuses existing >=90 warmth threshold, not a new adjustment", () => {
     const input = {

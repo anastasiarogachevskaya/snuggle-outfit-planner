@@ -36,6 +36,7 @@ import type { GarmentDetails } from "@/lib/garment-details";
 import { everydayTopRules } from "@/lib/recommend/everyday-tops";
 import { everydayBottomRules } from "@/lib/recommend/thermal-layers";
 import { outingEndOffset } from "@/lib/outing-duration";
+import { resolveOutingWeather, weatherCoverageMessage } from "@/lib/outing-weather";
 
 /** Fires a selection haptic only when the value actually changes. */
 function change<T>(current: T, next: T, set: (v: T) => void) {
@@ -148,14 +149,31 @@ export function TodayScreen({
 
   // Planning ahead only applies outdoors; home uses the room thermometer.
   const [leaveIn, setLeaveIn] = useState(0);
+  // Departure clock is distinct from forecast freshness, including cached weather.
+  const [planningReference, setPlanningReference] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    const update = () => setPlanningReference(new Date().toISOString());
+    update();
+    const timer = window.setInterval(update, 60_000);
+    return () => window.clearInterval(timer);
+  }, [leaveIn, duration, situation, weatherQ.data]);
   const planningAhead = situation === "walk" && leaveIn > 0;
   const weather = useMemo(
     () =>
       weatherQ.data && planningAhead
-        ? weatherAtMinutesFromNow(weatherQ.data, leaveIn)
+        ? weatherAtMinutesFromNow(weatherQ.data, leaveIn, planningReference)
         : weatherQ.data,
-    [weatherQ.data, planningAhead, leaveIn],
+    [weatherQ.data, planningAhead, leaveIn, planningReference],
   );
+
+  const outingWeather = useMemo(
+    () =>
+      situation === "walk" && weatherQ.data
+        ? resolveOutingWeather(weatherQ.data, duration, leaveIn, planningReference)
+        : null,
+    [weatherQ.data, situation, duration, leaveIn, planningReference],
+  );
+  const coverageMessage = outingWeather ? weatherCoverageMessage(outingWeather) : null;
 
   const isRaining = weather ? isRainingCode(weather.code) : false;
 
@@ -226,6 +244,7 @@ export function TodayScreen({
           ? (feelsLikeAtMinutesFromNow(
               weatherQ.data ?? weather,
               outingEndOffset(duration, planningAhead ? leaveIn : 0),
+              planningReference,
             ) ?? undefined)
           : undefined,
     });
@@ -234,6 +253,7 @@ export function TodayScreen({
     weather,
     weatherQ.data,
     planningAhead,
+    planningReference,
     leaveIn,
     situation,
     outing,
@@ -316,7 +336,10 @@ export function TodayScreen({
 
         <section className="mb-6">
           <WeatherSummary
-            weather={weather}
+            weather={weather ?? undefined}
+            forecastUnavailable={planningAhead && weather === null}
+            forecastSource={weatherQ.data}
+            requestedDeparture={outingWeather?.departure ?? undefined}
             isLoading={weatherQ.isLoading}
             isError={weatherQ.isError}
             hasLocation={baby.latitude != null && baby.longitude != null}
@@ -361,6 +384,12 @@ export function TodayScreen({
           }
         />
 
+        {coverageMessage && (
+          <p role="status" className="mb-6 text-sm text-ink/70">
+            {coverageMessage}
+          </p>
+        )}
+
         {/* The warmth-comparison model is clo-based and doesn't apply to
             TOG-rated sleep sacks, so this replaces the recommendation card
             only while awake — during sleep there's nothing to check. */}
@@ -369,7 +398,7 @@ export function TodayScreen({
             rec={rec}
             owned={owned}
             setAside={setAside}
-            weather={weather}
+            weather={weather ?? undefined}
             onBack={() => setCheckingOutfit(false)}
             everydayTops={everydayTopRules({ ageMonths }) !== null}
           />

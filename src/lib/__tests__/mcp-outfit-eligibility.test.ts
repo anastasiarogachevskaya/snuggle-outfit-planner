@@ -257,3 +257,62 @@ describe("assistant outfit tool: wool-leggings answer", () => {
     }
   });
 });
+
+describe("assistant outing weather coverage (T19)", () => {
+  for (const incomplete of [false, true]) {
+    it(`reports ${incomplete ? "partial" : "complete"} coverage without changing ownership`, async () => {
+      const realFetch = globalThis.fetch;
+      const hour = Math.floor(Date.now() / 3_600_000) * 3600;
+      const times = incomplete
+        ? [hour, hour + 7200, hour + 10800]
+        : [hour, hour + 3600, hour + 7200, hour + 10800];
+      globalThis.fetch = (async () =>
+        ({
+          ok: true,
+          json: async () => ({
+            timezone: "Europe/Helsinki",
+            current: {
+              time: hour,
+              temperature_2m: 10,
+              apparent_temperature: 10,
+              weather_code: 0,
+              wind_speed_10m: 0,
+            },
+            hourly: {
+              time: times,
+              temperature_2m: times.map(() => 10),
+              apparent_temperature: times.map(() => 10),
+              weather_code: times.map(() => 0),
+              wind_speed_10m: times.map(() => 0),
+              rain: times.map(() => 0),
+              showers: times.map(() => 0),
+            },
+          }),
+        }) as Response) as typeof fetch;
+      try {
+        tables = {
+          babies: [{ ...baby, latitude: 60.17, longitude: 24.94 }],
+          wardrobe_items: [item("pants")],
+        };
+        const out = (await run({ feels_like_c: undefined, duration_min: 105 })) as unknown as {
+          outing_weather: { coverage: string; departure: string; return: string; gaps: unknown[] };
+          weather_limitation: string | null;
+        };
+        expect(out.outing_weather.coverage).toBe(incomplete ? "partial" : "complete");
+        expect(
+          Date.parse(out.outing_weather.return) - Date.parse(out.outing_weather.departure),
+        ).toBe(105 * 60_000);
+        if (incomplete) {
+          expect(out.outing_weather.gaps.length).toBeGreaterThan(0);
+          expect(out.weather_limitation).toContain("part");
+        } else {
+          expect(out.outing_weather.gaps).toEqual([]);
+          expect(out.weather_limitation).toBeNull();
+        }
+        expect(tables.wardrobe_items).toEqual([item("pants")]);
+      } finally {
+        globalThis.fetch = realFetch;
+      }
+    });
+  }
+});

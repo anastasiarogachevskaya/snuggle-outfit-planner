@@ -3,6 +3,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { recommend, type Situation, type HomeActivity } from "@/lib/recommend";
 import { normalizeOutingContext, outingEngineFields } from "@/lib/outing-context";
+import { resolveOutingWeather, weatherCoverageMessage } from "@/lib/outing-weather";
 import { fetchWeather, isRainingCode } from "@/lib/weather";
 import {
   fetchWardrobeItems,
@@ -70,6 +71,10 @@ export default defineTool({
       }
     }
 
+    const outingWeather =
+      weather && input.situation === "walk"
+        ? resolveOutingWeather(weather, input.duration_min ?? 30)
+        : null;
     const feelsLikeC = input.feels_like_c ?? weather?.feelsLikeC;
     if (input.situation !== "home" && feelsLikeC === undefined) {
       return errorResult(
@@ -103,6 +108,8 @@ export default defineTool({
 
     const result = {
       baby: { id: baby.id, name: baby.name, age_months: ageMonths },
+      outing_weather: outingWeather,
+      weather_limitation: outingWeather ? weatherCoverageMessage(outingWeather) : null,
       toddler_rules_applied: toddlerRulesApply(ageMonths),
       weather: weather
         ? {

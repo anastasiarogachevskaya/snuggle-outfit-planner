@@ -27,6 +27,13 @@ export const Route = createFileRoute("/_authenticated/today")({
           "See today's recommended baby outfit based on the local weather, your activity, and the clothes you own.",
       },
       { property: "og:title", content: "Today's outfit — Layerly" },
+      {
+        property: "og:description",
+        content:
+          "See today's recommended baby outfit based on local weather, your outing, and the clothes you own.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { property: "og:url", content: "https://layerly.online/today" },
       { name: "robots", content: "noindex" },
     ],

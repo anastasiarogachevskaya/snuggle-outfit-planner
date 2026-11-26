@@ -38,7 +38,9 @@ export function DepartureTimeWord({
     selectionHaptic();
     onChange(v);
   };
-  const label = value === 0 ? "Now" : hourLabel(new Date(now.getTime() + (value + 30) * 60_000));
+  // Relative labels preserve the exact requested delay, without rounding to an hour.
+  const label =
+    value === 0 ? "Now" : value === 60 ? "In 1h" : value === 120 ? "In 2h" : `In ${value} min`;
 
   return (
     <label className="relative inline-flex cursor-pointer items-baseline">

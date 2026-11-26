@@ -1,7 +1,7 @@
 import { useTempUnit } from "@/hooks/use-temp-unit";
 import { formatTemp } from "@/lib/units";
 import { type fetchWeather } from "@/lib/weather";
-import { DepartureTimeWord, hourLabel, type LeaveIn } from "./departure-picker";
+import { DepartureTimeWord, type LeaveIn } from "./departure-picker";
 
 export function WeatherSummary({
   weather,
@@ -11,6 +11,9 @@ export function WeatherSummary({
   onRetry,
   onOpenProfile,
   timeSelector,
+  forecastUnavailable = false,
+  forecastSource,
+  requestedDeparture,
 }: {
   weather: Awaited<ReturnType<typeof fetchWeather>> | undefined;
   isLoading: boolean;
@@ -20,6 +23,9 @@ export function WeatherSummary({
   onOpenProfile: () => void;
   /** When set (Walk), the leading time word is tappable to pick a later hour. */
   timeSelector?: { value: LeaveIn; onChange: (v: LeaveIn) => void };
+  forecastUnavailable?: boolean;
+  forecastSource?: Awaited<ReturnType<typeof fetchWeather>>;
+  requestedDeparture?: string;
 }) {
   const [unit] = useTempUnit();
   if (weather) {
@@ -39,10 +45,30 @@ export function WeatherSummary({
         </div>
         {timeSelector && timeSelector.value > 0 && (
           <p className="mt-1 text-xs text-ink/60">
-            Forecast for {hourLabel(new Date(Date.now() + (timeSelector.value + 30) * 60_000))} —
-            outfit below is for then too.
+            Hourly forecast near{" "}
+            {new Intl.DateTimeFormat(undefined, {
+              hour: "numeric",
+              minute: "2-digit",
+              timeZone: forecastSource?.sourceTimezone ?? "UTC",
+            }).format(
+              new Date(
+                requestedDeparture ?? forecastSource?.fetchedAtIso ?? forecastSource?.asOfIso ?? "",
+              ),
+            )}{" "}
+            ({forecastSource?.sourceTimezone ?? "UTC"}).
           </p>
         )}
+      </div>
+    );
+  }
+
+  if (forecastUnavailable) {
+    return (
+      <div>
+        {timeSelector && (
+          <DepartureTimeWord value={timeSelector.value} onChange={timeSelector.onChange} />
+        )}
+        <p className="mt-1 text-sm text-ink/60">No weather reading for this departure.</p>
       </div>
     );
   }

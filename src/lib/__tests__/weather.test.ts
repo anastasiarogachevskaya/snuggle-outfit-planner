@@ -1,6 +1,6 @@
 // @ts-expect-error bun:test is provided by the bun test runner
 import { describe, it, expect, afterEach } from "bun:test";
-import { fetchWeather, feelsLikeAtMinutesFromNow } from "../weather";
+import { fetchWeather, feelsLikeAtMinutesFromNow, weatherAtMinutesFromNow } from "../weather";
 
 const realFetch = globalThis.fetch;
 
@@ -15,7 +15,7 @@ function stubFetch(current: Current, ok = true, hourly?: Hourly) {
     lastUrl = String(input);
     return {
       ok,
-      json: async () => ({ current, hourly }),
+      json: async () => ({ current, hourly, timezone: "Europe/Helsinki" }),
     } as Response;
   }) as typeof fetch;
 }
@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 const SAMPLE: Current = {
-  time: "2026-01-15T10:00",
+  time: "2026-01-15T10:00:00.000Z",
   temperature_2m: 11.4,
   apparent_temperature: 8.2,
   wind_speed_10m: 17,
@@ -46,26 +46,50 @@ describe("fetchWeather", () => {
       "temperature_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index,cloud_cover",
     );
     expect(url.searchParams.get("hourly")).toBe(
-      "apparent_temperature,temperature_2m,weather_code,uv_index,cloud_cover",
+      "apparent_temperature,temperature_2m,weather_code,uv_index,cloud_cover,wind_speed_10m,wind_gusts_10m,rain,showers",
     );
     expect(url.searchParams.get("forecast_days")).toBe("2");
     expect(url.searchParams.get("timezone")).toBe("auto");
+    expect(url.searchParams.get("timeformat")).toBe("unixtime");
   });
 
   it("maps the response onto the Weather shape", async () => {
     stubFetch(SAMPLE);
     const w = await fetchWeather(1, 2);
-    expect(w).toEqual({
+    expect(w.fetchedAtIso).toMatch(/Z$/);
+    expect(w).toMatchObject({
       tempC: 11.4,
       feelsLikeC: 8.2,
       windKph: 17,
       code: 61,
       condition: "Rain",
       uvIndex: 2.5,
-      asOfIso: "2026-01-15T10:00",
+      asOfIso: "2026-01-15T10:00:00.000Z",
+      sourceTimezone: "Europe/Helsinki",
       hourlyTimeIso: [],
       hourlyFeelsLikeC: [],
     });
+  });
+
+  it("normalizes provider UTC seconds and preserves null hourly fields", async () => {
+    const epoch = Date.parse("2026-01-15T10:00:00Z") / 1000;
+    stubFetch({ ...SAMPLE, time: epoch }, true, {
+      time: [epoch, epoch + 3600],
+      apparent_temperature: [8.2, null],
+      wind_speed_10m: [0, null],
+      rain: [0, null],
+    });
+    const w = await fetchWeather(1, 2);
+    expect(w.asOfIso).toBe("2026-01-15T10:00:00.000Z");
+    expect(w.hourlyTimeIso).toEqual(["2026-01-15T10:00:00.000Z", "2026-01-15T11:00:00.000Z"]);
+    expect(w.hourlyFeelsLikeC).toEqual([8.2, null]);
+    expect(w.hourlyWindKph).toEqual([0, null]);
+    expect(w.hourlyRainMm).toEqual([0, null]);
+  });
+
+  it("does not turn missing current temperature into a usable reading", async () => {
+    stubFetch({ ...SAMPLE, temperature_2m: null });
+    await expect(fetchWeather(1, 2)).rejects.toThrow("weather readings unavailable");
   });
 
   it("omits uvIndex when the API does not return one", async () => {
@@ -87,16 +111,19 @@ describe("fetchWeather", () => {
 });
 
 describe("feelsLikeAtMinutesFromNow", () => {
-  it("finds the closest hourly value ahead of now", async () => {
+  it("uses the preceding instant only within hourly coverage", async () => {
     stubFetch(SAMPLE, true, {
-      time: ["2026-01-15T10:00", "2026-01-15T11:00", "2026-01-15T12:00"],
+      time: ["2026-01-15T10:00:00.000Z", "2026-01-15T11:00:00.000Z", "2026-01-15T12:00:00.000Z"],
       apparent_temperature: [8.2, 10.5, 12.8],
     });
     const w = await fetchWeather(1, 2);
+    w.fetchedAtIso = w.asOfIso;
     expect(feelsLikeAtMinutesFromNow(w, 60)).toBe(10.5);
     expect(feelsLikeAtMinutesFromNow(w, 120)).toBe(12.8);
-    // 50 minutes rounds to the 11:00 bucket, not 10:00 or 12:00.
-    expect(feelsLikeAtMinutesFromNow(w, 50)).toBe(10.5);
+    // No interpolation or nearest-hour rounding.
+    expect(feelsLikeAtMinutesFromNow(w, 50)).toBe(8.2);
+    expect(feelsLikeAtMinutesFromNow(w, 121)).toBeNull();
+    expect(weatherAtMinutesFromNow(w, 121)).toBeNull();
   });
 
   it("returns null when there is no hourly data", async () => {
