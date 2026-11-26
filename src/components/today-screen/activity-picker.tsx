@@ -1,6 +1,8 @@
 import { type Situation, type TransportMode, type HomeActivity } from "@/lib/recommend";
 import { HomeIcon, WalkIcon, CarIcon, PlayingIcon, SleepingIcon } from "@/components/icons";
 import { selectionHaptic } from "@/lib/haptics";
+import { durationPresets } from "@/lib/outing-duration";
+import { DurationPicker } from "./duration-picker";
 
 const situationOptions: {
   id: Situation;
@@ -115,8 +117,8 @@ export function ActivityPicker({
   pramAllowed: boolean;
   transportMode: TransportMode;
   onTransportModeChange: (m: TransportMode) => void;
-  duration: 30 | 60 | 90;
-  onDurationChange: (d: 30 | 60 | 90) => void;
+  duration: number;
+  onDurationChange: (d: number) => void;
   homeActivity: HomeActivity;
   onHomeActivityChange: (a: HomeActivity) => void;
   roomTemp: number;
@@ -283,50 +285,27 @@ export function ActivityPicker({
                 </div>
               </div>
             )}
-            <div>
-              <p className="text-sm text-ink/70 mb-2">Duration</p>
-              <div className="grid grid-cols-3 gap-2">
-                {[30, 60, 90].map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => onDurationChange(d as 30 | 60 | 90)}
-                    aria-pressed={duration === d}
-                    className={
-                      "min-h-11 py-2 rounded-xl text-sm " +
-                      (duration === d
-                        ? "bg-primary/15 text-primary font-medium"
-                        : "bg-canvas text-ink/70")
-                    }
-                  >
-                    {d === 90 ? "60+ min" : `${d} min`}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <DurationPicker
+              value={duration}
+              onChange={onDurationChange}
+              customAllowed={Boolean(toddlerOuting)}
+              presets={
+                toddlerOuting
+                  ? durationPresets("walk", toddlerOuting.movement, toddlerOuting.activity)
+                  : [30, 60, 90]
+              }
+            />
           </div>
         )}
 
         {situation === "car" && (
-          <div>
-            <p className="text-sm text-ink/70 mb-2">Trip duration</p>
-            <div className="grid grid-cols-3 gap-2">
-              {[30, 60, 90].map((d) => (
-                <button
-                  key={d}
-                  onClick={() => onDurationChange(d as 30 | 60 | 90)}
-                  aria-pressed={duration === d}
-                  className={
-                    "min-h-11 py-2 rounded-xl text-sm " +
-                    (duration === d
-                      ? "bg-primary/15 text-primary font-medium"
-                      : "bg-canvas text-ink/70")
-                  }
-                >
-                  {d === 90 ? "60+ min" : `${d} min`}
-                </button>
-              ))}
-            </div>
-          </div>
+          <DurationPicker
+            label="Trip duration"
+            value={duration}
+            onChange={onDurationChange}
+            customAllowed={Boolean(toddlerOuting)}
+            presets={toddlerOuting ? durationPresets("car") : [30, 60, 90]}
+          />
         )}
       </section>
     </>

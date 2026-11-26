@@ -296,5 +296,5 @@ function protectionNeeds(
       out.push(`Rain cover for ${areas}: your ${name(g.slug)} ${STATUS_TEXT[g.status]}.`);
     else out.push(`Rain cover for ${areas}: no ${name(g.slug)} available to use.`);
   }
-  return [...new Set(out)];
+  return [...new Set(out.map((text) => localizeClothingText(text, unit)))];
 }

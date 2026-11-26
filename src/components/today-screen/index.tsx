@@ -35,6 +35,7 @@ import type { ChildPreferences } from "@/lib/child-preferences";
 import type { GarmentDetails } from "@/lib/garment-details";
 import { everydayTopRules } from "@/lib/recommend/everyday-tops";
 import { everydayBottomRules } from "@/lib/recommend/thermal-layers";
+import { outingEndOffset } from "@/lib/outing-duration";
 
 /** Fires a selection haptic only when the value actually changes. */
 function change<T>(current: T, next: T, set: (v: T) => void) {
@@ -57,7 +58,7 @@ export type FeedbackContext = {
   situation: Situation;
   homeActivity: HomeActivity;
   transportMode: TransportMode;
-  duration: 30 | 60 | 90;
+  duration: number;
   roomTemp: number;
   ageMonths: number | null;
   weather: Awaited<ReturnType<typeof fetchWeather>>;
@@ -102,7 +103,10 @@ export function TodayScreen({
     queryKey: ["weather", baby.latitude, baby.longitude],
     enabled: baby.latitude != null && baby.longitude != null,
     staleTime: 5 * 60_000,
-    queryFn: () => fetchWeather(baby.latitude!, baby.longitude!),
+    queryFn: () => {
+      if (baby.latitude == null || baby.longitude == null) throw new Error("Location required");
+      return fetchWeather(baby.latitude, baby.longitude);
+    },
   });
 
   const [situation, setSituation] = useState<Situation>("walk");
@@ -133,7 +137,7 @@ export function TodayScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ageMonths]);
 
-  const [duration, setDuration] = useState<30 | 60 | 90>(30);
+  const [duration, setDuration] = useState<number>(30);
   const [homeActivity, setHomeActivity] = useState<HomeActivity>("playing");
   const [checkingOutfit, setCheckingOutfit] = useState(false);
   // The warmth model doesn't apply to sleep, so drop out of the checker if
@@ -171,15 +175,16 @@ export function TodayScreen({
     setToddlerTransport(saved.toddlerTransport);
     setActivity(saved.activity);
     setGround(saved.ground);
+    setDuration(saved.duration ?? 30);
     setLoadedOutingBaby(babyId);
   }, [babyId]);
   useEffect(() => {
     if (!babyId || loadedOutingBaby !== babyId || typeof window === "undefined") return;
     window.sessionStorage.setItem(
       outingAnswersKey(babyId),
-      JSON.stringify({ movement, toddlerTransport, activity, ground }),
+      JSON.stringify({ movement, toddlerTransport, activity, ground, duration }),
     );
-  }, [babyId, loadedOutingBaby, movement, toddlerTransport, activity, ground]);
+  }, [babyId, loadedOutingBaby, movement, toddlerTransport, activity, ground, duration]);
 
   // Shared outing context (same normalization as the assistant tool).
   const outing = useMemo(
@@ -207,7 +212,7 @@ export function TodayScreen({
       ...outingEngineFields(outing),
       roomTempC: situation === "home" ? roomTemp : undefined,
       isRaining: situation === "walk" ? isRaining : undefined,
-      durationMin: duration,
+      durationMin: situation === "home" ? undefined : duration,
       owned,
       setAside,
       childPreferences: stylePrefs,
@@ -218,8 +223,10 @@ export function TodayScreen({
       cloudCoverPct: weather.cloudCoverPct,
       feelsLikeAtEndC:
         situation === "walk"
-          ? (feelsLikeAtMinutesFromNow(weatherQ.data!, (planningAhead ? leaveIn : 0) + duration) ??
-            undefined)
+          ? (feelsLikeAtMinutesFromNow(
+              weatherQ.data ?? weather,
+              outingEndOffset(duration, planningAhead ? leaveIn : 0),
+            ) ?? undefined)
           : undefined,
     });
   }, [

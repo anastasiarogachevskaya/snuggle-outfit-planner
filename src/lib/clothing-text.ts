@@ -18,7 +18,15 @@ const US_TERMS: [RegExp, string][] = [
 ];
 
 export function localizeClothingText(text: string, unit: TempUnit): string {
-  let result = localizeTempText(text, unit);
+  let result = localizeTempText(text, unit)
+    .replace(
+      /\b(walking shoes|rain boots|winter boots|rain pants|rain \/ snow pants) isn't\b/gi,
+      "$1 aren't",
+    )
+    .replace(
+      /\b(walking shoes|rain boots|winter boots|rain pants|rain \/ snow pants) is\b/gi,
+      "$1 are",
+    );
   if (unit !== "F") return result;
   for (const [pattern, replacement] of US_TERMS) {
     result = result.replace(pattern, (match) =>

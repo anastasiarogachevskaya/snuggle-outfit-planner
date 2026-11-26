@@ -27,8 +27,8 @@ export async function fetchWeather(lat: number, lon: number): Promise<Weather> {
     "current",
     "temperature_2m,apparent_temperature,wind_speed_10m,weather_code,uv_index,cloud_cover",
   );
-  // Only need a few hours ahead (the longest walk duration option is 90 min),
-  // but 2 days covers a "now" close to midnight without extra complexity.
+  // Fixed two-day hourly coverage, independent of the entered duration.
+  // Custom minutes stay intact; full interval/coverage handling belongs to T19.
   url.searchParams.set(
     "hourly",
     "apparent_temperature,temperature_2m,weather_code,uv_index,cloud_cover",

@@ -10,6 +10,7 @@
  * pre-T17 one (situation + transport).
  */
 import { toddlerRulesApply } from "./feature-flags";
+import { isDurationMinutes } from "./outing-duration";
 import {
   normalizeOutingContext,
   GROUND_CONDITIONS,
@@ -64,7 +65,7 @@ export function todayOutingContext(
 export type StoredOutingAnswers = Pick<
   TodayOutingAnswers,
   "toddlerTransport" | "movement" | "activity" | "ground"
->;
+> & { duration?: number };
 
 export const outingAnswersKey = (babyId: string) => `layerly:outing:${babyId}`;
 
@@ -88,5 +89,6 @@ export function parseStoredOutingAnswers(raw: string | null): StoredOutingAnswer
   if (m) out.movement = m;
   if (a) out.activity = a;
   if (g) out.ground = g;
+  if (isDurationMinutes(v["duration"])) out.duration = v["duration"];
   return out;
 }

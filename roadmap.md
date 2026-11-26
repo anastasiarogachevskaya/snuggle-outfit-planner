@@ -35,6 +35,8 @@
 - [x] T16 Walking clothing never lightened by a stroller/carrier offset on stated walking/active/mixed toddler outings; riding extras kept separate
 - [x] T17 Toddler outing controls on Today (movement, transport incl. none, activity, ground); footwear, rain layers and open protection shown separately
 - [x] T17A Availability edits verified through Wardrobe Details (phone + desktop); walk answers now kept for the session when leaving Today
+- [x] T18 Duration presets and custom whole minutes, session retention, copy correction, tests and phone/desktop verification
+- [ ] T19 Full interval weather handling (hourly nearest-point forecast is not an exposure limit)
 - [ ] Walking/riding policy (not scheduled): whether a mixed outing's walking outfit is warm enough for sitting in an exposed stroller, or too warm when carried
 - [ ] Before public toddler release: rain shells in the outfit check and Layer up, a policy for shell warmth and for layering a shell over warm outerwear, and a browser check once movement can be chosen on Today (T17)
 - [ ] Rain policy (not scheduled): whether snowy ground needs waterproof legs, and whether a warm jacket or winter overall may be added just for rain
