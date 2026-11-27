@@ -37,7 +37,8 @@
 - [x] T17A Availability edits verified through Wardrobe Details (phone + desktop); walk answers now kept for the session when leaving Today
 - [x] T18 Duration presets and custom whole minutes, session retention, copy correction, tests and phone/desktop verification
 - [x] T19 Exact full-outing forecast intervals, explicit coverage/gaps, Today + assistant integration; deterministic phone/desktop checks and full suites pass
-- [ ] T19 Verification remainder: standalone explicit typecheck and production build (manual builds/typechecks unavailable in this managed environment; automatic preview checks pass)
+- [x] T20 Departure outfit, later weather changes and take-along packing on the gated toddler outdoor path; shared Today/assistant results; 646 enabled tests pass, off/preview legacy suites pass, and deterministic phone/desktop checks pass
+- [ ] Verification remainder: standalone explicit production build (manual builds unavailable in this managed environment; standalone typecheck and automatic preview builds pass)
 - [ ] Walking/riding policy (not scheduled): whether a mixed outing's walking outfit is warm enough for sitting in an exposed stroller, or too warm when carried
 - [ ] Before public toddler release: rain shells in the outfit check and Layer up, a policy for shell warmth and for layering a shell over warm outerwear, and a browser check once movement can be chosen on Today (T17)
 - [ ] Rain policy (not scheduled): whether snowy ground needs waterproof legs, and whether a warm jacket or winter overall may be added just for rain

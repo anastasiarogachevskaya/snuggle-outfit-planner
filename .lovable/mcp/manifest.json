@@ -137,13 +137,48 @@
               "enum": [
                 "pram",
                 "sitting-stroller",
-                "carrier"
+                "carrier",
+                "none"
               ],
-              "description": "Transport for situation=walk."
+              "description": "Transport for situation=walk, including none for a stated walking outing."
+            },
+            "movement": {
+              "type": "string",
+              "enum": [
+                "seated",
+                "walking",
+                "active",
+                "mixed"
+              ],
+              "description": "Stated movement for situation=walk; never inferred from transport."
+            },
+            "activity": {
+              "type": "string",
+              "enum": [
+                "stroll",
+                "playground",
+                "wet_play",
+                "snow_play"
+              ],
+              "description": "Optional outdoor activity; does not imply ground or rain."
+            },
+            "ground": {
+              "type": "string",
+              "enum": [
+                "dry",
+                "wet",
+                "snow"
+              ],
+              "description": "Stated ground condition; never inferred from activity or rain."
             },
             "duration_min": {
               "type": "number",
               "description": "Planned time outside in minutes."
+            },
+            "leave_in_min": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Optional departure delay in minutes, using the same hourly forecast as Today."
             },
             "feels_like_c": {
               "type": "number",

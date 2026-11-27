@@ -235,6 +235,7 @@ export function TodayScreen({
       setAside,
       childPreferences: stylePrefs,
       garmentDetails: details,
+      outingWeather: situation === "walk" ? (outingWeather ?? undefined) : undefined,
       homeActivity: situation === "home" ? homeActivity : undefined,
       ageMonths,
       uvIndex: weather.uvIndex,
@@ -264,6 +265,7 @@ export function TodayScreen({
     setAside,
     stylePrefs,
     details,
+    outingWeather,
     homeActivity,
     ageMonths,
   ]);

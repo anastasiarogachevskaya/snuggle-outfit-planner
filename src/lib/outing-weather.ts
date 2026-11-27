@@ -20,6 +20,9 @@ export type ForecastSample = {
   rainMm: number | null;
   showersMm: number | null;
   gustKph: number | null;
+  /** Optional paired instant readings; absence never invalidates T19 coverage. */
+  uvIndex: number | null;
+  cloudCoverPct: number | null;
 };
 export type OutingWeather = {
   departure: string | null;
@@ -89,6 +92,8 @@ function allSamples(weather: Weather): ForecastSample[] {
               rainMm: numberOrNull(weather.hourlyRainMm?.[i]),
               showersMm: numberOrNull(weather.hourlyShowersMm?.[i]),
               gustKph: numberOrNull(weather.hourlyGustKph?.[i]),
+              uvIndex: numberOrNull(weather.hourlyUv?.[i]),
+              cloudCoverPct: numberOrNull(weather.hourlyCloudPct?.[i]),
             },
           ];
     })

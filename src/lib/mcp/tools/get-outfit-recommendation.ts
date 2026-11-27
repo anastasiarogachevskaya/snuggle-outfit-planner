@@ -4,7 +4,7 @@ import { z } from "zod";
 import { recommend, type Situation, type HomeActivity } from "@/lib/recommend";
 import { normalizeOutingContext, outingEngineFields } from "@/lib/outing-context";
 import { resolveOutingWeather, weatherCoverageMessage } from "@/lib/outing-weather";
-import { fetchWeather, isRainingCode } from "@/lib/weather";
+import { fetchWeather, isRainingCode, weatherAtMinutesFromNow } from "@/lib/weather";
 import {
   fetchWardrobeItems,
   resolveEligibleWardrobe,
@@ -28,10 +28,28 @@ export default defineTool({
       .optional()
       .describe("Home activity, for situation=home."),
     transport_mode: z
-      .enum(["pram", "sitting-stroller", "carrier"])
+      .enum(["pram", "sitting-stroller", "carrier", "none"])
       .optional()
-      .describe("Transport for situation=walk."),
+      .describe("Transport for situation=walk, including none for a stated walking outing."),
+    movement: z
+      .enum(["seated", "walking", "active", "mixed"])
+      .optional()
+      .describe("Stated movement for situation=walk; never inferred from transport."),
+    activity: z
+      .enum(["stroll", "playground", "wet_play", "snow_play"])
+      .optional()
+      .describe("Optional outdoor activity; does not imply ground or rain."),
+    ground: z
+      .enum(["dry", "wet", "snow"])
+      .optional()
+      .describe("Stated ground condition; never inferred from activity or rain."),
     duration_min: z.number().optional().describe("Planned time outside in minutes."),
+    leave_in_min: z
+      .number()
+      .int()
+      .min(0)
+      .optional()
+      .describe("Optional departure delay in minutes, using the same hourly forecast as Today."),
     feels_like_c: z
       .number()
       .optional()
@@ -71,11 +89,21 @@ export default defineTool({
       }
     }
 
+    const leaveIn = input.leave_in_min ?? 0;
     const outingWeather =
       weather && input.situation === "walk"
-        ? resolveOutingWeather(weather, input.duration_min ?? 30)
+        ? resolveOutingWeather(weather, input.duration_min ?? 30, leaveIn)
         : null;
-    const feelsLikeC = input.feels_like_c ?? weather?.feelsLikeC;
+    const departureWeather =
+      weather && input.situation === "walk" && leaveIn > 0
+        ? weatherAtMinutesFromNow(weather, leaveIn)
+        : weather;
+    const feelsLikeC = input.feels_like_c ?? departureWeather?.feelsLikeC;
+    // The assistant's toddler default matches Today's 30 minutes. Legacy
+    // infant/switch-off calls keep their previous undefined duration.
+    const durationMin = toddlerRulesApply(ageMonths)
+      ? (input.duration_min ?? 30)
+      : input.duration_min;
     if (input.situation !== "home" && feelsLikeC === undefined) {
       return errorResult(
         "No location saved for this baby and no feels_like_c provided — cannot fetch outdoor weather.",
@@ -90,11 +118,15 @@ export default defineTool({
         normalizeOutingContext({
           situation: input.situation as Situation,
           transportMode: input.transport_mode,
+          movement: input.movement,
+          activity: input.activity,
+          ground: input.ground,
         }),
       ),
       roomTempC: input.room_temp_c,
-      isRaining: weather ? isRainingCode(weather.code) : undefined,
-      durationMin: input.duration_min,
+      isRaining: departureWeather ? isRainingCode(departureWeather.code) : undefined,
+      durationMin,
+      outingWeather: outingWeather ?? undefined,
       owned,
       setAside: wardrobe.setAside,
       // Same saved preferences the app's Today screen passes.
@@ -102,8 +134,8 @@ export default defineTool({
       garmentDetails: wardrobe.details,
       homeActivity: input.home_activity as HomeActivity | undefined,
       ageMonths,
-      uvIndex: weather?.uvIndex,
-      cloudCoverPct: weather?.cloudCoverPct,
+      uvIndex: departureWeather?.uvIndex,
+      cloudCoverPct: departureWeather?.cloudCoverPct,
     });
 
     const result = {
@@ -111,13 +143,13 @@ export default defineTool({
       outing_weather: outingWeather,
       weather_limitation: outingWeather ? weatherCoverageMessage(outingWeather) : null,
       toddler_rules_applied: toddlerRulesApply(ageMonths),
-      weather: weather
+      weather: departureWeather
         ? {
-            temp_c: weather.tempC,
-            feels_like_c: weather.feelsLikeC,
-            condition: weather.condition,
-            wind_kph: weather.windKph,
-            uv_index: weather.uvIndex,
+            temp_c: departureWeather.tempC,
+            feels_like_c: departureWeather.feelsLikeC,
+            condition: departureWeather.condition,
+            wind_kph: departureWeather.windKph,
+            uv_index: departureWeather.uvIndex,
             location: baby.location_label,
           }
         : null,

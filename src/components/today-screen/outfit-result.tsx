@@ -4,6 +4,12 @@ import { useTempUnit } from "@/hooks/use-temp-unit";
 import { localizeClothingText } from "@/lib/clothing-text";
 import { ClothingIcon } from "@/components/icons";
 import { missingItemNote, type SetAsideReason } from "@/lib/wardrobe-eligibility";
+import type {
+  ChangeGarment,
+  LaterChange,
+  LaterProtectionNeed,
+  PackingItem,
+} from "@/lib/recommend/outing-preparation";
 
 export function OutfitResult({
   rec,
@@ -26,6 +32,8 @@ export function OutfitResult({
     : undefined;
   const rainAdded = new Set<string>(rec.rainProtection?.added ?? []);
   const openNeeds = protectionNeeds(rec, unit);
+  const preparation = rec.outingPreparation;
+  const resultNotes = [...rec.notes, ...(preparation?.notes ?? [])];
   return (
     <section className="mb-10">
       <div className="w-full max-w-full overflow-hidden bg-surface rounded-[32px] p-7 shadow-sm border border-black/5">
@@ -37,9 +45,9 @@ export function OutfitResult({
               : "Just the basics."}
         </h1>
         <p className="text-ink/60 leading-relaxed mb-4">{localizeClothingText(rec.reason, unit)}</p>
-        {rec.notes.length > 0 && (
+        {resultNotes.length > 0 && (
           <div className="space-y-2 mb-6">
-            {rec.notes.map((n, i) => (
+            {resultNotes.map((n, i) => (
               <p key={i} className="text-xs text-ink/70 border-l-2 border-accent/40 pl-3">
                 {localizeClothingText(n, unit)}
               </p>
@@ -48,7 +56,7 @@ export function OutfitResult({
         )}
 
         <p className="text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
-          Baby clothing
+          {preparation ? "Wear now" : "Baby clothing"}
         </p>
         <div className="space-y-3">
           {rec.babyClothing.map((l) => {
@@ -114,6 +122,59 @@ export function OutfitResult({
               dim={!owned.has(footwearItem.slug)}
             />
           </>
+        )}
+
+        {preparation && (preparation.changes.length > 0 || preparation.protection.length > 0) && (
+          <>
+            <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
+              Later changes
+            </p>
+            <ul className="space-y-2">
+              {preparation.changes.map((change) => (
+                <li
+                  key={laterChangeKey(change)}
+                  className="text-sm text-ink/80 bg-primary/5 border border-primary/10 rounded-2xl px-4 py-3"
+                >
+                  {laterChangeText(change, unit)}
+                </li>
+              ))}
+              {preparation.protection.map((need) => (
+                <li
+                  key={laterProtectionKey(need)}
+                  className="text-sm text-ink/80 bg-accent/5 border border-accent/10 rounded-2xl px-4 py-3"
+                >
+                  {laterProtectionText(need, unit)}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {preparation && preparation.packing.length > 0 && (
+          <>
+            <p className="mt-6 text-[11px] font-medium uppercase tracking-widest text-primary/60 mb-2">
+              Take along
+            </p>
+            <div className="space-y-3">
+              {preparation.packing.map((item) => (
+                <Row
+                  key={`pack-${item.category}-${item.slug}`}
+                  slug={item.slug}
+                  chip="PACK"
+                  label={localizeClothingText(item.label, unit)}
+                  sub={packingItemNote(item, unit)}
+                  accent
+                  dim={item.availability !== "available"}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {preparation?.spareSuggestion && (
+          <p className="mt-4 text-xs text-ink/60 border-l-2 border-accent/40 pl-3">
+            {localizeClothingText(preparation.spareSuggestion, unit)}
+          </p>
         )}
 
         {openNeeds.length > 0 && (
@@ -268,6 +329,67 @@ function Row({
 
 function rideName(t: string): string {
   return t === "sitting-stroller" ? "stroller" : t;
+}
+
+type TextUnit = Parameters<typeof localizeClothingText>[1];
+const changeName = (item: ChangeGarment, unit: TextUnit) =>
+  localizeClothingText((item.usingLabel ?? item.label).toLowerCase(), unit);
+
+function laterChangeKey(change: LaterChange): string {
+  return `${change.kind}-${change.role}-${change.from?.slug ?? ""}-${change.to?.slug ?? ""}`;
+}
+
+function laterChangeText(change: LaterChange, unit: TextUnit): string {
+  const timing = change.reasons.includes("rain") ? "Possible rain period" : "Later";
+  if (change.kind === "replace" && change.from && change.to)
+    return `${timing}: replace ${changeName(change.from, unit)} with ${changeName(change.to, unit)}.`;
+  if (change.kind === "remove" && change.from)
+    return `${timing}: remove ${changeName(change.from, unit)}.`;
+  if (change.to) return `${timing}: add ${changeName(change.to, unit)}.`;
+  return `${timing}: outfit change.`;
+}
+
+function laterProtectionKey(need: LaterProtectionNeed): string {
+  return `${need.kind}-${need.slug}-${need.status}-${need.notLayeredOver}`;
+}
+
+function laterProtectionText(need: LaterProtectionNeed, unit: TextUnit): string {
+  const name = localizeClothingText((LABEL_BY_SLUG[need.slug] ?? need.slug).toLowerCase(), unit);
+  const status =
+    need.status === "unmet" ? "is marked not waterproof" : "isn't confirmed waterproof";
+  const subject = need.kind === "footwear" ? "Footwear later" : "Rain later";
+  const layering = need.notLayeredOver
+    ? " Layerly doesn't add a rain shell over this warm layer."
+    : "";
+  return `${subject}: your ${name} ${status}.${layering}`;
+}
+
+function packingItemNote(item: PackingItem, unit: TextUnit): string {
+  const availability =
+    item.availability === "available"
+      ? undefined
+      : item.availability === "not_owned"
+        ? "Not in your wardrobe"
+        : item.availability === "outgrown"
+          ? "Marked outgrown in your wardrobe"
+          : "Marked temporarily unavailable in your wardrobe";
+  const protection =
+    item.protection === "confirmed"
+      ? "Waterproofing confirmed"
+      : item.protection === "unconfirmed"
+        ? "Waterproofing not confirmed"
+        : item.protection === "unmet"
+          ? "Marked not waterproof"
+          : undefined;
+  return [
+    item.category === "transport" ? "For the ride" : undefined,
+    item.usingLabel ? `Using your ${localizeClothingText(item.usingLabel, unit)}` : undefined,
+    availability,
+    protection,
+    item.notLayeredOver ? "No rain shell stacked over it" : undefined,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 const STATUS_TEXT = {

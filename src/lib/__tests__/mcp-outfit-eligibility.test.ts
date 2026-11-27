@@ -1,10 +1,12 @@
 // @ts-expect-error bun:test is provided by the bun test runner
 import { describe, expect, it, mock } from "bun:test";
-import { toddlerSupportEnabled } from "@/lib/feature-flags";
+import { toddlerRulesApply, toddlerSupportEnabled } from "@/lib/feature-flags";
 import { recommend } from "@/lib/recommend";
 import { normalizeOutingContext, outingEngineFields } from "@/lib/outing-context";
 import { resolveEligibleWardrobe } from "@/lib/wardrobe-eligibility";
 import { ageInMonths } from "@/lib/baby-age";
+import type { OutingWeather } from "@/lib/outing-weather";
+import { normalizeChildPreferences } from "@/lib/child-preferences";
 
 type Row = Record<string, unknown>;
 let tables: Record<string, Row[]> = {};
@@ -254,6 +256,110 @@ describe("assistant outfit tool: wool-leggings answer", () => {
       );
       // Owning a thermal bottom never adds it on its own.
       expect(out.recommendation.babyClothing.some((l) => l.slot === "thermal")).toBe(false);
+    }
+  });
+});
+
+describe("assistant outing preparation (T20)", () => {
+  const monthsAgo = (n: number) => {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - n);
+    return d.toISOString().slice(0, 10);
+  };
+  const toddler = { ...baby, dob: monthsAgo(24) };
+  const enabled = toddlerRulesApply(ageInMonths(toddler.dob));
+  const t20it = enabled ? it : it.skip;
+
+  t20it("returns the same structured result as Today for equivalent inputs", async () => {
+    const realFetch = globalThis.fetch;
+    const hour = Math.floor(Date.now() / 3_600_000) * 3600;
+    const times = [hour, hour + 3600, hour + 7200, hour + 10800];
+    const feels = [18, 2, 18, 18];
+    globalThis.fetch = (async () =>
+      ({
+        ok: true,
+        json: async () => ({
+          timezone: "Europe/Helsinki",
+          current: {
+            time: hour,
+            temperature_2m: 18,
+            apparent_temperature: 18,
+            weather_code: 0,
+            wind_speed_10m: 5,
+            uv_index: 1,
+            cloud_cover: 20,
+          },
+          hourly: {
+            time: times,
+            temperature_2m: feels,
+            apparent_temperature: feels,
+            weather_code: feels.map(() => 0),
+            wind_speed_10m: feels.map(() => 5),
+            rain: feels.map(() => 0),
+            showers: feels.map(() => 0),
+            wind_gusts_10m: feels.map(() => 8),
+            uv_index: feels.map(() => 1),
+            cloud_cover: feels.map(() => 20),
+          },
+        }),
+      }) as Response) as typeof fetch;
+    try {
+      tables = {
+        babies: [{ ...toddler, latitude: 60.17, longitude: 24.94 }],
+        wardrobe_items: [
+          "long_sleeve_bodysuit",
+          "pants",
+          "sweater",
+          "winter_overall",
+          "thin_hat",
+          "warm_hat",
+          "cotton_socks",
+          "wool_socks",
+          "mittens",
+          "everyday_shoes",
+        ].map((s) => item(s)),
+      };
+      const out = (await run({
+        feels_like_c: undefined,
+        transport_mode: "none",
+        movement: "walking",
+        ground: "dry",
+        duration_min: 120,
+      })) as unknown as {
+        recommendation: ReturnType<typeof recommend>;
+        outing_weather: OutingWeather;
+        weather: { feels_like_c: number; uv_index?: number };
+      };
+      expect(out.recommendation.outingPreparation?.packing).toContainEqual(
+        expect.objectContaining({ slug: "winter_overall", availability: "available" }),
+      );
+      const w = resolveEligibleWardrobe(tables.wardrobe_items as never);
+      const today = recommend({
+        feelsLikeC: out.weather.feels_like_c,
+        tempPref: 3,
+        ...outingEngineFields(
+          normalizeOutingContext({
+            situation: "walk",
+            transportMode: "none",
+            movement: "walking",
+            ground: "dry",
+          }),
+        ),
+        isRaining: false,
+        durationMin: 120,
+        outingWeather: out.outing_weather,
+        owned: w.eligible,
+        setAside: w.setAside,
+        garmentDetails: w.details,
+        ageMonths: ageInMonths(toddler.dob),
+        childPreferences: normalizeChildPreferences(toddler),
+        uvIndex: out.weather.uv_index,
+        cloudCoverPct: 20,
+      });
+      expect(out.recommendation).toEqual(today);
+    } finally {
+      globalThis.fetch = realFetch;
     }
   });
 });

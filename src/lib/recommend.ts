@@ -19,6 +19,9 @@ import {
   rideTransport,
   type WalkingWarmthPhases,
 } from "./recommend/walking-warmth";
+import type { OutingWeather } from "./outing-weather";
+import { toddlerRulesApply } from "./feature-flags";
+import { buildOutingPreparation, type OutingPreparation } from "./recommend/outing-preparation";
 
 export type Situation = "home" | "walk" | "car";
 export type TransportMode = "pram" | "sitting-stroller" | "carrier";
@@ -66,6 +69,13 @@ export type RecommendInput = {
    * waterproofing of footwear and rain shells.
    */
   garmentDetails?: ReadonlyMap<WardrobeSlug, Partial<GarmentDetails>>;
+  /**
+   * T19's exact outing intervals. On the gated 12–35-month walk path only,
+   * later covered instants add structured changes and packing while the
+   * departure outfit stays "Wear now". Older callers and all other paths are
+   * unchanged.
+   */
+  outingWeather?: OutingWeather;
 };
 
 /**
@@ -156,9 +166,31 @@ export type Recommendation = {
    * ride's warmth offset; transport extras stay for riding.
    */
   walkingWarmth?: WalkingWarmthPhases;
+  /** Later covered-weather changes and packing; never merged into Wear now. */
+  outingPreparation?: OutingPreparation;
 };
 
 export function recommend(input: RecommendInput): Recommendation {
+  if (input.situation !== "walk" || !input.outingWeather || !toddlerRulesApply(input.ageMonths))
+    return recommendAtInstant(input);
+
+  const weather = input.outingWeather;
+  // T20 supersedes the legacy endpoint-only note on this gated path. Every
+  // covered interval is assessed instead; infant and switch-off notes remain.
+  const departureInput = { ...input, feelsLikeAtEndC: undefined };
+  const departure = recommendAtInstant(departureInput);
+  return {
+    ...departure,
+    outingPreparation: buildOutingPreparation(
+      departureInput,
+      weather,
+      departure,
+      recommendAtInstant,
+    ),
+  };
+}
+
+function recommendAtInstant(input: RecommendInput): Recommendation {
   const tops = everydayTopRules({
     ageMonths: input.ageMonths,
     preferences: input.childPreferences,
@@ -223,7 +255,8 @@ export function recommend(input: RecommendInput): Recommendation {
     outing: ctx.outing,
   });
   const ride = walkingMovement ? rideTransport(ctx.outing) : null;
-  const walkingRide = walkingMovement && ride ? pickWalkingWithRide(ctx, walkingMovement, ride) : null;
+  const walkingRide =
+    walkingMovement && ride ? pickWalkingWithRide(ctx, walkingMovement, ride) : null;
   const out = walkingRide ? walkingRide.pick : pickOutdoor(ctx);
   const mapped = mapWardrobe(
     out.layers,
